@@ -77,7 +77,8 @@ def grupo_video(video, divisao=DIVISAO):
     return grupos[0]
 
 
-def carregar_fotos(base, revisoes):
+def iterar_fotos_revisadas(base, revisoes):
+    """Entrega as revisões verificadas, inclusive ausências e ambiguidades."""
     base, revisoes = Path(base), Path(revisoes)
     rotulos = carregar_revisoes(revisoes)
     with (base / 'metadados.csv').open(encoding='utf-8-sig', newline='') as arquivo:
@@ -93,7 +94,6 @@ def carregar_fotos(base, revisoes):
             arquivos[p.name] = p
     if set(rotulos) - set(meta):
         raise ValueError('Revisões contêm imagem ausente do CSV')
-    incluidos, excluidos, reduzidos, alvos = [], [], [], []
     for nome, revisao in sorted(rotulos.items()):
         registro = meta[nome]
         if any(revisao[k] != registro[k] for k in ['video_origem', 'timestamp', 'largura', 'altura']):
@@ -104,6 +104,12 @@ def carregar_fotos(base, revisoes):
         img = cv2.imdecode(np.frombuffer(bruto, np.uint8), cv2.IMREAD_COLOR)
         if img is None or img.shape[:2] != (int(registro['altura']), int(registro['largura'])):
             raise ValueError(f'Imagem/resolução inválida: {nome}')
+        yield registro, revisao, img, str(arquivos[nome].relative_to(base))
+
+
+def carregar_fotos(base, revisoes):
+    incluidos, excluidos, reduzidos, alvos = [], [], [], []
+    for registro, revisao, img, arquivo in iterar_fotos_revisadas(base, revisoes):
         grupo = grupo_video(registro['video_origem'])
         alvo = posicao_anotada(revisao)
         if alvo is None:
@@ -117,7 +123,7 @@ def carregar_fotos(base, revisoes):
         incluidos.append({**registro, 'grupo': grupo, 'posicao': alvo, 'sha256': revisao['sha256'],
                           'visibilidade': revisao['visibilidade'], 'pontos_px': revisao['pontos_px'],
                           'recorte_y0': y0, 'recorte_y1': y1,
-                          'arquivo': str(arquivos[nome].relative_to(base))})
+                          'arquivo': arquivo})
     if not incluidos:
         raise ValueError('Nenhuma anotação utilizável para posição em y=75%')
     return np.stack(reduzidos), np.array(alvos, dtype=np.float32), incluidos, excluidos

@@ -327,3 +327,44 @@ continua pendente de avaliação com gravações novas da câmera montada.
 - As pastas por semente guardam os checkpoints, as curvas em CSV e cada
   previsão de validação. Para treinar só a variante com normalização,
   use `tools/treinar_fotos_linha.py --batchnorm --saida <pasta-nova>`.
+
+## Referência offline com HoughLinesP
+
+```bash
+.venv/bin/python tools/comparar_hough.py --saida dataset_pista/resultados/comparacao_hough
+```
+
+O ensaio lê o snapshot do segundo treino e os pesos CNN correspondentes.
+Aplica Canny e HoughLinesP num recorte proporcional de 320×160, em três
+faixas locais. Procura duas bordas próximas, com inclinações semelhantes
+e faixa interna mais escura que os lados. O ponto médio do par estima o
+centro. Só a faixa central fornece a previsão avaliada em y=75%.
+Para contornos, usa o x do centróide do detector atual em imagem reduzida
+proporcionalmente para 160 px de largura. A CNN usa sua entrada 80×40 e
+o checkpoint de posição selecionado no segundo treino.
+
+Nos mesmos quadros em que os três métodos estimaram posição, o MAE em
+porcentagem da largura foi o seguinte.
+
+| Conjunto | Quadros pareados | Hough | Contornos | CNN |
+|---|---:|---:|---:|---:|
+| Validação | 8 de 10 | 14,43% | 11,10% | 5,36% |
+| Teste exploratório | 5 de 9 | 9,90% | 2,11% | 2,34% |
+
+Hough ficou sem estimativa em 5 dos 19 quadros com posição anotada.
+Nos diagnósticos de `video_03_frame_00102.jpg`, `video_04_frame_00048.jpg`
+e `video_06_frame_00034.jpg`, o par aceito na faixa central cai sobre o
+rejunte, com erros de cerca de 46%, 35% e 42% da largura. A inspeção desses
+quadros ilustra o erro de seleção. Uma taxa de falsos positivos por cenário
+requer rótulos sistemáticos de rejunte.
+
+No único quadro rotulado como ausente, Hough e contornos ficaram sem
+estimativa e a CNN emitiu posição. Nos dois ambíguos, Hough ficou sem
+estimativa em ambos, contornos emitiu posição em um e a CNN nos dois.
+Esses três casos são do grupo de treino da CNN. A saída de visibilidade
+dos pesos permanece sem supervisão, e o conjunto segue exploratório.
+
+O ensaio gera `RELATORIO.md`, `quadros.csv`, `comparacao.json` com métrica
+por vídeo, `segmentos.jsonl` com as decisões por faixa e 23 imagens em
+`diagnosticos/`. Nos painéis, cinza indica segmentos descartados, ciano
+indica os pares aceitos e verde marca a referência humana.

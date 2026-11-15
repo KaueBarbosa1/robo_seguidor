@@ -112,6 +112,16 @@ validade e a idade da previsão, a leitura dos sensores e o motivo do comando.
 
 Consulte [a reprodução e os artefatos do experimento](08_dataset_linha.md#comparação-offline-com-batchnorm).
 
+### Comparação offline com HoughLinesP
+
+`tools/comparar_hough.py` compara Hough, contornos e CNN nas mesmas fotos
+rotuladas. Hough analisa pares de bordas em três faixas locais e estima
+a posição em y=75% quando encontra um par na faixa central. O relatório
+separa cobertura, erro nos quadros comuns e casos ausentes ou ambíguos.
+Nos vídeos exploratórios, houve abstenções e seleção de rejunte como fita.
+O experimento roda fora do controle. Consulte
+[o método e os resultados](08_dataset_linha.md#referência-offline-com-houghlinesp).
+
 ## Quatro mudanças propostas na CNN — todas pendentes
 
 ### 1. Adaptar a entrada à ESP32-CAM
