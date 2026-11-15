@@ -1,0 +1,205 @@
+{
+  "tarefa": "localizacao_horizontal_offline",
+  "preprocessamento": "foto_roi_2por1_y075_v1",
+  "y_relativo": 0.75,
+  "entrada": [
+    1,
+    40,
+    80
+  ],
+  "alvo": "2*x/(largura_original-1)-1, positivo para direita; sem ganho de controle",
+  "visibilidade_treinada": false,
+  "lambda_vis": 0.0,
+  "uso_no_robo_aprovado": false,
+  "parametros": {
+    "dataset": "/home/carrasco/Downloads/robo_seguidor/dataset_pista",
+    "revisoes": "/home/carrasco/Downloads/robo_seguidor/dataset_pista/rotulos/revisoes.jsonl",
+    "saida": "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_01",
+    "passos": 300,
+    "lote": 8,
+    "lr": 0.001,
+    "avaliar_cada": 10,
+    "semente": 7
+  },
+  "melhor_passo": 170,
+  "criterio_checkpoint": "menor MSE de validacao",
+  "hash_pesos": "106fe11416848d8f",
+  "baseline_media_treino": 0.029454650357365608,
+  "criado_utc": "2026-11-08T00:45:00.028896+00:00",
+  "tempo_treino_e_avaliacao_s": 3.9202739810007188,
+  "python": "3.13.5",
+  "numpy": "2.5.4",
+  "opencv": "5.0.0",
+  "hash_fontes": {
+    "tools/treinar_fotos_linha.py": "15071c9debe386f5e293938bd80166fb627b2d85cbd23cb292bb0306e69886c6",
+    "aprendizado/dataset_rotulado.py": "906afb2fabaab7b07f691d9d867e3116867e3b3724f137a124fa2b75f537d4a7",
+    "aprendizado/cnn.py": "cecbfd916a4292a79deb6e701bdd5a4fe6b1fa30b349859126bdee2e2705e6bd",
+    "aprendizado/dados.py": "02e60c3229bd93ea0a2b95aa9e4eda600c7456650970910002ced56805236c6f"
+  },
+  "hash_revisoes": "9d2e347b7193e9eb0ea56278aa6f6df29b6f92159d115e9b0f538bdb0053179a",
+  "hash_metadados": "1e15f14514dc1d89c7491f2ac8bfb8988fdde6448a82298cc5286ef828a58f9d",
+  "metricas": {
+    "treino": {
+      "cnn": {
+        "n": 24,
+        "mae": 0.020132264122366905,
+        "mse": 0.0006074404227547348,
+        "erro_absoluto_max": 0.050912514328956604,
+        "erro_absoluto_mediano": 0.017203763127326965,
+        "mae_pixels_entrada80": 0.7952244281768799
+      },
+      "sempre_centro": {
+        "n": 24,
+        "mae": 0.2369145495661845,
+        "mse": 0.08058038375255104,
+        "erro_absoluto_max": 0.584325909614563,
+        "erro_absoluto_mediano": 0.22729544341564178,
+        "mae_pixels_entrada80": 9.358124707864288
+      },
+      "media_treino": {
+        "n": 24,
+        "mae": 0.23230909393168986,
+        "mse": 0.07971280729287265,
+        "erro_absoluto_max": 0.5548712592571974,
+        "erro_absoluto_mediano": 0.22729544341564178,
+        "mae_pixels_entrada80": 9.17620921030175
+      },
+      "por_video": {
+        "20261103_123529.mp4": {
+          "n": 5,
+          "mae": 0.01660137251019478,
+          "mse": 0.00035949505399912596,
+          "erro_absoluto_max": 0.029073387384414673,
+          "erro_absoluto_mediano": 0.020670980215072632,
+          "mae_pixels_entrada80": 0.6557542085647583
+        },
+        "20261103_145305.mp4": {
+          "n": 4,
+          "mae": 0.0256095752120018,
+          "mse": 0.0007748933276161551,
+          "erro_absoluto_max": 0.036700665950775146,
+          "erro_absoluto_mediano": 0.026463672518730164,
+          "mae_pixels_entrada80": 1.0115782022476196
+        },
+        "20261103_145818.mp4": {
+          "n": 5,
+          "mae": 0.020788127556443214,
+          "mse": 0.0005680120084434748,
+          "erro_absoluto_max": 0.041260600090026855,
+          "erro_absoluto_mediano": 0.019919395446777344,
+          "mae_pixels_entrada80": 0.8211310505867004
+        },
+        "IMG_0324.mp4": {
+          "n": 5,
+          "mae": 0.022971870377659798,
+          "mse": 0.0008654769626446068,
+          "erro_absoluto_max": 0.050912514328956604,
+          "erro_absoluto_mediano": 0.010472312569618225,
+          "mae_pixels_entrada80": 0.9073888659477234
+        },
+        "IMG_0327.mp4": {
+          "n": 5,
+          "mae": 0.015785839408636093,
+          "mse": 0.000502815586514771,
+          "erro_absoluto_max": 0.04524756968021393,
+          "erro_absoluto_mediano": 0.011885121464729309,
+          "mae_pixels_entrada80": 0.6235406398773193
+        }
+      }
+    },
+    "validacao": {
+      "cnn": {
+        "n": 10,
+        "mae": 0.14030325412750244,
+        "mse": 0.030263841152191162,
+        "erro_absoluto_max": 0.37735599279403687,
+        "erro_absoluto_mediano": 0.11621436476707458,
+        "mae_pixels_entrada80": 5.541978359222412
+      },
+      "sempre_centro": {
+        "n": 10,
+        "mae": 0.24740501828491687,
+        "mse": 0.0908649611277089,
+        "erro_absoluto_max": 0.5411955714225769,
+        "erro_absoluto_mediano": 0.2222779020667076,
+        "mae_pixels_entrada80": 9.772498222254216
+      },
+      "media_treino": {
+        "n": 10,
+        "mae": 0.24425395242869855,
+        "mse": 0.09429137255466022,
+        "erro_absoluto_max": 0.5706502217799425,
+        "erro_absoluto_mediano": 0.2222779020667076,
+        "mae_pixels_entrada80": 9.648031120933593
+      },
+      "por_video": {
+        "20261103_145411.mp4": {
+          "n": 5,
+          "mae": 0.1819421350955963,
+          "mse": 0.04818645864725113,
+          "erro_absoluto_max": 0.37735599279403687,
+          "erro_absoluto_mediano": 0.1331099420785904,
+          "mae_pixels_entrada80": 7.186714172363281
+        },
+        "20261103_145514.mp4": {
+          "n": 5,
+          "mae": 0.09866438806056976,
+          "mse": 0.01234122458845377,
+          "erro_absoluto_max": 0.1562066674232483,
+          "erro_absoluto_mediano": 0.09931878000497818,
+          "mae_pixels_entrada80": 3.8972432613372803
+        }
+      }
+    },
+    "teste": {
+      "cnn": {
+        "n": 9,
+        "mae": 0.13731905817985535,
+        "mse": 0.04887092486023903,
+        "erro_absoluto_max": 0.596339225769043,
+        "erro_absoluto_mediano": 0.06234690546989441,
+        "mae_pixels_entrada80": 5.424102783203125
+      },
+      "sempre_centro": {
+        "n": 9,
+        "mae": 0.23216793313622475,
+        "mse": 0.10864902943401683,
+        "erro_absoluto_max": 0.8089518547058105,
+        "erro_absoluto_mediano": 0.12733638286590576,
+        "mae_pixels_entrada80": 9.170633358880877
+      },
+      "media_treino": {
+        "n": 9,
+        "mae": 0.23544067206482092,
+        "mse": 0.11633704347937451,
+        "erro_absoluto_max": 0.8384065050631762,
+        "erro_absoluto_mediano": 0.11559189297258854,
+        "mae_pixels_entrada80": 9.299906546560425
+      },
+      "por_video": {
+        "20261103_145908.mp4": {
+          "n": 5,
+          "mae": 0.16609784960746765,
+          "mse": 0.07506256550550461,
+          "erro_absoluto_max": 0.596339225769043,
+          "erro_absoluto_mediano": 0.06234690546989441,
+          "mae_pixels_entrada80": 6.5608649253845215
+        },
+        "IMG_0329.mp4": {
+          "n": 4,
+          "mae": 0.10134556889533997,
+          "mse": 0.01613137498497963,
+          "erro_absoluto_max": 0.20990142226219177,
+          "erro_absoluto_mediano": 0.09315770864486694,
+          "mae_pixels_entrada80": 4.00314998626709
+        }
+      }
+    }
+  },
+  "limites": [
+    "43 fotos utilizáveis; conjunto pequeno no experimento inicial",
+    "vídeos do mesmo ambiente e amostras já inspecionadas na exploração",
+    "sem validação de visibilidade/ausência ou ESP32-CAM",
+    "pesos não compatíveis semanticamente com controle atual"
+  ]
+}

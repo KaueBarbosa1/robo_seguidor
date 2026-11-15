@@ -1,0 +1,9 @@
+numpy
+opencv-python-headless    # ou: sudo apt install python3-opencv (costuma ser mais fácil na Pi)
+pyserial
+sounddevice
+scipy
+joblib
+scikit-learn==1.8.0       # MESMA versão do treino (os .pkl foram salvos com a 1.8.0)
+dbus-fast                 # controle pelo celular via Bluetooth (remoto/); fala com o BlueZ pelo D-Bus
+# (opcional, só com FONTE_IMAGEM="csi", que NÃO é a câmera do projeto)  sudo apt install -y python3-picamera2

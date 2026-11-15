@@ -1,0 +1,16 @@
+# Serviço de USUÁRIO do systemd: sobe o robô (voz + controle pelo celular por Bluetooth) quando a Pi liga.
+# Instale com:  bash deploy/instalar_servico.sh      (o @DIR@ abaixo é trocado pelo caminho real do projeto)
+# O robô começa PARADO: só anda depois de um comando de voz ("siga") ou do celular.
+[Unit]
+Description=Robo seguidor de linha (voz + Bluetooth)
+
+[Service]
+Type=simple
+WorkingDirectory=@DIR@
+ExecStart=@PYTHON@ -u main.py
+Restart=on-failure
+RestartSec=5
+# Para testar sem o Arduino ligado, acrescente  --sem-arduino  ao ExecStart.
+
+[Install]
+WantedBy=default.target

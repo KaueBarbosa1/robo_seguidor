@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800">
+<style>text{font-family:DejaVu Sans,sans-serif;fill:#172033}</style>
+<rect width="1280" height="800" fill="white"/>
+<text x="50" y="52" font-size="29" style="fill:#172033" text-anchor="start" font-weight="bold">Erro médio por vídeo de teste</text>
+<text x="50" y="86" font-size="17" style="fill:#64748b" text-anchor="start" font-weight="normal">Poucas amostras por vídeo. Não interpretar os valores como desempenho em todo o vídeo.</text>
+<line x1="50" y1="740" x2="1230" y2="740" stroke="#e2e8f0" stroke-width="1"/>
+<text x="50" y="769" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">Resultados exploratórios • teste com 9 imagens • CNN treinada do zero • sem validação física</text>
+<rect x="150" y="121" width="18" height="18" fill="#64748b" rx="3"/>
+<text x="178" y="135" font-size="17" style="fill:#172033" text-anchor="start" font-weight="normal">Primeiro treino</text>
+<rect x="335" y="121" width="18" height="18" fill="#0f766e" rx="3"/>
+<text x="363" y="135" font-size="17" style="fill:#172033" text-anchor="start" font-weight="normal">Segundo treino</text>
+<line x1="130" y1="580.0" x2="1150" y2="580.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="118" y="586.0" font-size="16" style="fill:#172033" text-anchor="end" font-weight="normal">0</text>
+<line x1="130" y1="502.0" x2="1150" y2="502.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="118" y="508.0" font-size="16" style="fill:#172033" text-anchor="end" font-weight="normal">2</text>
+<line x1="130" y1="424.0" x2="1150" y2="424.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="118" y="430.0" font-size="16" style="fill:#172033" text-anchor="end" font-weight="normal">4</text>
+<line x1="130" y1="346.0" x2="1150" y2="346.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="118" y="352.0" font-size="16" style="fill:#172033" text-anchor="end" font-weight="normal">6</text>
+<line x1="130" y1="268.0" x2="1150" y2="268.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="118" y="274.0" font-size="16" style="fill:#172033" text-anchor="end" font-weight="normal">8</text>
+<line x1="130" y1="190.0" x2="1150" y2="190.0" stroke="#e2e8f0" stroke-width="1"/>
+<text x="118" y="196.0" font-size="16" style="fill:#172033" text-anchor="end" font-weight="normal">10</text>
+<line x1="130" y1="190" x2="130" y2="580" stroke="#172033" stroke-width="1"/>
+<line x1="130" y1="580" x2="1150" y2="580" stroke="#172033" stroke-width="1"/>
+<text x="71" y="385.0" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal" transform="rotate(-90 71 385.0)">Erro médio (% da largura)</text>
+<rect x="285.0" y="256.1091932654381" width="85" height="323.8908067345619" fill="#64748b" rx="3"/>
+<text x="327.0" y="243.10919326543808" font-size="23" style="fill:#64748b" text-anchor="middle" font-weight="bold">8,3%</text>
+<rect x="400.0" y="480.9703805670142" width="85" height="99.02961943298578" fill="#0f766e" rx="3"/>
+<text x="442.0" y="467.9703805670142" font-size="23" style="fill:#0f766e" text-anchor="middle" font-weight="bold">2,5%</text>
+<text x="385.0" y="620" font-size="21" style="fill:#172033" text-anchor="middle" font-weight="normal">20261103_145908.mp4</text>
+<text x="385.0" y="652" font-size="17" style="fill:#64748b" text-anchor="middle" font-weight="normal">5 imagens avaliadas</text>
+<rect x="795.0" y="382.37614065408707" width="85" height="197.62385934591293" fill="#64748b" rx="3"/>
+<text x="837.0" y="369.37614065408707" font-size="23" style="fill:#64748b" text-anchor="middle" font-weight="bold">5,1%</text>
+<rect x="910.0" y="385.7775694876909" width="85" height="194.22243051230907" fill="#0f766e" rx="3"/>
+<text x="952.0" y="372.7775694876909" font-size="23" style="fill:#0f766e" text-anchor="middle" font-weight="bold">5,0%</text>
+<text x="895.0" y="620" font-size="21" style="fill:#172033" text-anchor="middle" font-weight="normal">IMG_0329.mp4</text>
+<text x="895.0" y="652" font-size="17" style="fill:#64748b" text-anchor="middle" font-weight="normal">4 imagens avaliadas</text>
+</svg>

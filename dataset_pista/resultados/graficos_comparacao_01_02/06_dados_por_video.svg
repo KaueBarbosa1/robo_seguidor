@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800">
+<style>text{font-family:DejaVu Sans,sans-serif;fill:#172033}</style>
+<rect width="1280" height="800" fill="white"/>
+<text x="50" y="52" font-size="29" style="fill:#172033" text-anchor="start" font-weight="bold">Quantidade de imagens de treino por vídeo</text>
+<text x="50" y="86" font-size="17" style="fill:#64748b" text-anchor="start" font-weight="normal">A ampliação do segundo conjunto concentrou exemplos no primeiro vídeo.</text>
+<line x1="50" y1="740" x2="1230" y2="740" stroke="#e2e8f0" stroke-width="1"/>
+<text x="50" y="769" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">Resultados exploratórios • teste com 9 imagens • CNN treinada do zero • sem validação física</text>
+<rect x="400" y="121" width="18" height="18" fill="#64748b" rx="3"/>
+<text x="428" y="135" font-size="17" style="fill:#172033" text-anchor="start" font-weight="normal">Primeiro: total 24</text>
+<rect x="615" y="121" width="18" height="18" fill="#0f766e" rx="3"/>
+<text x="643" y="135" font-size="17" style="fill:#172033" text-anchor="start" font-weight="normal">Segundo: total 58</text>
+<line x1="400.0" y1="190" x2="400.0" y2="610" stroke="#e2e8f0" stroke-width="1"/>
+<text x="400.0" y="640" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">0</text>
+<line x1="580.0" y1="190" x2="580.0" y2="610" stroke="#e2e8f0" stroke-width="1"/>
+<text x="580.0" y="640" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">10</text>
+<line x1="760.0" y1="190" x2="760.0" y2="610" stroke="#e2e8f0" stroke-width="1"/>
+<text x="760.0" y="640" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">20</text>
+<line x1="940.0" y1="190" x2="940.0" y2="610" stroke="#e2e8f0" stroke-width="1"/>
+<text x="940.0" y="640" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">30</text>
+<line x1="1120.0" y1="190" x2="1120.0" y2="610" stroke="#e2e8f0" stroke-width="1"/>
+<text x="1120.0" y="640" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">40</text>
+<text x="380" y="227.0" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">20261103_123529.mp4</text>
+<rect x="400" y="204.0" width="90.0" height="18" fill="#64748b" rx="3"/>
+<text x="498.0" y="219.0" font-size="16" style="fill:#64748b" text-anchor="start" font-weight="normal">5</text>
+<rect x="400" y="227.0" width="702.0" height="18" fill="#0f766e" rx="3"/>
+<text x="1110.0" y="242.0" font-size="16" style="fill:#0f766e" text-anchor="start" font-weight="normal">39</text>
+<text x="380" y="311.0" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">20261103_145305.mp4</text>
+<rect x="400" y="288.0" width="72.0" height="18" fill="#64748b" rx="3"/>
+<text x="480.0" y="303.0" font-size="16" style="fill:#64748b" text-anchor="start" font-weight="normal">4</text>
+<rect x="400" y="311.0" width="72.0" height="18" fill="#0f766e" rx="3"/>
+<text x="480.0" y="326.0" font-size="16" style="fill:#0f766e" text-anchor="start" font-weight="normal">4</text>
+<text x="380" y="395.0" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">20261103_145818.mp4</text>
+<rect x="400" y="372.0" width="90.0" height="18" fill="#64748b" rx="3"/>
+<text x="498.0" y="387.0" font-size="16" style="fill:#64748b" text-anchor="start" font-weight="normal">5</text>
+<rect x="400" y="395.0" width="90.0" height="18" fill="#0f766e" rx="3"/>
+<text x="498.0" y="410.0" font-size="16" style="fill:#0f766e" text-anchor="start" font-weight="normal">5</text>
+<text x="380" y="479.0" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">IMG_0324.mp4</text>
+<rect x="400" y="456.0" width="90.0" height="18" fill="#64748b" rx="3"/>
+<text x="498.0" y="471.0" font-size="16" style="fill:#64748b" text-anchor="start" font-weight="normal">5</text>
+<rect x="400" y="479.0" width="90.0" height="18" fill="#0f766e" rx="3"/>
+<text x="498.0" y="494.0" font-size="16" style="fill:#0f766e" text-anchor="start" font-weight="normal">5</text>
+<text x="380" y="563.0" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">IMG_0327.mp4</text>
+<rect x="400" y="540.0" width="90.0" height="18" fill="#64748b" rx="3"/>
+<text x="498.0" y="555.0" font-size="16" style="fill:#64748b" text-anchor="start" font-weight="normal">5</text>
+<rect x="400" y="563.0" width="90.0" height="18" fill="#0f766e" rx="3"/>
+<text x="498.0" y="578.0" font-size="16" style="fill:#0f766e" text-anchor="start" font-weight="normal">5</text>
+<text x="760.0" y="680" font-size="20" style="fill:#172033" text-anchor="middle" font-weight="normal">Imagens utilizadas no treinamento</text>
+</svg>

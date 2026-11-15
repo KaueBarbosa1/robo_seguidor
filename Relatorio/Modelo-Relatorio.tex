@@ -1,0 +1,221 @@
+\documentclass[a4paper,oneside,portuguese,11pt]{article}
+\usepackage[portuguese]{babel}
+\usepackage[utf8]{inputenc}
+%\usepackage[T1]{fontenc}
+%\usepackage[utf8]{inputenc}
+\usepackage[dvips]{graphicx}
+\usepackage{pifont} %simbolos marcadores
+\usepackage[normalem]{ulem} %sublinhados
+%simbolos marcadores
+\usepackage{amsmath} 
+\usepackage[portuguese, linesnumbered]{algorithm2e}
+\usepackage[nottoc,numbib]{tocbibind}
+\usepackage{algorithmic}
+\usepackage{multicol}
+\usepackage{breakcites}
+\usepackage{amssymb}
+\usepackage{textcomp}
+% \usepackage{bbding}
+%\usepackage{dingbat} %lápis
+\usepackage{wasysym}
+\usepackage{subfigure}
+\usepackage{indentfirst}
+\usepackage{paralist}
+\usepackage{setspace}
+\usepackage{url}
+% \usepackage[alf,abnt-emphasize=bf,abnt-thesis-year=title,bibjustif] {abntcite} %abntex 
+%\usepackage{pdfpages}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{color}
+\usepackage{colortbl}
+\usepackage[titletoc]{appendix}
+\usepackage{adjustbox}
+\usepackage{listings}
+\usepackage{color}
+\definecolor{dkgreen}{rgb}{0,0.6,0}
+\definecolor{gray}{rgb}{0.5,0.5,0.5}
+\definecolor{mauve}{rgb}{0.58,0,0.82}
+
+\lstset{frame=tb,
+  language=Java,
+  aboveskip=3mm,
+  belowskip=3mm,
+  showstringspaces=false,
+  columns=flexible,
+  basicstyle={\small\ttfamily},
+  numbers=none,
+  numberstyle=\tiny\color{gray},
+  keywordstyle=\color{blue},
+  commentstyle=\color{dkgreen},
+  stringstyle=\color{mauve},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=3
+}
+
+\usepackage{cite}
+
+\usepackage{pgfgantt}
+\usepackage{xcolor}
+
+\newcommand{\blue}[1]{\textcolor{blue}{#1}}
+\newcommand{\red}[1]{\textcolor{red}{#1}}
+\newcommand{\green}[1]{\textcolor{green}{#1}}
+
+\newcommand{\setf}[1]{\fontfamily{phv}\selectfont \tiny{#1}}
+
+\hyphenpenalty=2000
+\tolerance=400
+\usepackage{pdfpages}
+\usepackage[none]{hyphenat}
+
+\setlength{\textheight}{24.0 cm}
+\setlength{\textwidth}{16.5 cm}
+\setlength{\columnsep}{0.793cm}
+\setlength{\topmargin}{-1.5cm}
+\setlength{\headheight}{1cm}
+\setlength{\headsep}{1.cm}
+\setlength{\parindent}{1 cm}
+\setlength{\oddsidemargin}{0cm}  % Centers text.
+\setlength{\evensidemargin}{0cm}
+
+\usepackage{acronym}
+\usepackage[activate=true,final,tracking=true,kerning=true,spacing=true]{microtype}
+\acrodef{MU}{MAMONAS Unit}
+\acrodef{CL}{Collaborative Learning}
+\acrodef{MEC}{Mobile Edge Computing}
+\acrodef{BDI}{Beliefs, Desires, and Intentions}
+\acrodef{RL}{Reinforcement Learning}
+
+
+\usepackage{ntheorem}
+\theoremseparator{:}
+\newtheorem{myhyp}{Hipótese}
+\newtheorem{mycor}{Corolário}
+\newtheorem{mydef}{Definição}
+
+
+
+\usepackage{fancyhdr} %cabeçalhos
+\pagestyle{fancy}
+
+\renewcommand{\footrulewidth}{0.1mm}
+
+\lhead{\includegraphics[angle=0, width=0.08\textwidth]{ufc}}
+\chead{\sf \large Nome-Curto do Trabalho}
+\rhead{}
+\cfoot{}
+\rfoot{\thepage}
+\lfoot{\textbf{Nome-Aluno1\& Nome-Aluno2}}
+
+
+
+\begin{document}
+
+
+\thispagestyle{empty}
+
+\begin{center}
+\includegraphics[angle=0, width=0.1\textwidth]{ufc}\\{\bf \large {UFC}}\\
+
+\vspace*{1cm}{\bf \large {UNIVERSIDADE FEDERAL DO CEAR\'{A} \\ CAMPUS JARDINS DE ANITA - ITAPAJÉ}}
+
+
+
+\vspace*{3cm}{\bf \Large{Titulo do Trabalho \\ }}
+
+
+
+%\vspace*{3cm}%{\LARGE \bf{Microarchitecture for Multi-Objectives \\ in Networks of Autonomous Systems}\\}
+
+\vspace*{2cm}{\large {\textbf{Autores: Aluno1 \\ Aluno2 }}}
+
+\vspace*{2cm}{\large {\textbf{Disciplina: }}}
+
+\vspace*{5cm} Fortaleza, Mês, 2026
+
+
+\end{center}
+
+
+\newpage
+
+\tableofcontents
+
+
+\newpage
+
+\section*{Resumo do Projeto}
+Inclua um resumo de 150 palavras aqui
+
+\section{Introdução}
+
+Desde a metade dos anos 90 a humanidade vem produzindo uma quantidade cada vez maior de dados. Isto deve-se a fatores como a criação de protocolos padrões tais como o Http, WiFi, xDSL, e ao crescimento da infraestrutura das redes de telecomunicações. Mais recentemente, outros fatores como o desenvolvimento tecnológico da telefonia móvel e a explosão do uso de aplicações de redes sociais em dispositivos móveis e celulares conectados à Internet provocaram uma inundação de dados. 
+
+Nesse contexto, a International Data Corporation (IDC) Research prevê um crescimento exponencial na produção de dados, passando de 18,3 Zettabytes (ZB) em 2019 para 73,1 ZB em 2025. Segundo a IDC, haverá 55,7 bilhões de dispositivos conectados em todo o mundo, representando um volume de dados com crescimento exponencial, onde a criação de dados de borda (por exemplo, em indústrias) está crescendo quase tão rapidamente quanto na nuvem. Este crescimento de dados (também conhecido como Big Data) está originando um paradigma de computação chamado de \emph{Edge Computing} (EC) baseado em dispositivos IoT. A principal característica deste paradigma é a criação de valor na borda sem que haja o compartilhamento dos dados entre os usuários \cite{Anjos-ACM-092023}, ou seja, os dados começam a ser processados em celulares e dispositivos que antigamente só eram elementos passivos coletando dados. Este volume de informação requer uma capacidade de processamento e de redes de transmissão de dados que vão além das capacidades suportadas pelas infraestruturas atuais \cite{Anjos-IoT:2021}. 
+
+Este é um exemplo de citação de Figura \ref{fig:enter-label}
+
+
+\begin{figure}[!ht]
+    \centering
+    \includegraphics[width=0.4\linewidth]{Pelicano-01.png}
+    \caption{Exemplo de Figura}
+    \label{fig:enter-label}
+\end{figure}
+
+
+A Tabela \ref{tab:custo} apresenta o resumo de investimento. 
+
+\begin{table}[ht!]
+\centering 
+ \caption{Custos de RH por Atividades}
+\label{tab:custo}
+\begin{adjustbox}{max width=.95\textwidth}
+
+\begin{tabular}{llrrrrrrrrrr}
+\hline
+Descrição & Titulação & R\$ Unit & Atividade 1 &Atividade 2 &Atividade 3 & Atividade 4 &Atividade 5 & Atividade 6 & TOTAL\\
+\hline
+Coordenador & Doutor& 5.000,00 & 0 &15.000,00 &15.000,00 & 0 &0 & 60.000,00& 90.000,00 0\\
+Coordenador Técnico&Doutor & 5.000,00 & 25.000,00 &20.000,00 &15.000,00 & 0 &0 & 60.000,00& 120.000,00 \\
+Pesquisador 1 &Doutor& 4.500,00 & 0&4.500,00 &13.500,00 & 0 &0 & 54.000,00& 72.000,00 \\
+Desenvolvedor 1 &Doutor& 4.500,00 & 22.500,00 &18.000,00 &13.500,00 & 0 &0 & 0& 54.000,00 \\
+Desenvolvedor 2 &Doutor& 4.500,00 & 22.500,00 &18.000,00 &13.500,00 & 0 &0 & 0& 54.000,00 \\
+Mestrando 1  &Graduado& 2.100,00 & 0 &0 &0 & 8.400,00 &0 & 25.200,00& 33.600,00 \\
+Doutorando 1 &Mestre& 3.300,00 & 0 &0 &0 & 3.300,00 &0 & 39,600,00& 42.600,00 \\
+Auditor Segurança &Doutor& 4.500,00 & 0 &0 &0 & 0 &9.000,00 & 0& 9.000,00 \\
+Total &  & & 70.000,00 & 75.500,00 & 70.500,00& 11.700,00 &9.000,00 & 238.800,00 & 475.500,00 \\
+\hline
+\end{tabular}
+\end{adjustbox}
+\end{table}
+
+
+\newpage
+
+
+
+\newpage
+
+\bibliographystyle{ieeetr}
+%\bibliographystyle{sbc}
+% \begin{flushleft}
+\bibliography{Bibliografia}
+
+\newpage
+
+
+
+%\begin{appendices}
+
+%\section{Anexos Arquivos}
+%\includepdf[pages=1,scale=0.85,pagecommand={\section{Título Anexos}\label{sec:anexo1}}]{path/nome_arquivo.pdf}
+
+%\end{appendices}
+
+
+
+\end{document}
+

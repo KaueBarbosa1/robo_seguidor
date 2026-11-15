@@ -1,0 +1,22 @@
+# Ambientes virtuais e caches Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Credenciais e configurações locais
+.env
+.env.*
+!.env.example
+.aws/
+.codex/
+.agents/
+
+# Arquivos temporários do sistema e editores
+.DS_Store
+Thumbs.db
+*~
+*.swp

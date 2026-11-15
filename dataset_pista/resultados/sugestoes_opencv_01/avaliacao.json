@@ -1,0 +1,1984 @@
+{
+  "rotulos_gerados": false,
+  "referencia_temporal_usada": false,
+  "imagens_revisadas": 45,
+  "com_sugestao": 45,
+  "comparaveis_y075": 33,
+  "mae_condicional_y075": 0.02617406220097142,
+  "erro_max_condicional_y075": 0.33547835668645654,
+  "hash_rotulos": "9d2e347b7193e9eb0ea56278aa6f6df29b6f92159d115e9b0f538bdb0053179a",
+  "hash_algoritmo": "22c86bc3a20f66317b0da279f895b5df8e06220c4279ae8c5fc43c0a11764959",
+  "sugestoes": [
+    {
+      "imagem": "video_01_frame_00000.jpg",
+      "pontos": [
+        [
+          104,
+          236
+        ],
+        [
+          157,
+          279
+        ],
+        [
+          416,
+          640
+        ],
+        [
+          462,
+          716
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 2,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.3082375967473403,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_01_frame_00020.jpg",
+      "pontos": [
+        [
+          704,
+          3
+        ],
+        [
+          703,
+          13
+        ],
+        [
+          663,
+          205
+        ],
+        [
+          636,
+          339
+        ],
+        [
+          631,
+          372
+        ]
+      ],
+      "metodo": "limiar_140_abertura3",
+      "segmentos": 3,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.07143692459719975,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_01_frame_00040.jpg",
+      "pontos": [
+        [
+          821,
+          99
+        ],
+        [
+          804,
+          108
+        ],
+        [
+          723,
+          176
+        ],
+        [
+          641,
+          244
+        ],
+        [
+          572,
+          314
+        ],
+        [
+          506,
+          390
+        ],
+        [
+          431,
+          493
+        ],
+        [
+          340,
+          634
+        ],
+        [
+          272,
+          809
+        ],
+        [
+          268,
+          1009
+        ],
+        [
+          288,
+          1278
+        ],
+        [
+          379,
+          1653
+        ],
+        [
+          384,
+          1718
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 11,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.4057089898053753,
+      "previsto": -0.39364226135310476,
+      "erro": 0.012066728452270525
+    },
+    {
+      "imagem": "video_01_frame_00059.jpg",
+      "pontos": [
+        [
+          247,
+          171
+        ],
+        [
+          244,
+          224
+        ],
+        [
+          240,
+          539
+        ],
+        [
+          271,
+          963
+        ],
+        [
+          306,
+          1616
+        ],
+        [
+          312,
+          1772
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.46160183721310577,
+      "previsto": -0.4503680879721028,
+      "erro": 0.011233749241002955
+    },
+    {
+      "imagem": "video_01_frame_00079.jpg",
+      "pontos": [
+        [
+          450,
+          10
+        ],
+        [
+          455,
+          35
+        ],
+        [
+          489,
+          192
+        ],
+        [
+          529,
+          359
+        ],
+        [
+          576,
+          559
+        ],
+        [
+          646,
+          827
+        ],
+        [
+          704,
+          1085
+        ],
+        [
+          743,
+          1392
+        ],
+        [
+          885,
+          1852
+        ],
+        [
+          896,
+          1897
+        ],
+        [
+          900,
+          1912
+        ]
+      ],
+      "metodo": "limiar_111_abertura3",
+      "segmentos": 9,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.36910825418703075,
+      "previsto": 0.4042370149494299,
+      "erro": 0.035128760762399125
+    },
+    {
+      "imagem": "video_02_frame_00000.jpg",
+      "pontos": [
+        [
+          80,
+          393
+        ],
+        [
+          111,
+          413
+        ],
+        [
+          245,
+          506
+        ],
+        [
+          390,
+          644
+        ],
+        [
+          1007,
+          1016
+        ],
+        [
+          1058,
+          1049
+        ],
+        [
+          1072,
+          1059
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 5,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": null,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_02_frame_00022.jpg",
+      "pontos": [
+        [
+          563,
+          525
+        ],
+        [
+          564,
+          533
+        ],
+        [
+          585,
+          590
+        ],
+        [
+          600,
+          675
+        ],
+        [
+          623,
+          790
+        ],
+        [
+          634,
+          919
+        ],
+        [
+          650,
+          1101
+        ],
+        [
+          697,
+          1386
+        ],
+        [
+          845,
+          1896
+        ],
+        [
+          856,
+          1911
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 8,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.29981864657500257,
+      "previsto": 0.32058005778771204,
+      "erro": 0.02076141121270947
+    },
+    {
+      "imagem": "video_02_frame_00044.jpg",
+      "pontos": [
+        [
+          1071,
+          964
+        ],
+        [
+          1068,
+          975
+        ],
+        [
+          980,
+          1096
+        ],
+        [
+          928,
+          1199
+        ],
+        [
+          892,
+          1307
+        ],
+        [
+          856,
+          1424
+        ],
+        [
+          802,
+          1639
+        ],
+        [
+          754,
+          1871
+        ],
+        [
+          748,
+          1904
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 7,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.5843259358008008,
+      "previsto": 0.579554712589176,
+      "erro": 0.00477122321162482
+    },
+    {
+      "imagem": "video_02_frame_00066.jpg",
+      "pontos": [
+        [
+          3,
+          183
+        ],
+        [
+          11,
+          188
+        ],
+        [
+          165,
+          387
+        ],
+        [
+          204,
+          413
+        ],
+        [
+          252,
+          445
+        ],
+        [
+          303,
+          481
+        ],
+        [
+          410,
+          577
+        ],
+        [
+          441,
+          640
+        ],
+        [
+          456,
+          723
+        ],
+        [
+          465,
+          824
+        ],
+        [
+          471,
+          960
+        ],
+        [
+          442,
+          1149
+        ],
+        [
+          406,
+          1438
+        ],
+        [
+          339,
+          1813
+        ],
+        [
+          324,
+          1887
+        ]
+      ],
+      "metodo": "limiar_120_abertura3",
+      "segmentos": 13,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.2624266645419129,
+      "previsto": -0.24786530738337975,
+      "erro": 0.014561357158533128
+    },
+    {
+      "imagem": "video_02_frame_00088.jpg",
+      "pontos": [
+        [
+          454,
+          547
+        ],
+        [
+          454,
+          554
+        ],
+        [
+          454,
+          620
+        ],
+        [
+          455,
+          718
+        ],
+        [
+          456,
+          841
+        ],
+        [
+          452,
+          979
+        ],
+        [
+          451,
+          1138
+        ],
+        [
+          448,
+          1375
+        ],
+        [
+          457,
+          1781
+        ],
+        [
+          457,
+          1878
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 8,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.17212744441934547,
+      "previsto": -0.16696151791706426,
+      "erro": 0.005165926502281204
+    },
+    {
+      "imagem": "video_03_frame_00000.jpg",
+      "pontos": [
+        [
+          1011,
+          33
+        ],
+        [
+          984,
+          69
+        ],
+        [
+          713,
+          449
+        ],
+        [
+          592,
+          1073
+        ],
+        [
+          606,
+          1661
+        ],
+        [
+          629,
+          1777
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.09871257605673533,
+      "previsto": 0.11347588154817068,
+      "erro": 0.014763305491435341
+    },
+    {
+      "imagem": "video_03_frame_00026.jpg",
+      "pontos": [
+        [
+          505,
+          14
+        ],
+        [
+          508,
+          50
+        ],
+        [
+          519,
+          324
+        ],
+        [
+          523,
+          641
+        ],
+        [
+          539,
+          947
+        ],
+        [
+          551,
+          1233
+        ],
+        [
+          553,
+          1464
+        ],
+        [
+          556,
+          1686
+        ],
+        [
+          554,
+          1735
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 7,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.01575532900834098,
+      "previsto": 0.02462597643320552,
+      "erro": 0.008870647424864542
+    },
+    {
+      "imagem": "video_03_frame_00051.jpg",
+      "pontos": [
+        [
+          350,
+          10
+        ],
+        [
+          353,
+          36
+        ],
+        [
+          379,
+          173
+        ],
+        [
+          397,
+          324
+        ],
+        [
+          408,
+          503
+        ],
+        [
+          415,
+          687
+        ],
+        [
+          407,
+          875
+        ],
+        [
+          380,
+          1053
+        ],
+        [
+          356,
+          1414
+        ],
+        [
+          378,
+          1462
+        ],
+        [
+          443,
+          1605
+        ],
+        [
+          480,
+          1683
+        ],
+        [
+          523,
+          1776
+        ],
+        [
+          539,
+          1814
+        ]
+      ],
+      "metodo": "limiar_139_abertura3",
+      "segmentos": 12,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.5411955514365152,
+      "previsto": -0.31867856039542786,
+      "erro": 0.22251699104108735
+    },
+    {
+      "imagem": "video_03_frame_00076.jpg",
+      "pontos": [
+        [
+          754,
+          31
+        ],
+        [
+          740,
+          109
+        ],
+        [
+          673,
+          537
+        ],
+        [
+          616,
+          962
+        ],
+        [
+          572,
+          1399
+        ],
+        [
+          576,
+          1815
+        ],
+        [
+          583,
+          1887
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 5,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.04581774735643229,
+      "previsto": 0.06095833036287179,
+      "erro": 0.0151405830064395
+    },
+    {
+      "imagem": "video_03_frame_00102.jpg",
+      "pontos": [
+        [
+          747,
+          10
+        ],
+        [
+          735,
+          27
+        ],
+        [
+          672,
+          534
+        ],
+        [
+          689,
+          1089
+        ],
+        [
+          829,
+          1609
+        ],
+        [
+          864,
+          1708
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.4435473572059285,
+      "previsto": 0.4518963427675198,
+      "erro": 0.008348985561591249
+    },
+    {
+      "imagem": "video_04_frame_00000.jpg",
+      "pontos": [
+        [
+          504,
+          1559
+        ],
+        [
+          561,
+          1606
+        ],
+        [
+          758,
+          1857
+        ],
+        [
+          788,
+          1898
+        ]
+      ],
+      "metodo": "limiar_120_abertura3",
+      "segmentos": 2,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.46807253433759455,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_04_frame_00024.jpg",
+      "pontos": [
+        [
+          444,
+          838
+        ],
+        [
+          439,
+          844
+        ],
+        [
+          432,
+          895
+        ],
+        [
+          424,
+          953
+        ],
+        [
+          407,
+          1014
+        ],
+        [
+          397,
+          1075
+        ],
+        [
+          387,
+          1151
+        ],
+        [
+          384,
+          1241
+        ],
+        [
+          395,
+          1348
+        ],
+        [
+          406,
+          1457
+        ],
+        [
+          444,
+          1693
+        ],
+        [
+          480,
+          1869
+        ],
+        [
+          491,
+          1903
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 11,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.23846933384147662,
+      "previsto": -0.25077161149892446,
+      "erro": 0.012302277657447847
+    },
+    {
+      "imagem": "video_04_frame_00048.jpg",
+      "pontos": [
+        [
+          1074,
+          1067
+        ],
+        [
+          1064,
+          1072
+        ],
+        [
+          871,
+          1207
+        ],
+        [
+          787,
+          1286
+        ],
+        [
+          709,
+          1378
+        ],
+        [
+          638,
+          1480
+        ],
+        [
+          566,
+          1586
+        ],
+        [
+          508,
+          1691
+        ],
+        [
+          456,
+          1803
+        ],
+        [
+          440,
+          1826
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 8,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.23808384904381796,
+      "previsto": 0.23515328281451597,
+      "erro": 0.0029305662293019896
+    },
+    {
+      "imagem": "video_04_frame_00073.jpg",
+      "pontos": [
+        [
+          19,
+          903
+        ],
+        [
+          39,
+          913
+        ],
+        [
+          126,
+          965
+        ],
+        [
+          242,
+          1048
+        ],
+        [
+          312,
+          1139
+        ],
+        [
+          363,
+          1256
+        ],
+        [
+          414,
+          1395
+        ],
+        [
+          494,
+          1797
+        ],
+        [
+          500,
+          1854
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 7,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.20647195272865593,
+      "previsto": -0.2163003333656094,
+      "erro": 0.00982838063695346
+    },
+    {
+      "imagem": "video_04_frame_00097.jpg",
+      "pontos": [
+        [
+          51,
+          837
+        ],
+        [
+          76,
+          861
+        ],
+        [
+          221,
+          1012
+        ],
+        [
+          440,
+          1230
+        ],
+        [
+          661,
+          1470
+        ],
+        [
+          901,
+          1799
+        ],
+        [
+          1057,
+          1900
+        ],
+        [
+          1069,
+          1913
+        ]
+      ],
+      "metodo": "limiar_120_abertura3",
+      "segmentos": 6,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.17792392095855947,
+      "previsto": 0.17272358665430954,
+      "erro": 0.005200334304249932
+    },
+    {
+      "imagem": "video_05_frame_00000.jpg",
+      "pontos": [
+        [
+          1451,
+          29
+        ],
+        [
+          1458,
+          82
+        ],
+        [
+          1468,
+          467
+        ],
+        [
+          1460,
+          927
+        ],
+        [
+          1469,
+          1464
+        ],
+        [
+          1476,
+          2287
+        ],
+        [
+          1547,
+          3484
+        ],
+        [
+          1565,
+          3737
+        ]
+      ],
+      "metodo": "limiar_121_abertura3",
+      "segmentos": 6,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.3858537528611323,
+      "previsto": 0.3998418541335582,
+      "erro": 0.01398810127242589
+    },
+    {
+      "imagem": "video_05_frame_00054.jpg",
+      "pontos": [
+        [
+          1610,
+          1688
+        ],
+        [
+          1561,
+          1740
+        ],
+        [
+          1432,
+          1883
+        ],
+        [
+          1280,
+          2061
+        ],
+        [
+          1227,
+          2121
+        ]
+      ],
+      "metodo": "limiar_127_abertura3",
+      "segmentos": 3,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.29782893495382223,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_05_frame_00107.jpg",
+      "pontos": [
+        [
+          1636,
+          129
+        ],
+        [
+          1560,
+          237
+        ],
+        [
+          1151,
+          1020
+        ],
+        [
+          1024,
+          1993
+        ],
+        [
+          1072,
+          3141
+        ],
+        [
+          1113,
+          3420
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.01666843827863773,
+      "previsto": -0.01708592021406219,
+      "erro": 0.00041748193542445744
+    },
+    {
+      "imagem": "video_05_frame_00160.jpg",
+      "pontos": [
+        [
+          1239,
+          35
+        ],
+        [
+          1229,
+          119
+        ],
+        [
+          1147,
+          695
+        ],
+        [
+          1056,
+          1670
+        ],
+        [
+          1062,
+          1892
+        ]
+      ],
+      "metodo": "limiar_121_abertura3",
+      "segmentos": 3,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.035252546248181194,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_05_frame_00214.jpg",
+      "pontos": [
+        [
+          4,
+          1953
+        ],
+        [
+          13,
+          1964
+        ],
+        [
+          144,
+          2084
+        ],
+        [
+          258,
+          2193
+        ],
+        [
+          475,
+          2486
+        ],
+        [
+          538,
+          2833
+        ],
+        [
+          559,
+          3245
+        ],
+        [
+          552,
+          3700
+        ],
+        [
+          552,
+          3798
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 7,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.4917549980395489,
+      "previsto": -0.4994373294000728,
+      "erro": 0.007682331360523875
+    },
+    {
+      "imagem": "video_06_frame_00000.jpg",
+      "pontos": [
+        [
+          114,
+          23
+        ],
+        [
+          177,
+          65
+        ],
+        [
+          453,
+          314
+        ],
+        [
+          913,
+          561
+        ],
+        [
+          1008,
+          625
+        ],
+        [
+          1034,
+          642
+        ]
+      ],
+      "metodo": "limiar_127_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.2889988890866573,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_06_frame_00034.jpg",
+      "pontos": [
+        [
+          548,
+          784
+        ],
+        [
+          545,
+          796
+        ],
+        [
+          506,
+          1181
+        ],
+        [
+          511,
+          1363
+        ],
+        [
+          512,
+          1599
+        ],
+        [
+          508,
+          1656
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.04381161007667034,
+      "previsto": -0.05222781608834293,
+      "erro": 0.008416206011672589
+    },
+    {
+      "imagem": "video_06_frame_00067.jpg",
+      "pontos": [
+        [
+          721,
+          1195
+        ],
+        [
+          701,
+          1208
+        ],
+        [
+          581,
+          1524
+        ],
+        [
+          561,
+          1786
+        ],
+        [
+          549,
+          1823
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 3,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.12733637975646483,
+      "previsto": 0.13657746858905928,
+      "erro": 0.009241088832594446
+    },
+    {
+      "imagem": "video_06_frame_00100.jpg",
+      "pontos": [
+        [
+          159,
+          43
+        ],
+        [
+          163,
+          47
+        ],
+        [
+          196,
+          86
+        ],
+        [
+          209,
+          127
+        ],
+        [
+          229,
+          176
+        ],
+        [
+          239,
+          225
+        ],
+        [
+          251,
+          286
+        ],
+        [
+          281,
+          351
+        ],
+        [
+          310,
+          429
+        ],
+        [
+          325,
+          518
+        ],
+        [
+          334,
+          638
+        ],
+        [
+          346,
+          777
+        ],
+        [
+          376,
+          960
+        ],
+        [
+          398,
+          1192
+        ],
+        [
+          405,
+          1249
+        ]
+      ],
+      "metodo": "limiar_120_abertura3",
+      "segmentos": 13,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.23650617602819857,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_06_frame_00134.jpg",
+      "pontos": [
+        [
+          102,
+          1440
+        ],
+        [
+          177,
+          1556
+        ],
+        [
+          250,
+          1670
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 1,
+      "aviso": "Só um segmento aproveitável: confira a extensão da trajetória antes de confirmar.",
+      "real": -0.8089518281338193,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_07_frame_00000.jpg",
+      "pontos": [
+        [
+          517,
+          9
+        ],
+        [
+          531,
+          29
+        ],
+        [
+          659,
+          327
+        ],
+        [
+          641,
+          681
+        ],
+        [
+          618,
+          1103
+        ],
+        [
+          578,
+          1529
+        ],
+        [
+          496,
+          1884
+        ],
+        [
+          488,
+          1908
+        ]
+      ],
+      "metodo": "limiar_120_abertura3",
+      "segmentos": 6,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.08864891002135633,
+      "previsto": 0.08698281751056225,
+      "erro": 0.0016660925107940816
+    },
+    {
+      "imagem": "video_07_frame_00021.jpg",
+      "pontos": [
+        [
+          552,
+          20
+        ],
+        [
+          545,
+          69
+        ],
+        [
+          517,
+          321
+        ],
+        [
+          505,
+          587
+        ],
+        [
+          492,
+          835
+        ],
+        [
+          486,
+          1281
+        ],
+        [
+          489,
+          1585
+        ],
+        [
+          496,
+          1871
+        ],
+        [
+          497,
+          1905
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 7,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.09057415032133576,
+      "previsto": -0.09627121847714748,
+      "erro": 0.005697068155811724
+    },
+    {
+      "imagem": "video_07_frame_00042.jpg",
+      "pontos": [
+        [
+          1054,
+          15
+        ],
+        [
+          1032,
+          38
+        ],
+        [
+          937,
+          208
+        ],
+        [
+          855,
+          400
+        ],
+        [
+          791,
+          589
+        ],
+        [
+          734,
+          772
+        ],
+        [
+          697,
+          925
+        ],
+        [
+          670,
+          1081
+        ],
+        [
+          652,
+          1268
+        ],
+        [
+          641,
+          1491
+        ],
+        [
+          666,
+          1721
+        ],
+        [
+          677,
+          1757
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 10,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.20163345690454126,
+      "previsto": 0.19286874992207514,
+      "erro": 0.00876470698246612
+    },
+    {
+      "imagem": "video_07_frame_00063.jpg",
+      "pontos": [
+        [
+          559,
+          216
+        ],
+        [
+          558,
+          317
+        ],
+        [
+          556,
+          805
+        ],
+        [
+          581,
+          1276
+        ],
+        [
+          603,
+          1767
+        ],
+        [
+          606,
+          1866
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.09134274655181818,
+      "previsto": 0.0904813048213533,
+      "erro": 0.0008614417304648736
+    },
+    {
+      "imagem": "video_07_frame_00084.jpg",
+      "pontos": [
+        [
+          952,
+          153
+        ],
+        [
+          952,
+          176
+        ],
+        [
+          939,
+          474
+        ],
+        [
+          935,
+          565
+        ],
+        [
+          919,
+          783
+        ],
+        [
+          920,
+          795
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.21939038204098438,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_08_frame_00000.jpg",
+      "pontos": [
+        [
+          339,
+          58
+        ],
+        [
+          389,
+          110
+        ],
+        [
+          586,
+          431
+        ],
+        [
+          735,
+          917
+        ],
+        [
+          614,
+          1533
+        ],
+        [
+          581,
+          1688
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.15866499584470062,
+      "previsto": 0.1722246127366609,
+      "erro": 0.01355961689196028
+    },
+    {
+      "imagem": "video_08_frame_00024.jpg",
+      "pontos": [
+        [
+          572,
+          81
+        ],
+        [
+          569,
+          101
+        ],
+        [
+          555,
+          233
+        ],
+        [
+          556,
+          367
+        ],
+        [
+          553,
+          516
+        ],
+        [
+          546,
+          688
+        ],
+        [
+          547,
+          863
+        ],
+        [
+          560,
+          1094
+        ],
+        [
+          551,
+          1402
+        ],
+        [
+          541,
+          1788
+        ],
+        [
+          537,
+          1871
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 9,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.02581081814044195,
+      "previsto": 0.01952729210985038,
+      "erro": 0.0062835260305915686
+    },
+    {
+      "imagem": "video_08_frame_00048.jpg",
+      "pontos": [
+        [
+          1011,
+          44
+        ],
+        [
+          998,
+          71
+        ],
+        [
+          919,
+          254
+        ],
+        [
+          852,
+          418
+        ],
+        [
+          792,
+          604
+        ],
+        [
+          737,
+          791
+        ],
+        [
+          674,
+          1016
+        ],
+        [
+          624,
+          1250
+        ],
+        [
+          558,
+          1564
+        ],
+        [
+          500,
+          1853
+        ],
+        [
+          485,
+          1897
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 9,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.08440399106071839,
+      "previsto": 0.08289404555999602,
+      "erro": 0.001509945500722365
+    },
+    {
+      "imagem": "video_08_frame_00073.jpg",
+      "pontos": [
+        [
+          669,
+          5
+        ],
+        [
+          668,
+          19
+        ],
+        [
+          658,
+          196
+        ],
+        [
+          650,
+          461
+        ],
+        [
+          664,
+          775
+        ],
+        [
+          680,
+          1185
+        ],
+        [
+          996,
+          1665
+        ],
+        [
+          1052,
+          1700
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 6,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.23520051263699115,
+      "previsto": 0.5706788693234477,
+      "erro": 0.33547835668645654
+    },
+    {
+      "imagem": "video_08_frame_00097.jpg",
+      "pontos": [
+        [
+          210,
+          125
+        ],
+        [
+          267,
+          170
+        ],
+        [
+          511,
+          462
+        ],
+        [
+          734,
+          931
+        ],
+        [
+          744,
+          1025
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 3,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.32812828022672913,
+      "previsto": null,
+      "erro": null
+    },
+    {
+      "imagem": "video_09_frame_00000.jpg",
+      "pontos": [
+        [
+          515,
+          5
+        ],
+        [
+          518,
+          18
+        ],
+        [
+          588,
+          302
+        ],
+        [
+          651,
+          616
+        ],
+        [
+          684,
+          951
+        ],
+        [
+          604,
+          1311
+        ],
+        [
+          445,
+          1725
+        ],
+        [
+          406,
+          1812
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 6,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.041777992893931915,
+      "previsto": 0.028256840069307287,
+      "erro": 0.013521152824624627
+    },
+    {
+      "imagem": "video_09_frame_00032.jpg",
+      "pontos": [
+        [
+          715,
+          9
+        ],
+        [
+          704,
+          17
+        ],
+        [
+          652,
+          175
+        ],
+        [
+          605,
+          350
+        ],
+        [
+          550,
+          515
+        ],
+        [
+          494,
+          690
+        ],
+        [
+          409,
+          984
+        ],
+        [
+          344,
+          1197
+        ],
+        [
+          325,
+          1398
+        ],
+        [
+          367,
+          1592
+        ],
+        [
+          413,
+          1758
+        ],
+        [
+          431,
+          1884
+        ],
+        [
+          429,
+          1908
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 11,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.3903526192682819,
+      "previsto": -0.3810372337884448,
+      "erro": 0.009315385479837124
+    },
+    {
+      "imagem": "video_09_frame_00064.jpg",
+      "pontos": [
+        [
+          547,
+          30
+        ],
+        [
+          548,
+          79
+        ],
+        [
+          564,
+          310
+        ],
+        [
+          562,
+          535
+        ],
+        [
+          562,
+          766
+        ],
+        [
+          561,
+          1029
+        ],
+        [
+          566,
+          1281
+        ],
+        [
+          574,
+          1501
+        ],
+        [
+          572,
+          1724
+        ],
+        [
+          570,
+          1770
+        ]
+      ],
+      "metodo": "limiar_80_abertura3",
+      "segmentos": 8,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": 0.06563862286753852,
+      "previsto": 0.059785997135394675,
+      "erro": 0.005852625732143846
+    },
+    {
+      "imagem": "video_09_frame_00096.jpg",
+      "pontos": [
+        [
+          613,
+          39
+        ],
+        [
+          611,
+          129
+        ],
+        [
+          567,
+          583
+        ],
+        [
+          530,
+          1059
+        ],
+        [
+          472,
+          1532
+        ],
+        [
+          458,
+          1635
+        ]
+      ],
+      "metodo": "limiar_100_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": -0.08613724276374868,
+      "previsto": -0.10403493956309873,
+      "erro": 0.01789769679935005
+    },
+    {
+      "imagem": "video_09_frame_00128.jpg",
+      "pontos": [
+        [
+          277,
+          22
+        ],
+        [
+          285,
+          33
+        ],
+        [
+          348,
+          120
+        ],
+        [
+          412,
+          210
+        ],
+        [
+          464,
+          283
+        ],
+        [
+          481,
+          308
+        ]
+      ],
+      "metodo": "limiar_120_abertura3",
+      "segmentos": 4,
+      "aviso": "Sugestão automática: confira curvas e cruzamentos antes de confirmar.",
+      "real": null,
+      "previsto": null,
+      "erro": null
+    }
+  ]
+}

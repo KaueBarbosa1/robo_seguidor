@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="800" viewBox="0 0 1280 800">
+<style>text{font-family:DejaVu Sans,sans-serif;fill:#172033}</style>
+<rect width="1280" height="800" fill="white"/>
+<text x="50" y="52" font-size="29" style="fill:#172033" text-anchor="start" font-weight="bold">Erro em cada imagem de teste</text>
+<text x="50" y="86" font-size="17" style="fill:#64748b" text-anchor="start" font-weight="normal">O segundo treino teve menor erro em 4 das 9 imagens. Confira também as pioras.</text>
+<line x1="50" y1="740" x2="1230" y2="740" stroke="#e2e8f0" stroke-width="1"/>
+<text x="50" y="769" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">Resultados exploratórios • teste com 9 imagens • CNN treinada do zero • sem validação física</text>
+<rect x="300" y="121" width="18" height="18" fill="#64748b" rx="3"/>
+<text x="328" y="135" font-size="17" style="fill:#172033" text-anchor="start" font-weight="normal">Primeiro treino</text>
+<rect x="485" y="121" width="18" height="18" fill="#0f766e" rx="3"/>
+<text x="513" y="135" font-size="17" style="fill:#172033" text-anchor="start" font-weight="normal">Segundo treino</text>
+<line x1="330.0" y1="175" x2="330.0" y2="640" stroke="#e2e8f0" stroke-width="1"/>
+<text x="330.0" y="670" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">0</text>
+<line x1="468.33333333333337" y1="175" x2="468.33333333333337" y2="640" stroke="#e2e8f0" stroke-width="1"/>
+<text x="468.33333333333337" y="670" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">5</text>
+<line x1="606.6666666666667" y1="175" x2="606.6666666666667" y2="640" stroke="#e2e8f0" stroke-width="1"/>
+<text x="606.6666666666667" y="670" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">10</text>
+<line x1="745.0" y1="175" x2="745.0" y2="640" stroke="#e2e8f0" stroke-width="1"/>
+<text x="745.0" y="670" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">15</text>
+<line x1="883.3333333333334" y1="175" x2="883.3333333333334" y2="640" stroke="#e2e8f0" stroke-width="1"/>
+<text x="883.3333333333334" y="670" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">20</text>
+<line x1="1021.6666666666666" y1="175" x2="1021.6666666666666" y2="640" stroke="#e2e8f0" stroke-width="1"/>
+<text x="1021.6666666666666" y="670" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">25</text>
+<line x1="1160.0" y1="175" x2="1160.0" y2="640" stroke="#e2e8f0" stroke-width="1"/>
+<text x="1160.0" y="670" font-size="17" style="fill:#172033" text-anchor="middle" font-weight="normal">30</text>
+<text x="315" y="204.0" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">06 / 00000</text>
+<rect x="330" y="183.0" width="44.609431425730406" height="15" fill="#64748b" rx="3"/>
+<text x="381.6094314257304" y="196.0" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">1,6%</text>
+<rect x="330" y="203.0" width="144.2711432774862" height="15" fill="#0f766e" rx="3"/>
+<text x="481.2711432774862" y="216.0" font-size="14" style="fill:#0f766e" text-anchor="start" font-weight="normal">5,2%</text>
+<text x="315" y="255.66666666666666" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">06 / 00034</text>
+<rect x="330" y="234.66666666666666" width="165.88210898141062" height="15" fill="#64748b" rx="3"/>
+<text x="502.8821089814106" y="247.66666666666666" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">6,0%</text>
+<rect x="330" y="254.66666666666666" width="29.13930146023631" height="15" fill="#0f766e" rx="3"/>
+<text x="366.1393014602363" y="267.66666666666663" font-size="14" style="fill:#0f766e" text-anchor="start" font-weight="normal">1,1%</text>
+<text x="315" y="307.3333333333333" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">06 / 00067</text>
+<rect x="330" y="286.3333333333333" width="27.169406910737337" height="15" fill="#64748b" rx="3"/>
+<text x="364.16940691073734" y="299.3333333333333" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">1,0%</text>
+<rect x="330" y="306.3333333333333" width="57.229165732860565" height="15" fill="#0f766e" rx="3"/>
+<text x="394.22916573286057" y="319.3333333333333" font-size="14" style="fill:#0f766e" text-anchor="start" font-weight="normal">2,1%</text>
+<text x="315" y="359.0" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">06 / 00100</text>
+<rect x="330" y="338.0" width="86.24655256668728" height="15" fill="#64748b" rx="3"/>
+<text x="423.2465525666873" y="351.0" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">3,1%</text>
+<rect x="330" y="358.0" width="39.56138516465825" height="15" fill="#0f766e" rx="3"/>
+<text x="376.56138516465825" y="371.0" font-size="14" style="fill:#0f766e" text-anchor="start" font-weight="normal">1,4%</text>
+<text x="315" y="410.66666666666663" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">06 / 00134</text>
+<rect x="330" y="389.66666666666663" width="824.9359289805093" height="15" fill="#64748b" rx="3"/>
+<text x="1161.9359289805093" y="402.66666666666663" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">29,8%</text>
+<rect x="330" y="409.66666666666663" width="81.05790317058563" height="15" fill="#0f766e" rx="3"/>
+<text x="418.05790317058563" y="422.66666666666663" font-size="14" style="fill:#0f766e" text-anchor="start" font-weight="normal">2,9%</text>
+<text x="315" y="462.3333333333333" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">09 / 00000</text>
+<rect x="330" y="441.3333333333333" width="290.3636341293652" height="15" fill="#64748b" rx="3"/>
+<text x="627.3636341293652" y="454.3333333333333" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">10,5%</text>
+<rect x="330" y="461.3333333333333" width="340.6200923025608" height="15" fill="#0f766e" rx="3"/>
+<text x="677.6200923025608" y="474.3333333333333" font-size="14" style="fill:#0f766e" text-anchor="start" font-weight="normal">12,3%</text>
+<text x="315" y="514.0" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">09 / 00032</text>
+<rect x="330" y="493.0" width="182.67762859662378" height="15" fill="#64748b" rx="3"/>
+<text x="519.6776285966238" y="506.0" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">6,6%</text>
+<rect x="330" y="513.0" width="96.22634500265121" height="15" fill="#0f766e" rx="3"/>
+<text x="433.2263450026512" y="526.0" font-size="14" style="fill:#0f766e" text-anchor="start" font-weight="normal">3,5%</text>
+<text x="315" y="565.6666666666666" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">09 / 00064</text>
+<rect x="330" y="544.6666666666666" width="12.678873787323653" height="15" fill="#64748b" rx="3"/>
+<text x="349.67887378732365" y="557.6666666666666" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">0,5%</text>
+<rect x="330" y="564.6666666666666" width="36.579304188489914" height="15" fill="#0f766e" rx="3"/>
+<text x="373.5793041884899" y="577.6666666666666" font-size="14" style="fill:#0f766e" text-anchor="start" font-weight="normal">1,3%</text>
+<text x="315" y="617.3333333333333" font-size="18" style="fill:#172033" text-anchor="end" font-weight="normal">09 / 00096</text>
+<rect x="330" y="596.3333333333333" width="75.0586883475383" height="15" fill="#64748b" rx="3"/>
+<text x="412.0586883475383" y="609.3333333333333" font-size="14" style="fill:#64748b" text-anchor="start" font-weight="normal">2,7%</text>
+<rect x="330" y="616.3333333333333" width="77.7011038114627" height="15" fill="#0f766e" rx="3"/>
+<text x="414.7011038114627" y="629.3333333333333" font-size="14" style="fill:#0f766e" text-anchor="start" font-weight="normal">2,8%</text>
+<text x="745.0" y="709" font-size="20" style="fill:#172033" text-anchor="middle" font-weight="normal">Erro absoluto (% da largura da imagem)</text>
+</svg>

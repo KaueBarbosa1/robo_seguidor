@@ -1,0 +1,28 @@
+{
+  "experimentos": [
+    "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_01",
+    "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_02"
+  ],
+  "arquivos": [
+    "01_resumo",
+    "02_curvas_treinamento",
+    "03_previsto_real",
+    "04_erros_por_imagem",
+    "05_erros_por_video",
+    "06_dados_por_video"
+  ],
+  "unidade_erro": "porcentagem_da_largura = MAE_normalizado * 50",
+  "avaliacao_identica_verificada": true,
+  "treino_executado": false,
+  "hashes_origem": {
+    "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_01/experimento.json": "8c0b6a966e7f5c9b3311de1e675a6fecbe0586a79cd3c6baacd2dd5c428cf985",
+    "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_01/dataset.json": "55ff1c06f04557f11b02769b0561a96e44942094a99dec9b0f115261c142a81c",
+    "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_01/predicoes.csv": "9d066509f5058d7224e3fda5953560ad23355dd8334210176679a99d5ea8d042",
+    "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_01/historico.csv": "018469accc238583030a81105731d9411573928292842aec2d56c5e66eb4a609",
+    "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_02/experimento.json": "c70cc63a14f16ce980820efab0d31ee9fdd3100ca47d5040e4caff76d7fcdafd",
+    "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_02/dataset.json": "2c8d708e64f1222b52644aff9733cb9756a1398c0599db4fab86e3e40f38b667",
+    "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_02/predicoes.csv": "b2fcfda9cd3e017d175ad57000d388d440d366c0d1caa552f4427c9a63d3d0ab",
+    "/home/carrasco/Downloads/robo_seguidor/dataset_pista/resultados/treino_posicao_02/historico.csv": "fd0e24653aeeb4850a820bcf392255b517bec1feb82f1cb6fa3c5f2a7448aa50"
+  },
+  "hash_script": "20b8edea30044fd1ac18adef070a1138d9baf56d9f6bb246688f5a46a9b6ad29"
+}
