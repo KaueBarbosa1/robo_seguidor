@@ -63,6 +63,48 @@ em falhas HTTP, desconexão ou JPEG inválido há registro e nova tentativa apó
 A janela fica preta durante falhas para não apresentar uma imagem antiga como atual.
 O CSV é sobrescrito ao iniciar: escolha outro nome para preservar ensaios.
 
+## Coletar imagens com a câmera montada
+
+Conecte a Pi à rede `Carrinho-CAM`. Com os motores desligados, ajuste
+foco, inclinação e orientação da câmera olhando a prévia.
+
+```bash
+/usr/bin/python3 tools/coletar_esp32_cam.py --previa --roi 0 80 320 160
+```
+
+A janela mostra o quadro orientado com o retângulo da ROI e, ao lado, o
+recorte em cinza reduzido a 80×40 e ampliado para inspeção. `--roi X Y L A`
+usa pixels do quadro após a orientação, com origem no canto superior
+esquerdo. O recorte deve caber no quadro e ter proporção 2:1. `0 80 320 160`
+é um ponto de partida. Mude os valores até conseguir ver a fita perto e
+longe na prévia. Use `--espelhar-h` para inverter esquerda e direita e
+`--espelhar-v` para inverter cima e baixo. Repita as mesmas opções na coleta.
+
+```bash
+/usr/bin/python3 tools/coletar_esp32_cam.py \
+  --saida coletas_esp32/curvas_luz_natural_01 --roi 0 80 320 160 \
+  --duracao 30 --nota 'Câmera montada, luz natural, curvas e vãos'
+```
+
+Use uma pasta nova por sessão. `q`, fechar a janela ou `Ctrl+C` encerra a
+captura. `--quadros N` limita a quantidade de JPEGs válidos e `--duracao S`
+limita o tempo para iniciar novas capturas. Por SSH, acrescente
+`--sem-janela`. A pausa padrão após um quadro válido é 0,2 s. Ajuste com
+`--intervalo` para variar a frequência de amostragem. Falhas de rede ou de
+JPEG são registradas e a captura é retomada quando a câmera responde.
+
+- `quadros/` guarda os JPEGs originais de 320×240, byte a byte. Orientação e
+  recorte aparecem na prévia e no manifesto.
+- `capturas.csv` registra cada tentativa, com sequência, arquivo e horário
+  UTC de recepção para os quadros válidos. Inclui tempos HTTP, duração
+  monotônica desde o início e as estimativas de idade da bancada.
+- `sessao.json` registra o identificador único da sessão, início e fim,
+  nota da montagem, versão da prévia, ROI, orientação e contadores.
+
+Guarde a pasta inteira. Separe sessões completas na avaliação. O formato
+da coleta preserva a origem de cada JPEG para a futura rotulação. Os
+experimentos anteriores continuam usando seus respectivos formatos de entrada.
+
 ## Métricas e aceitação
 
 - `HTTP`: tempo monotônico desde antes do GET até terminar de receber o corpo;

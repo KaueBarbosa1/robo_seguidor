@@ -39,8 +39,11 @@ prioritários durante qualquer futura integração.
   Comentários que chamavam a OV7670 de decisão definitiva são históricos;
   a migração proposta agora considera a ESP32-CAM.
 - A ESP32-CAM é testada por `arduino/esp32_cam_bancada/` e
-  `tools/testar_esp32_cam.py`: não está integrada a `visao/fontes.py`, ao
-  `main.py` ou ao ciclo CNN/controle. A recepção não aplica o recorte da CNN.
+  `tools/testar_esp32_cam.py`. `tools/coletar_esp32_cam.py` reaproveita a
+  recepção para guardar JPEGs originais por sessão e mostrar uma ROI 80×40
+  para calibração. A captura e a recuperação de JPEG truncado foram testadas
+  com servidor HTTP simulado. A coleta e a calibração no hardware, bem como
+  a integração com `visao/fontes.py`, CNN e controle, permanecem pendentes.
 - O servo já tem varredura e inspeção de três direções implementadas.
   A inspeção automática em SEGUINDO termina em PARADO; ainda não escolhe um
   desvio nem retoma movimento sozinha. A validação física integrada é pendente.
@@ -140,6 +143,12 @@ Receber JPEGs 320×240 e calibrar orientação e recorte com a câmera montada n
 carrinho, preservando área perto e longe da pista. Começar avaliando 80×40;
 medir se os pontos distantes continuam distinguíveis antes de aumentar a rede.
 Não deformar a geometria para fazer caber um recorte antigo.
+
+O [coletor de bancada](12_esp32_cam_bancada.md#coletar-imagens-com-a-câmera-montada)
+já registra a sessão, o recorte e a orientação. A ROI padrão da prévia é
+um ponto inicial para o ajuste físico. A prévia versionada usa cinza e
+redução com `INTER_AREA`. A normalização da CNN pertence ao contrato futuro
+de treino e inferência.
 
 Criar um pré-processamento compartilhado entre coleta, treino e inferência.
 Versionar resolução, ROI, orientação, conversão para cinza e normalização junto
