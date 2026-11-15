@@ -368,3 +368,58 @@ O ensaio gera `RELATORIO.md`, `quadros.csv`, `comparacao.json` com métrica
 por vídeo, `segmentos.jsonl` com as decisões por faixa e 23 imagens em
 `diagnosticos/`. Nos painéis, cinza indica segmentos descartados, ciano
 indica os pares aceitos e verde marca a referência humana.
+
+## Comparação offline com MobileNetV2
+
+`tools/comparar_mobilenet.py` usa o recorte proporcional do segundo treino
+e o mesmo alvo em y=75%. A MobileNetV2 recebe RGB 128×64 em `[-1, 1]`.
+A base usa `alpha=0.5`, pesos oficiais ImageNet e saída espacial no último
+bloco residual. Seus 496.304 parâmetros ficam congelados. A regressão linear
+tem 1.281 parâmetros ajustados por ridge. O menor MSE nos vídeos de validação
+seleciona a regularização, antes de calcular as métricas do teste exploratório.
+
+| Conjunto | Quadros | CNN NumPy | MobileNetV2 |
+|---|---:|---:|---:|
+| Treino | 58 | 1,75% | 1,35% |
+| Validação | 10 | 5,13% | 4,77% |
+| Teste exploratório | 9 | 3,62% | 5,38% |
+
+O MAE é expresso em porcentagem da largura. Nos três quadros em que o
+Hough selecionou o rejunte, a MobileNetV2 reduziu o erro em
+`video_03_frame_00102.jpg` (7,59% para 3,72%) e aumentou em
+`video_04_frame_00048.jpg` (5,74% para 8,78%) e `video_06_frame_00034.jpg`
+(1,05% para 2,76%). Os quadros e as gravações já foram usados em estudos
+exploratórios. Ainda falta avaliar em sessões independentes da ESP32-CAM.
+
+Com o carrinho parado, rode em um ambiente offline com NumPy, OpenCV e
+TensorFlow com Keras 3. O ensaio foi executado com TensorFlow 2.21.0 no
+Windows. Há pacote Linux ARM64 para Python 3.13 no PyPI para repetir a
+medição na Raspberry Pi. [Distribuição do TensorFlow](https://pypi.org/project/tensorflow/2.21.0/#files)
+
+Baixe o [checkpoint oficial sem a camada de classificação](https://storage.googleapis.com/tensorflow/keras-applications/mobilenet_v2/mobilenet_v2_weights_tf_dim_ordering_tf_kernels_0.5_128_no_top.h5)
+e passe o caminho a `--pesos-base`. A ferramenta verifica o SHA-256 dos
+pesos e a correspondência entre os rótulos, as divisões e a CNN de referência.
+
+```bash
+OPENBLAS_NUM_THREADS=1 .venv/bin/python tools/comparar_mobilenet.py comparar \
+  --pesos-base mobilenet_v2_weights_tf_dim_ordering_tf_kernels_0.5_128_no_top.h5 \
+  --saida dataset_pista/resultados/comparacao_mobilenet
+```
+
+Para medir na Raspberry Pi, copie a pasta gerada ou reproduza o ensaio.
+O subcomando usa `mobilenet.keras` e `comparacao.json` da pasta para conferir
+o modelo. Ele mede recorte e normalização, inferência e total em CPU,
+com lote unitário e cinco chamadas de aquecimento por modelo. O CSV contém
+as amostras, e o JSON traz P50 e P95. Os quadros já estão decodificados em
+memória. Recepção Wi-Fi, JPEG e comando de motor ficam fora da medição.
+
+Na execução local em CPU no Windows, com 95 medições por método, o total
+de pré-processamento e inferência ficou em 2,14 ms (P50) e 2,81 ms (P95)
+para a CNN NumPy, e em 5,35 ms (P50) e 6,85 ms (P95) para a MobileNetV2.
+Esses valores correspondem ao computador do ensaio.
+
+```bash
+OPENBLAS_NUM_THREADS=1 .venv/bin/python tools/comparar_mobilenet.py latencia \
+  --experimento-mobilenet dataset_pista/resultados/comparacao_mobilenet \
+  --saida dataset_pista/resultados/latencia_mobilenet_pi --threads 1
+```

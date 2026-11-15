@@ -122,6 +122,16 @@ Nos vídeos exploratórios, houve abstenções e seleção de rejunte como fita.
 O experimento roda fora do controle. Consulte
 [o método e os resultados](08_dataset_linha.md#referência-offline-com-houghlinesp).
 
+### Comparação offline com MobileNetV2
+
+`tools/comparar_mobilenet.py` usa MobileNetV2 pré-treinada e congelada, com
+uma regressão de posição em y=75% ajustada nas mesmas divisões por vídeo
+da CNN NumPy. No teste exploratório, a CNN NumPy teve menor erro médio.
+O subcomando `latencia` mede pré-processamento e inferência por quadro a
+partir do modelo salvo. A medição local foi em CPU no Windows. A execução
+na Raspberry e a generalização com a ESP32-CAM montada seguem pendentes.
+Consulte [o procedimento e os resultados](08_dataset_linha.md#comparação-offline-com-mobilenetv2).
+
 ## Quatro mudanças propostas na CNN — todas pendentes
 
 ### 1. Adaptar a entrada à ESP32-CAM
