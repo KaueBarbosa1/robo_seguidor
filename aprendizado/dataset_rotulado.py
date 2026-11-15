@@ -2,6 +2,11 @@
 
 O mesmo preparar_foto deve ser usado para inferência destes pesos. Não substitui
 dados.preparar_entrada nem produz ações para os motores.
+
+Pendente: calibrar e versionar outra ROI para a ESP32-CAM 320x240; o recorte
+atual centrado em y=75% não cabe nessa resolução. Derivar três alvos apenas
+dentro dos pontos humanos, com máscaras por altura, e incluir estados negativos
+no futuro treino de validade. Ver docs/13_contexto_e_plano_cnn.md.
 """
 import csv
 import hashlib

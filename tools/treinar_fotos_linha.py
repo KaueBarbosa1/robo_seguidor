@@ -77,6 +77,9 @@ def executar(args):
         entrada, alvo = aumentar(x[lote], y[lote], rng)
         perda, _ = rede.perda_e_gradiente(entrada, alvo, np.ones(len(lote), bool),
                                          np.zeros(len(lote), np.float32), np.ones(len(lote), np.float32),
+                                         # Pendente: supervisionar validade e três alturas com máscaras;
+                                         # não usar a visibilidade destes pesos para autorizar movimento.
+                                         # Plano: docs/13_contexto_e_plano_cnn.md.
                                          lambda_vis=0.)
         if not np.isfinite(perda):
             raise ValueError('Perda não finita; experimento interrompido')

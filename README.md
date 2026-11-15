@@ -1,5 +1,15 @@
 # Robô seguidor de linha com comando de voz
 
+Contexto atual e próximos passos: [plano comentado da CNN e da integração
+ESP32-CAM](docs/13_contexto_e_plano_cnn.md). Reúne o que existe, as limitações
+e as propostas de trajetória em três alturas, validade supervisionada, memória
+para os vãos e colaboração com o futuro planejador de obstáculos.
+
+O diagrama abaixo descreve a arquitetura legada. A configuração atual usa Uno
+sem câmera; a ESP32-CAM tem receptor de bancada separado e sua integração à
+CNN/controle ainda está pendente. Consulte o contexto antes de seguir as etapas
+históricas ou considerar alguma capacidade validada no carrinho físico.
+
 Teste independente da ESP32-CAM OV2640: [guia de bancada](docs/12_esp32_cam_bancada.md).
 Firmware e receptor separados; validação física e decisão sobre CNN ficam em etapas distintas.
 

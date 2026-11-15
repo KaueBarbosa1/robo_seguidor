@@ -4,8 +4,9 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parent
 
 # ------------------------------------------------- Serial (Pi <-> Arduino: imagem da OV7670 + comandos dos motores)
-# A câmera é a OV7670 ligada ao Arduino (decisão definitiva): a imagem chega pela serial. A ligação física entre as
-# placas (hoje USB) e quem controla cada sensor ainda podem mudar: veja docs/06_revisao_tecnica.md.
+# Caminho legado: OV7670 ligada ao Arduino, com imagem pela serial no modo com câmera.
+# A configuração abaixo está no modo sem câmera. A ESP32-CAM usa bancada separada;
+# integração e nova entrada da CNN pendentes: docs/13_contexto_e_plano_cnn.md.
 SERIAL_PORTA = "/dev/ttyACM0"      # Arduino UNO via USB costuma ser ttyACM0 (clones: ttyUSB0)
 FIRMWARE_COM_CAMERA = False       # True = firmware com USAR_CAMERA 1 (OV7670, 1 Mbaud, sem ultrassom/encoders);
                                    # False = USAR_CAMERA 0 (sem câmera: 115200 baud, COM ultrassom e encoders). Igual ao que foi gravado!

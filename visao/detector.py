@@ -3,6 +3,12 @@
 Esta thread NÃO fala com o Arduino. Ela só publica no EstadoRobo o erro medido;
 quem converte erro em comando e escreve na serial é o controle (controle.py).
 Assim existe um único ponto de decisão e a hierarquia "voz > visão" fica garantida.
+
+Integração CNN/ESP32-CAM pendente: carregar pesos compatíveis, usar o quadro
+mais recente com pré-processamento idêntico ao treino e publicar trajetória,
+validade e idade sem escrever nos motores. Esta thread ainda usa OpenCV.
+Memória para vãos e planejamento de desvio pertencem a etapas próprias;
+ver docs/13_contexto_e_plano_cnn.md.
 """
 import logging
 import threading

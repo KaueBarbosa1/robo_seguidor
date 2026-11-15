@@ -8,6 +8,13 @@ Camadas : conv 5x5/2 (8) -> ReLU -> conv 3x3/2 (16) -> ReLU -> conv 3x3/2 (16) -
 
 Por que NumPy: o Raspberry Pi 5 treina isto em segundos, não há dependência pesada, e o gradiente pode ser
 conferido numericamente (tools/testes). Os pesos começam ALEATÓRIOS (He) e só aprendem com dados do carrinho.
+
+Plano pendente (docs/13_contexto_e_plano_cnn.md): manter inicialmente 80x40,
+calibrar a ROI da ESP32-CAM e prever posições perto/meio/longe com validade
+supervisionada. Isso exige alterar cabeça, gradientes, perdas, máscaras e
+contrato de pesos; a interface abaixo continua sendo a de duas saídas.
+No treino com fotos, a primeira saída é posição em y=75%, não ação de motor;
+a visibilidade não é supervisionada (lambda_vis=0) e deve ser ignorada.
 """
 import hashlib
 from pathlib import Path
