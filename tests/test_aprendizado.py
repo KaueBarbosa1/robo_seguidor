@@ -67,6 +67,43 @@ def test_cnn_aprende_e_salva():
     assert r2.hash() == r.hash() and np.allclose(r2.prever(X)[0], d)
 
 
+def test_cnn_batchnorm_gradiente_e_inferencia():
+    rng = np.random.default_rng(73)
+    rede = RedeLinha(7, np.float64, batchnorm=True)
+    x = rng.normal(size=(4, 1, 40, 80))
+    y = rng.uniform(-1, 1, len(x))
+    mascara = np.ones(len(x))
+
+    def perda():
+        return rede.perda_e_gradiente(x, y, mascara, mascara, mascara)[0]
+
+    perda()
+    gradientes = [g.copy() for g in rede.gradientes()]
+    for parametro, gradiente in zip(rede.parametros(), gradientes):
+        direcao = rng.normal(size=parametro.shape)
+        direcao /= np.linalg.norm(direcao)
+        original = parametro.copy()
+        h = 1e-6
+        parametro[:] = original + h * direcao
+        mais = perda()
+        parametro[:] = original - h * direcao
+        menos = perda()
+        parametro[:] = original
+        np.testing.assert_allclose((mais - menos) / (2 * h), (gradiente * direcao).sum(), atol=2e-8)
+
+    hash_antes = rede.hash()
+    previsoes = rede.prever(x)
+    lote_unitario = rede.prever(x, lote=1)
+    np.testing.assert_allclose(previsoes, lote_unitario, atol=1e-12)
+    assert [a.shape for a in rede.mapas_ativacao(x[:1])] == [(1, 8, 20, 40), (1, 16, 10, 20), (1, 16, 5, 10)]
+    assert rede.hash() == hash_antes
+    arquivo = _tmp() / 'batchnorm.npz'
+    rede.salvar(arquivo)
+    for copia in (rede.copiar(), RedeLinha.carregar(arquivo, np.float64)):
+        assert copia.hash() == hash_antes
+        np.testing.assert_array_equal(copia.prever(x), previsoes)
+
+
 # ------------------------------------------------------------------ dados / rótulos
 def _ep(visivel, e=None, dt=0.4):
     passos = [{"t": i * dt, "prof_visivel": bool(v), "e_prof": (e[i] if e else 0.1 * i) if v else None}

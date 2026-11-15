@@ -42,36 +42,29 @@ def escrever_csv(caminho, linhas):
         escritor.writerows(linhas)
 
 
-def executar(args):
-    if args.saida.resolve().exists():
-        raise ValueError('A pasta de saída já existe; escolha uma nova execução')
+def preparar_dados(dataset, revisoes):
     # A divisão é fixada antes de ajustar pesos ou avaliar previsões.
     videos = [v for lista in DIVISAO.values() for v in lista]
     if len(videos) != len(set(videos)):
         raise ValueError('Vazamento de vídeos entre conjuntos')
-    reduzidos, y, registros, excluidos = carregar_fotos(args.dataset, args.revisoes)
-    x = normalizar(reduzidos)
+    reduzidos, y, registros, excluidos = carregar_fotos(dataset, revisoes)
     idx = {grupo: np.array([i for i, r in enumerate(registros) if r['grupo'] == grupo]) for grupo in DIVISAO}
     if any(len(v) == 0 for v in idx.values()):
         raise ValueError('Cada conjunto precisa ter ao menos um exemplo')
-    saida = args.saida.resolve()
-    saida.mkdir(parents=True, exist_ok=False)
-    (saida / 'previsoes').mkdir()
     auditoria = {'revisoes_unicas': len(registros) + len(excluidos),
                  'visibilidade_incluidos': dict(Counter(r['visibilidade'] for r in registros)),
                  'incluidos': registros, 'excluidos': excluidos,
                  'divisao_por_video': DIVISAO,
                  'contagens': {g: len(i) for g, i in idx.items()}}
-    (saida / 'dataset.json').write_text(json.dumps(auditoria, indent=2, ensure_ascii=False), encoding='utf-8')
-    np.savez_compressed(saida / 'dados.npz', reduzidos=reduzidos, posicao=y,
-                        **{g: i for g, i in idx.items()})
+    return reduzidos, y, idx, auditoria
+
+
+def ajustar_posicao(x, y, idx, args):
     rng = np.random.default_rng(args.semente)
-    rede = RedeLinha(args.semente)
+    rede = RedeLinha(args.semente, batchnorm=args.batchnorm)
     opt = Adam(rede, lr=args.lr)
     melhor, melhor_mse, melhor_passo = None, float('inf'), None
     historico = []
-    inicio = time.monotonic()
-    print('Divisão:', auditoria['contagens'], '| excluídos:', len(excluidos), flush=True)
     for passo in range(1, args.passos + 1):
         lote = rng.choice(idx['treino'], size=min(args.lote, len(idx['treino'])), replace=False)
         entrada, alvo = aumentar(x[lote], y[lote], rng)
@@ -95,6 +88,24 @@ def executar(args):
             if mv['mse'] < melhor_mse:
                 melhor, melhor_mse, melhor_passo = rede.copiar(), mv['mse'], passo
             print(f'passo {passo}: MAE treino={mt["mae"]:.4f}, validação={mv["mae"]:.4f}', flush=True)
+    return melhor, melhor_passo, historico
+
+
+def executar(args):
+    if args.saida.resolve().exists():
+        raise ValueError('A pasta de saída já existe; escolha uma nova execução')
+    reduzidos, y, idx, auditoria = preparar_dados(args.dataset, args.revisoes)
+    registros = auditoria['incluidos']
+    x = normalizar(reduzidos)
+    saida = args.saida.resolve()
+    saida.mkdir(parents=True, exist_ok=False)
+    (saida / 'previsoes').mkdir()
+    (saida / 'dataset.json').write_text(json.dumps(auditoria, indent=2, ensure_ascii=False), encoding='utf-8')
+    np.savez_compressed(saida / 'dados.npz', reduzidos=reduzidos, posicao=y,
+                        **{g: i for g, i in idx.items()})
+    inicio = time.monotonic()
+    print('Divisão:', auditoria['contagens'], '| excluídos:', len(auditoria['excluidos']), flush=True)
+    melhor, melhor_passo, historico = ajustar_posicao(x, y, idx, args)
     melhor.salvar(saida / 'pesos_posicao.npz')
     # Recarrega o checkpoint para avaliar o mesmo arquivo que foi persistido.
     modelo = RedeLinha.carregar(saida / 'pesos_posicao.npz')
@@ -125,6 +136,7 @@ def executar(args):
     escrever_csv(saida / 'historico.csv', historico)
     escrever_csv(saida / 'predicoes.csv', linhas)
     manifesto = {'tarefa': 'localizacao_horizontal_offline', 'preprocessamento': PREPROCESSAMENTO,
+                 'batchnorm': args.batchnorm,
                  'y_relativo': Y_RELATIVO, 'entrada': [1, 40, 80],
                  'alvo': '2*x/(largura_original-1)-1, positivo para direita; sem ganho de controle',
                  'visibilidade_treinada': False, 'lambda_vis': 0., 'uso_no_robo_aprovado': False,
@@ -150,7 +162,7 @@ def executar(args):
     print('Artefatos:', saida, flush=True)
 
 
-def desenhar_previsao(imagem, registro, previsto, destino):
+def sobrepor_previsao(imagem, registro, previsto):
     h, w = imagem.shape[:2]
     pequena = cv2.resize(imagem, (360, round(360 * h / w)), interpolation=cv2.INTER_AREA)
     sh, sw = pequena.shape[:2]
@@ -167,15 +179,21 @@ def desenhar_previsao(imagem, registro, previsto, destino):
     cv2.putText(pequena, registro['grupo'], (5, 18), cv2.FONT_HERSHEY_SIMPLEX, .5, (0, 0, 255), 1)
     cv2.putText(pequena, f'real={registro["posicao"]:+.2f} CNN={previsto:+.2f}',
                 (5, 38), cv2.FONT_HERSHEY_SIMPLEX, .45, (0, 0, 255), 1)
-    if not cv2.imwrite(str(destino), pequena):
+    return pequena
+
+
+def desenhar_previsao(imagem, registro, previsto, destino):
+    if not cv2.imwrite(str(destino), sobrepor_previsao(imagem, registro, previsto)):
         raise OSError(f'Falha ao salvar {destino}')
 
 
 def relatorio(manifesto, auditoria):
-    texto = ['# Primeiro experimento offline de localização\n',
+    arquitetura = ('RedeLinha com BatchNorm nas três convoluções' if manifesto['batchnorm']
+                   else 'RedeLinha original')
+    texto = ['# Experimento offline de localização\n',
              f"{auditoria['revisoes_unicas']} imagens revisadas; {len(auditoria['incluidos'])} usadas; "
              f"{len(auditoria['excluidos'])} excluídas. Divisão: {auditoria['contagens']}.\n",
-             'RedeLinha existente, sem mudar sua arquitetura. Cabeça 0 aprende posição em y=75%, '
+             f'{arquitetura}. Cabeça 0 aprende posição em y=75%, '
              'não comando de motor. Cabeça de visibilidade não supervisionada (lambda=0); ignorar sua saída.\n',
              'Recorte 2:1 na largura inteira centrado em y=75%, cinza 40×80, normalização compartilhada '
              'com aprendizado/dados.py. Interpolação somente dentro dos pontos humanos, sem extrapolação. '
@@ -200,19 +218,28 @@ def relatorio(manifesto, auditoria):
     return ''.join(texto)
 
 
-def main():
-    ap = argparse.ArgumentParser(description=__doc__)
+def argumentos_treino(ap):
     ap.add_argument('--dataset', type=Path, default=RAIZ / 'dataset_pista')
     ap.add_argument('--revisoes', type=Path, default=RAIZ / 'dataset_pista/rotulos/revisoes.jsonl')
-    ap.add_argument('--saida', type=Path, default=RAIZ / 'dataset_pista/resultados/treino_posicao_01')
     ap.add_argument('--passos', type=int, default=300)
     ap.add_argument('--lote', type=int, default=8)
     ap.add_argument('--lr', type=float, default=0.001)
     ap.add_argument('--avaliar-cada', type=int, default=10)
-    ap.add_argument('--semente', type=int, default=7)
-    a = ap.parse_args()
-    if min(a.passos, a.lote, a.avaliar_cada) < 1 or not np.isfinite(a.lr) or a.lr <= 0:
+
+
+def validar_treino(ap, args):
+    if min(args.passos, args.lote, args.avaliar_cada) < 1 or not np.isfinite(args.lr) or args.lr <= 0:
         ap.error('passos/lote/avaliar-cada/lr devem ser positivos e finitos')
+
+
+def main():
+    ap = argparse.ArgumentParser(description=__doc__)
+    argumentos_treino(ap)
+    ap.add_argument('--saida', type=Path, default=RAIZ / 'dataset_pista/resultados/treino_posicao_01')
+    ap.add_argument('--semente', type=int, default=7)
+    ap.add_argument('--batchnorm', action='store_true', help='normaliza as três convoluções')
+    a = ap.parse_args()
+    validar_treino(ap, a)
     executar(a)
 
 

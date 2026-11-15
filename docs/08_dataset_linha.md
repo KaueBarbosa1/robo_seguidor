@@ -288,3 +288,42 @@ contém a curva numérica de treino/validação. Pesos, relatório e métricas p
 estão na pasta do experimento. Não houve teste físico, ativação de autonomia ou
 validação de ausência da linha. Antes de integrar ao robô, são necessários mais
 dados e testes independentes com a câmera instalada.
+
+## Comparação offline com BatchNorm
+
+Com o carrinho parado, execute no ambiente Python do projeto. Os gráficos
+e painéis usam `matplotlib`.
+
+```bash
+.venv/bin/python -m pip install matplotlib
+OPENBLAS_NUM_THREADS=1 .venv/bin/python tools/comparar_batchnorm.py --saida dataset_pista/resultados/comparacao_batchnorm
+```
+
+A comparação usa o snapshot do segundo treino e, por padrão, as sementes
+7, 17 e 27. Para cada semente, treina as duas variantes do zero com 300 passos,
+lotes de oito e os mesmos aumentos de dados. O menor MSE de validação escolhe
+o checkpoint de cada execução. Os vídeos de teste ficam fora desta análise.
+
+Com 58 imagens de treino e dez de validação, a comparação produziu os
+seguintes MAEs médios entre as três sementes, em porcentagem da largura:
+
+| Variante | Treino | Validação | Diferença validação − treino |
+|---|---:|---:|---:|
+| Sem BatchNorm | 1,65% | 6,73% | 5,08 p.p. |
+| Com BatchNorm | 2,16% | 7,01% | 4,85 p.p. |
+
+A diferença entre treino e validação caiu 0,23 p.p. e o MAE de validação
+subiu 0,28 p.p. em média. A CNN original teve menor erro em duas das três
+sementes. A variante fica disponível para experimentos. A generalização
+continua pendente de avaliação com gravações novas da câmera montada.
+
+- `RELATORIO.md` contém o MAE em porcentagem da largura e a diferença entre
+  treino e validação. `comparacao.json` contém também o erro por vídeo.
+- `curvas.png` mostra a média e o desvio-padrão entre sementes em cada passo.
+- `menor_erro.png` e `maior_erro.png` mostram as mesmas imagens para as duas
+  redes, escolhidas pelo erro médio do par na primeira semente. Cada bloco
+  usa sua própria escala de intensidade. Os canais são escolhidos pela
+  ativação média da imagem, e sua intensidade descreve a resposta do filtro.
+- As pastas por semente guardam os checkpoints, as curvas em CSV e cada
+  previsão de validação. Para treinar só a variante com normalização,
+  use `tools/treinar_fotos_linha.py --batchnorm --saida <pasta-nova>`.

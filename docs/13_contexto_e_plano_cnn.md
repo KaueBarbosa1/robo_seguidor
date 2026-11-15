@@ -91,6 +91,27 @@ A divisão já ocorre por vídeo, mas os conjuntos atuais são exploratórios e
 do mesmo ambiente. A sugestão de `visao/sugestao.py` é OpenCV para revisão
 humana; não é CNN nem gera visibilidade supervisionada automaticamente.
 
+### Experimento offline com BatchNorm
+
+A `RedeLinha` ganhou uma variante opcional com `Convolução → BatchNorm → ReLU`
+nos três blocos. O treino calcula médias e variâncias por canal. A inferência
+usa as estimativas móveis persistidas no checkpoint, inclusive ao processar
+um único quadro. O formato `rede_linha_batchnorm_v1` identifica esses pesos.
+
+`tools/comparar_batchnorm.py` compara a variante e a CNN original para o
+mesmo alvo em y=75%. Cada par usa os mesmos dados, inicialização, sequência de
+lotes e critério de seleção por validação. O experimento é offline e mede
+erro de posição e diferença entre treino e validação. Ainda é preciso avaliar
+a generalização em gravações novas da ESP32-CAM montada.
+
+O diagnóstico visual mostra a imagem original, a entrada normalizada, a
+previsão de cada variante sobre a anotação e três canais após a ReLU de cada
+bloco. Esses mapas exibem ativações intermediárias. Para acompanhar decisões
+do carrinho, a integração futura deve registrar a transição de estado, a
+validade e a idade da previsão, a leitura dos sensores e o motivo do comando.
+
+Consulte [a reprodução e os artefatos do experimento](08_dataset_linha.md#comparação-offline-com-batchnorm).
+
 ## Quatro mudanças propostas na CNN — todas pendentes
 
 ### 1. Adaptar a entrada à ESP32-CAM
