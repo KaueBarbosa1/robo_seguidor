@@ -13,6 +13,10 @@ históricas ou considerar alguma capacidade validada no carrinho físico.
 Teste independente da ESP32-CAM OV2640: [guia de bancada](docs/12_esp32_cam_bancada.md).
 Firmware e receptor separados; validação física e decisão sobre CNN ficam em etapas distintas.
 
+Controle pelo aplicativo Bluetooth: execute `.venv/bin/python main.py` e
+conecte o app ao serviço serial da Raspberry, conforme o [guia Bluetooth](docs/07_controle_bluetooth.md).
+As melhorias do [sonar em movimento](docs/14_sonar_em_movimento.md) permanecem ativas no controle manual.
+
 ## Arquitetura
 
 ```
@@ -154,4 +158,4 @@ calibração do ruído de fundo).
 
 ## LEDs e buzzer ativo
 
-No modo atual sem câmera, LEDs verde/amarelo/vermelho em A0/A1/A2 e buzzer ativo em D10 indicam a proteção frontal. Buzina manual pelo Bluetooth: `buzina` e `buzina off` (com Enter). Ligação, comportamento e teste em [docs/10_sinalizacao.md](docs/10_sinalizacao.md).
+No modo atual sem câmera, LEDs verde/vermelho em A0/A3 indicam liberacao frontal ou bloqueio/falha; o antigo amarelo em A1 permanece desligado. O buzzer ativo fica em D10. Buzina manual pelo Bluetooth: `buzina` e `buzina off` (com Enter). Ligação, comportamento e teste em [docs/10_sinalizacao.md](docs/10_sinalizacao.md).

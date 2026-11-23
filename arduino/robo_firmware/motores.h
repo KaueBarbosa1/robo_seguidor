@@ -5,6 +5,7 @@
 void motores_velocidade(int16_t esq, int16_t dir);
 void motores_regular_velocidade();
 bool motores_falha_encoder();
+void motores_diagnostico(int16_t &esq, int16_t &dir, uint8_t &flags);
 void motores_iniciar();
 void motores_set(int16_t esq, int16_t dir);   // -255..255 (negativo = ré)
 void motores_parar();

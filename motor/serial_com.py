@@ -35,6 +35,10 @@ class Sensores:
     avanco_bloqueado: bool = True
     falha_sensor: bool = True
     obstaculo_confirmado: bool = False
+    sonar_nao_calibrado: bool = False
+    sonar_experimental: bool = False
+    lateral_esq_bloqueada: bool = False
+    lateral_dir_bloqueada: bool = False
 
 
 @dataclass
@@ -47,6 +51,27 @@ class StatusServo:
     timestamp: float
     inspecao: bool = False
     concluida: bool = False
+    sonar: bool = False
+    sonar_movimento: bool = False
+
+
+@dataclass(frozen=True)
+class EstadoMotores:
+    pwm_esq: int
+    pwm_dir: int
+    falha_encoder: bool
+    pi_ativo: bool
+    reforco_esq: bool
+    reforco_dir: bool
+    timestamp: float
+
+
+@dataclass(frozen=True)
+class MedidaSonar:
+    angulo_nominal: int              # comando no disparo do ultrassom, nao posicao fisica
+    distancia_cm: int | None
+    sequencia: int
+    timestamp: float
 
 
 @dataclass(frozen=True)
@@ -74,7 +99,11 @@ class ArduinoSerial:
         self._lock_sens = threading.Lock()
         self._sens: Sensores | None = None
         self._servo: StatusServo | None = None
+        self._motores: EstadoMotores | None = None
+        self._guarda_sonar: tuple[int, float] | None = None
+        self._sonar_manual = False
         self._inspecao: dict[int, AmostraDirecional] = {}
+        self._sonar: deque[MedidaSonar] = deque(maxlen=256)
         self._dists: deque = deque(maxlen=10)      # últimas leituras de distância (None = sem eco)
         self._enc_ult: tuple[int, int] | None = None
         self._ticks = [0, 0]
@@ -123,9 +152,28 @@ class ArduinoSerial:
                 # Repetir espaçado garante que ao menos uma cópia chegue num intervalo livre.
                 time.sleep(0.004)
 
+    def usar_sonar_manual(self, ativo: bool) -> None:
+        ativo = bool(ativo and cfg.SONAR_MOVIMENTO_ATIVO)
+        if self._sonar_manual and not ativo:
+            self.parar()
+            self.configurar_servo(False)
+        self._sonar_manual = ativo
+
     def motores(self, esq: int, dir_: int) -> None:
         esq = max(-cfg.VEL_MAX, min(cfg.VEL_MAX, int(esq)))
         dir_ = max(-cfg.VEL_MAX, min(cfg.VEL_MAX, int(dir_)))
+        if self._sonar_manual and (esq or dir_):
+            if not cfg.CONTROLE_VELOCIDADE_ATIVO or cfg.FIRMWARE_COM_CAMERA:
+                raise RuntimeError('Sonar em movimento exige PI com encoders e firmware sem OV7670')
+            self.iniciar_sonar_movimento()
+            status = self.status_servo()
+            agora = time.monotonic()
+            if (status is None or not status.ativo or not status.sonar_movimento or
+                    not 0 <= agora - status.timestamp <= .5):
+                # Firmware antigo pode ignorar V4 e aceitar R normal sem o teto.
+                # Aguardar confirmacao explicita do modo antes de solicitar movimento.
+                self.parar()
+                return
         if cfg.CONTROLE_VELOCIDADE_ATIVO:
             if cfg.FIRMWARE_COM_CAMERA:
                 raise RuntimeError("Encoders indisponiveis no firmware com camera")
@@ -138,6 +186,15 @@ class ArduinoSerial:
         if cfg.FIRMWARE_COM_CAMERA:
             raise RuntimeError("Controle de velocidade exige firmware sem camera")
         self._escrever(P.comando_velocidade(esq, dir_))
+
+    def pwm(self, esq: int, dir_: int) -> None:
+        """PWM explicito para bancada, independente da conversao PI de motores()."""
+        status = self.status_servo()
+        if self._sonar_manual or (status is not None and status.sonar_movimento):
+            raise RuntimeError('PWM direto indisponivel no sonar em movimento')
+        if any(not isinstance(v, int) or isinstance(v, bool) or abs(v) > 254 for v in (esq, dir_)):
+            raise ValueError('PWM deve ser inteiro entre -254 e 254')
+        self._escrever(P.comando_motores(esq, dir_))
 
     def parar(self, repetir: int = 1) -> None:
         self._escrever(P.comando_parar(), repetir)
@@ -153,6 +210,24 @@ class ArduinoSerial:
 
     def inspecionar_obstaculo(self) -> None:
         self._escrever(P.comando_inspecao())
+
+    def iniciar_sonar(self) -> None:
+        self._escrever(P.comando_sonar())
+
+    def iniciar_sonar_movimento(self) -> None:
+        self._escrever(P.comando_sonar_movimento())
+
+    def consumir_leituras_sonar(self) -> list[MedidaSonar]:
+        """Retira as medidas recebidas; timestamp e de recepcao na Pi."""
+        with self._lock_sens:
+            medidas = list(self._sonar)
+            self._sonar.clear()
+            return medidas
+
+    def _ao_sonar(self, angulo: int, cm: int, sequencia: int) -> None:
+        with self._lock_sens:
+            self._sonar.append(MedidaSonar(angulo, cm if 2 <= cm <= 400 else None,
+                                           sequencia, time.monotonic()))
 
     def leituras_inspecao(self) -> list[AmostraDirecional]:
         with self._lock_sens:
@@ -171,13 +246,35 @@ class ArduinoSerial:
         with self._lock_sens:
             return self._servo
 
+    def estado_motores(self) -> EstadoMotores | None:
+        with self._lock_sens:
+            return self._motores
+
+    def guarda_sonar(self) -> tuple[int, float] | None:
+        with self._lock_sens:
+            return self._guarda_sonar
+
+    def _ao_guarda_sonar(self, motivos: int) -> None:
+        with self._lock_sens:
+            self._guarda_sonar = (motivos, time.monotonic())
+
+    def _ao_motores(self, esq: int, dir_: int, flags: int) -> None:
+        with self._lock_sens:
+            self._motores = EstadoMotores(-esq if flags & P.MOTORES_FLAG_NEG_ESQ else esq,
+                                          -dir_ if flags & P.MOTORES_FLAG_NEG_DIR else dir_,
+                                          bool(flags & P.MOTORES_FLAG_FALHA_ENCODER),
+                                          bool(flags & P.MOTORES_FLAG_PI),
+                                          bool(flags & P.MOTORES_FLAG_REFORCO_ESQ),
+                                          bool(flags & P.MOTORES_FLAG_REFORCO_DIR), time.monotonic())
+
     def _ao_servo(self, angulo: int, centro_us: int, flags: int) -> None:
         with self._lock_sens:
             self._servo = StatusServo(angulo, centro_us, bool(flags & P.SERVO_FLAG_VARREDURA),
                                       bool(flags & P.SERVO_FLAG_CENTRO_PRONTO),
                                       bool(flags & P.SERVO_FLAG_ATIVO), time.monotonic(),
                                       bool(flags & P.SERVO_FLAG_INSPECAO),
-                                      bool(flags & P.SERVO_FLAG_CONCLUIDA))
+                                      bool(flags & P.SERVO_FLAG_CONCLUIDA), bool(flags & P.SERVO_FLAG_SONAR),
+                                      bool(flags & P.SERVO_FLAG_SONAR_MOVIMENTO))
 
     # ------------------------------------------------------------ imagem
     @property
@@ -227,12 +324,17 @@ class ArduinoSerial:
             self._sens = Sensores(d, self._ticks[0], self._ticks[1], time.monotonic(),
                                   bool(flags & P.SENSOR_FLAG_BLOQUEADO),
                                   bool(flags & P.SENSOR_FLAG_FALHA),
-                                  bool(flags & P.SENSOR_FLAG_OBSTACULO))
+                                  bool(flags & P.SENSOR_FLAG_OBSTACULO),
+                                  bool(flags & P.SENSOR_FLAG_SONAR_NAO_CALIBRADO),
+                                  bool(flags & P.SENSOR_FLAG_SONAR_EXPERIMENTAL),
+                                  bool(flags & P.SENSOR_FLAG_LATERAL_ESQ),
+                                  bool(flags & P.SENSOR_FLAG_LATERAL_DIR))
 
     # ------------------------------------------------------------ leitura
     def _rx_loop(self) -> None:
         dec = DecodificadorQuadros(self._ao_quadro, self._ao_status, self.estatisticas,
-                                  self._ao_sensores, self._ao_servo, self._ao_inspecao)
+                                  self._ao_sensores, self._ao_servo, self._ao_inspecao, self._ao_sonar,
+                                  self._ao_motores, self._ao_guarda_sonar)
         while not self._parar_rx.is_set():
             ser = self._ser
             if ser is None:
@@ -273,12 +375,16 @@ class DecodificadorQuadros:
     de uma linha significa byte perdido: a linha é descartada e a leitura ressincroniza ali.
     """
 
-    def __init__(self, ao_quadro, ao_status=None, estat=None, ao_sensores=None, ao_servo=None, ao_inspecao=None):
+    def __init__(self, ao_quadro, ao_status=None, estat=None, ao_sensores=None, ao_servo=None, ao_inspecao=None,
+                 ao_sonar=None, ao_motores=None, ao_guarda_sonar=None):
         self._ao_quadro = ao_quadro
         self._ao_status = ao_status or (lambda c: None)
         self._ao_sensores = ao_sensores or (lambda d, e, r, f=0: None)
         self._ao_servo = ao_servo or (lambda a, c, f: None)
         self._ao_inspecao = ao_inspecao or (lambda a, d, r: None)
+        self._ao_sonar = ao_sonar or (lambda a, d, s: None)
+        self._ao_motores = ao_motores or (lambda e, d, f: None)
+        self._ao_guarda_sonar = ao_guarda_sonar or (lambda f: None)
         self._est = estat if estat is not None else {
             "quadros": 0, "linhas_ok": 0, "linhas_descartadas": 0, "quadros_incompletos": 0}
         self._buf = bytearray()
@@ -316,6 +422,25 @@ class DecodificadorQuadros:
                     break
                 self._ao_status(buf[j + 2])
                 i = j + 3
+            elif idx == P.IDX_GUARDA_SONAR:
+                if j + 3 > n:
+                    i = j
+                    break
+                if buf[j + 2] > 0x7F:
+                    i = j + 1
+                    continue
+                self._ao_guarda_sonar(buf[j + 2])
+                i = j + 3
+            elif idx == P.IDX_SONAR:
+                if j + 2 + P.BYTES_SONAR > n:
+                    i = j
+                    break
+                c = buf[j + 2:j + 2 + P.BYTES_SONAR]
+                if any(b > 0x7F for b in c) or (c[0] | (c[1] << 7)) > 180:
+                    i = j + 1
+                    continue
+                self._ao_sonar(c[0] | (c[1] << 7), c[2] | (c[3] << 7), c[4] | (c[5] << 7))
+                i = j + 2 + P.BYTES_SONAR
             elif idx == P.IDX_INSPECAO:
                 if j + 2 + P.BYTES_INSPECAO > n:
                     i = j
@@ -336,6 +461,16 @@ class DecodificadorQuadros:
                     continue
                 self._ao_servo(c[0] | (c[1] << 7), c[2] | (c[3] << 7), c[4])
                 i = j + 2 + P.BYTES_SERVO
+            elif idx == P.IDX_MOTORES:
+                if j + 2 + P.BYTES_MOTORES > n:
+                    i = j
+                    break
+                c = buf[j + 2:j + 2 + P.BYTES_MOTORES]
+                if any(b > 0x7F for b in c) or c[1] > 1 or c[3] > 1:
+                    i = j + 1
+                    continue
+                self._ao_motores(c[0] | (c[1] << 7), c[2] | (c[3] << 7), c[4])
+                i = j + 2 + P.BYTES_MOTORES
             elif idx == P.IDX_SENSORES:
                 if j + 2 + P.BYTES_SENSORES > n:
                     i = j

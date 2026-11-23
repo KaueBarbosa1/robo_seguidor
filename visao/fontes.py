@@ -2,6 +2,7 @@
 
   arduino  : OV7670 ligada ao Arduino; a imagem chega pela serial (ArduinoSerial já tem id_atual/proximo_quadro) <- a atual.
   csi      : câmera no conector CSI da Pi (Raspberry Pi Camera Rev 1.3), via picamera2. Código mantido, NÃO é a câmera do projeto.
+  esp32    : JPEG HTTP contínuo, somente o quadro recente.
   nenhuma  : sem câmera.
   simulada : linha sintética que serpenteia, para testar visão/controle sem câmera.
 """
@@ -61,6 +62,11 @@ def criar_fonte(nome: str, motor=None):
         if motor is None or not hasattr(motor, "proximo_quadro"):
             raise ValueError("FONTE_IMAGEM='arduino' precisa do ArduinoSerial (sem --sem-arduino)")
         return motor
+    if nome == "esp32":
+        import config as cfg
+        from visao.esp32_cam import CameraESP32
+        return CameraESP32(cfg.ESP32_URL, cfg.ESP32_TIMEOUT_S,
+                           cfg.ESP32_IDADE_MAX_S, cfg.ESP32_RECONEXAO_S)
     if nome == "csi":
         from visao.camera_csi import CameraCSI
         return CameraCSI()
@@ -68,4 +74,4 @@ def criar_fonte(nome: str, motor=None):
         return FonteNenhuma()
     if nome == "simulada":
         return FonteSimulada()
-    raise ValueError(f"FONTE_IMAGEM inválida: {nome!r} (use 'arduino', 'csi', 'nenhuma' ou 'simulada')")
+    raise ValueError(f"FONTE_IMAGEM inválida: {nome!r} (use 'arduino', 'csi', 'nenhuma', 'simulada' ou 'esp32')")

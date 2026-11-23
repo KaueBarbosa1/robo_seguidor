@@ -13,6 +13,7 @@ import threading
 import time
 from types import SimpleNamespace
 from pathlib import Path
+from unittest.mock import patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 import config as cfg  # noqa: E402
@@ -90,10 +91,10 @@ def test_lixo_nao_trava_os_proximos_comandos():
 
 
 def test_pwm_por_direcao_e_limite():
-    assert calcular_pwm("frente", 10) == (cfg.REMOTO_VEL_MAX, cfg.REMOTO_VEL_MAX)
+    assert calcular_pwm("frente", 10) == (min(cfg.VEL_MAX, cfg.REMOTO_VEL_MAX),) * 2
     assert calcular_pwm("frente", 0) == (0, 0)
-    e, d = calcular_pwm("esq", 5); assert e < 0 < d                      # esquerda: roda esquerda para trás
-    e, d = calcular_pwm("dir", 5); assert d < 0 < e
+    e, d = calcular_pwm("esq", 5); assert 0 < e < d                      # curva: roda interna mais lenta
+    e, d = calcular_pwm("dir", 5); assert 0 < d < e
     e, d = calcular_pwm("frente_esq", 5); assert 0 < e < d               # curva à esquerda: roda esquerda mais lenta
     e, d = calcular_pwm("tras", 5); assert e < 0 and d < 0
     assert max(abs(x) for x in calcular_pwm("frente", 99)) <= min(cfg.VEL_MAX, cfg.REMOTO_VEL_MAX)
@@ -121,8 +122,8 @@ def test_mistura_analogica():
     assert calcular_pwm_analogico(0, 0) == (0, 0) and calcular_pwm_analogico(0.1, 0.1) == (0, 0)   # zona morta
     assert calcular_pwm_analogico(0, 1) == (cfg.REMOTO_VEL_MAX, cfg.REMOTO_VEL_MAX)                # tudo para cima: frente
     assert calcular_pwm_analogico(0, -1) == (-cfg.REMOTO_VEL_MAX, -cfg.REMOTO_VEL_MAX)             # tudo para baixo: ré
-    e, d = calcular_pwm_analogico(1, 0); assert e > 0 > d                                           # direita: gira à direita no lugar
-    e, d = calcular_pwm_analogico(-1, 0); assert d > 0 > e
+    e, d = calcular_pwm_analogico(1, 0); assert e > d > 0                                           # lateral: curva para frente
+    e, d = calcular_pwm_analogico(-1, 0); assert d > e > 0
     e, d = calcular_pwm_analogico(0.4, 0.8); assert e > d > 0                                       # frente-direita: roda esquerda mais rápida
     e, d = calcular_pwm_analogico(-0.4, 0.8); assert d > e > 0
     e, d = calcular_pwm_analogico(0, 0.5); assert 0 < e == d < cfg.REMOTO_VEL_MAX                   # mais perto do centro: mais devagar
@@ -153,17 +154,54 @@ def test_protocolo_robokit_eletrogate():
 
 def test_pwm_eletrogate_todas_direcoes_e_intensidade():
     teto = min(cfg.VEL_MAX, cfg.REMOTO_VEL_MAX)
-    escala = teto / 255.0
-    assert calcular_pwm_eletrogate(192, 0, 0, 0) == (round(192 * escala),) * 2
-    assert calcular_pwm_eletrogate(0, 192, 0, 0) == (-round(192 * escala),) * 2
+    # O app usa o mesmo joystick com zona morta, nao uma escala linear de PWM.
+    zona = cfg.REMOTO_BLUEDOT_ZONA_MORTA
+    intensidade = (192 / 255.0 - zona) / (1 - zona)
+    esperado = round(teto * intensidade)
+    assert calcular_pwm_eletrogate(192, 0, 0, 0) == (esperado,) * 2
+    assert calcular_pwm_eletrogate(0, 192, 0, 0) == (-esperado,) * 2
     esq, dir_ = calcular_pwm_eletrogate(0, 0, 192, 0)
-    assert esq > 0 > dir_
+    assert esq > dir_ > 0
     esq, dir_ = calcular_pwm_eletrogate(0, 0, 0, 192)
-    assert dir_ > 0 > esq
+    assert dir_ > esq > 0
     e1, d1 = calcular_pwm_eletrogate(64, 0, 0, 0)
     e2, d2 = calcular_pwm_eletrogate(192, 0, 0, 0)
     assert 0 < e1 == d1 < e2 == d2 <= teto
     assert calcular_pwm_eletrogate(0, 0, 0, 0) == (0, 0)
+
+
+def test_joystick_preserva_intensidade_radial_e_teto_na_curva_lateral():
+    # Valores independentes do misturador: raio1 ->200; raio0.575 ->100.
+    with patch.object(cfg, "REMOTO_VEL_MAX", 200), patch.object(cfg, "VEL_MAX", 255), \
+         patch.object(cfg, "REMOTO_CURVA_FATOR", .4), patch.object(cfg, "REMOTO_BLUEDOT_ZONA_MORTA", .15):
+        assert calcular_pwm_analogico(1, 0) == (200, 80)
+        assert calcular_pwm_analogico(-1, 0) == (80, 200)
+        assert calcular_pwm_analogico(.575, 0) == (100, 40)
+        assert calcular_pwm_analogico(0, .575) == (100, 100)
+        assert calcular_pwm_analogico(0, .15) == (0, 0)
+        assert calcular_pwm_eletrogate(0, 0, 255, 0) == (200, 80)
+        assert calcular_pwm_eletrogate(0, 0, 0, 255) == (80, 200)
+        assert calcular_pwm_eletrogate(192, 0, 0, 0) == (142, 142)
+        assert calcular_pwm_analogico(1, 1) == (200, 140)
+        assert calcular_pwm_analogico(-1, -1) == (-140, -200)
+    with patch.object(cfg, "VEL_MAX", 120), patch.object(cfg, "REMOTO_VEL_MAX", 200):
+        e, d = calcular_pwm_analogico(1, 0)
+        assert e == 120 and 0 < d < e
+
+
+def test_eletrogate_e_analogico_respeitam_teto_em_todos_quadrantes():
+    teto = min(cfg.VEL_MAX, cfg.REMOTO_VEL_MAX)
+    for x in range(-10, 11):
+        for y in range(-10, 11):
+            saida = calcular_pwm_analogico(x / 10, y / 10)
+            assert max(abs(v) for v in saida) <= teto
+    for f in (0, 64, 192, 255):
+        for t in (0, 64, 192, 255):
+            for d in (0, 64, 192, 255):
+                for e in (0, 64, 192, 255):
+                    saida = calcular_pwm_eletrogate(f, t, d, e)
+                    assert max(abs(v) for v in saida) <= teto
+    assert calcular_pwm_eletrogate(192, 192, 64, 64) == (0, 0)
 
 
 # ----------------------------------------------------------------------------- controle MANUAL

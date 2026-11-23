@@ -49,14 +49,20 @@ def preparar_imagem(imagem, modo='normalizado'):
     return pequena, tratar_cinza(cinza, modo)
 
 
-def _segmentos(mascara):
+def _segmentos(mascara, *, area_min=12, fracao_area_max=.08,
+               fracao_altura_max=.45, alongamento_max=100, max_candidatos=None):
     h, w = mascara.shape
     n, labels, stats, centros = cv2.connectedComponentsWithStats(mascara, connectivity=8)
     candidatos = []
-    for i in range(1, n):
+    indices = [i for i in range(1, n)
+               if area_min <= stats[i, 4] <= h * w * fracao_area_max
+               and stats[i, 2] <= w * .45 and stats[i, 3] <= h * fracao_altura_max]
+    # No uso contínuo, excesso de componentes causa abstenção antes da PCA.
+    # Padrões do uso offline preservados quando não há limite explícito.
+    if max_candidatos is not None and len(indices) > max_candidatos:
+        return []
+    for i in indices:
         x, y, bw, bh, area = stats[i]
-        if area < 12 or area > h * w * .08 or bw > w * .45 or bh > h * .45:
-            continue
         ys, xs = np.nonzero(labels[y:y + bh, x:x + bw] == i)
         xy = np.column_stack((xs, ys)).astype(np.float32)
         _, (lado_a, lado_b), _ = cv2.minAreaRect(xy)
@@ -70,7 +76,7 @@ def _segmentos(mascara):
         # Rejuntes finos são removidos pela abertura; traços quase horizontais
         # são concorrentes frequentes. Nenhuma dessas regras prova a identidade.
         razao = valores[0, 0] / max(valores[1, 0], .1)
-        if vy < .45 or not 1.5 <= razao <= 100:
+        if vy < .45 or not 1.5 <= razao <= alongamento_max:
             continue
         media = xy.mean(axis=0)
         eixo = np.array([vx, vy])

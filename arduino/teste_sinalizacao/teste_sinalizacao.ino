@@ -1,10 +1,11 @@
 // Teste isolado para Arduino UNO: montagem SEM camera.
-// LEDs: A0/A1/A3 via resistores de 330 ohms; buzzer ATIVO: D10 via transistor.
-const byte LEDS[] = {A0, A1, A3};
+// LEDs: verde A0 e vermelho A3; antigo amarelo A1 mantido desligado.
+const byte LEDS[] = {A0, A3};
+const byte N_LEDS = sizeof(LEDS) / sizeof(LEDS[0]);
 const byte BUZZER = 10;
 
 void apagar() {
-  for (byte i = 0; i < 3; i++) digitalWrite(LEDS[i], LOW);
+  for (byte i = 0; i < N_LEDS; i++) digitalWrite(LEDS[i], LOW);
   digitalWrite(BUZZER, LOW);
 }
 
@@ -15,10 +16,12 @@ void setup() {
     digitalWrite(motores[i], LOW);
     pinMode(motores[i], OUTPUT);
   }
-  for (byte i = 0; i < 3; i++) {
+  for (byte i = 0; i < N_LEDS; i++) {
     digitalWrite(LEDS[i], LOW);
     pinMode(LEDS[i], OUTPUT);
   }
+  digitalWrite(A1, LOW);
+  pinMode(A1, OUTPUT);
   digitalWrite(BUZZER, LOW);
   pinMode(BUZZER, OUTPUT);
   Serial.begin(115200);
@@ -26,8 +29,8 @@ void setup() {
 }
 
 void loop() {
-  const char* nomes[] = {"LED verde", "LED amarelo", "LED vermelho"};
-  for (byte i = 0; i < 3; i++) {
+  const char* nomes[] = {"LED verde", "LED vermelho"};
+  for (byte i = 0; i < N_LEDS; i++) {
     Serial.println(nomes[i]);
     digitalWrite(LEDS[i], HIGH);
     delay(1000);
@@ -42,7 +45,7 @@ void loop() {
     delay(350);
   }
   Serial.println("Todos os LEDs com um bipe");
-  for (byte i = 0; i < 3; i++) digitalWrite(LEDS[i], HIGH);
+  for (byte i = 0; i < N_LEDS; i++) digitalWrite(LEDS[i], HIGH);
   digitalWrite(BUZZER, HIGH);
   delay(300);
   apagar();

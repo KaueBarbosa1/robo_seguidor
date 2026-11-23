@@ -10,6 +10,34 @@ A Pi registra no BlueZ um serviço de **porta serial Bluetooth (SPP/RFCOMM)**. O
 serial e manda comandos curtos. O programa principal (`python main.py`) sobe o servidor sozinho (`REMOTO_BT_ATIVO = True`) e pode subir no boot (seção 5).
 O comando do celular entra no controle pelo **modo MANUAL**; a voz continua valendo ("pare" de voz corta tudo na hora).
 
+O controle usa o aplicativo Bluetooth serial original. Nao depende de painel
+web, navegador ou compartilhamento de internet por Bluetooth. Para retomar
+apos remover a interface web, encerre qualquer processo antigo dela com
+Ctrl+C e execute `.venv/bin/python main.py`. As ferramentas independentes
+de camera/coleta continuam disponiveis em `tools/`.
+
+As melhorias do ultrassonico permanecem: sonar durante marcha/curvas,
+bloqueio da curva para lateral ocupada, memoria frontal limitada com retry,
+recuo curto por obstaculo frontal confirmado e PI de baixa velocidade.
+Parar pelo app cancela movimento e sonar. Veja o
+[guia do sonar](14_sonar_em_movimento.md) para limites e validacao pendente.
+O teto experimental permanece em 4 pulsos/s; nao foi elevado nesta remocao.
+
+A revisao posterior de sustentacao mantem a marcha MANUAL durante a
+varredura e antecipa a revisita frontal por deslocamento. Exige regravar Uno.
+Com `REMOTO_DIAGNOSTICO_MOVIMENTO=True`, a main mostra linhas `MANUAL`
+com pedido, frente, confirmacao do modo4 e PWM/falha de encoder lidos por F8.
+`aguardando_modo4` indica falta de confirmacao recente; `falha_encoder_no_arduino`
+indica flag recente de falha; `comando_expirado` indica prazo do aplicativo.
+Os contadores sao acumulados, nao velocidade. Para investigar uma parada,
+enviar essas linhas e os bytes Bluetooth RX correspondentes. O logger e
+somente leitura. LED amarelo permanece apagado; protecoes continuam ativas.
+
+Se foi criado o perfil NetworkManager `painel-celular` exclusivamente para a
+interface web, ele pode ser removido na Raspberry com
+`sudo nmcli connection delete painel-celular`. Isso remove o perfil PAN,
+preservando o pareamento e o servico Bluetooth serial do aplicativo.
+
 ## 1. Preparar a Pi (uma vez)
 ```bash
 sudo apt install -y bluez

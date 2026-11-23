@@ -20,3 +20,18 @@ __pycache__/
 Thumbs.db
 *~
 *.swp
+
+# Gravacoes antigas preservadas como dados locais (interface web removida)
+gravacoes_painel/
+
+# Resultados locais e artefatos de compilacao: nao publicar
+*.csv
+*.log
+resultados_esp32_wifi/
+*.o
+*.a
+*.elf
+*.hex
+*.bin
+*.pem
+*.key

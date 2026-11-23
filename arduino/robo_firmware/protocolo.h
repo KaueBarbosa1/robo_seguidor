@@ -11,6 +11,8 @@
 //             encoder esquerdo/direito = contadores de 14 bits que dão a volta (a Pi calcula a diferença)
 //             flags bit 0 = avanço bloqueado; bit 1 = sensor sem leitura válida / falha;
 //             bit 2 = obstaculo confirmado por leituras reais consecutivas (nao e bloqueio de boot).
+//             bit 3 = modo 4 com calibracao ausente/invalida.
+//             bit 4 = perfil experimental ativo (pode permitir movimento sem declarar calibracao).
 //   servo: 0xFF, 0xFB, angL, angH, centroL, centroH, flags (5 bytes de 7 bits)
 //          angulo nominal comandado, centro em us; nao mede posicao fisica.
 //          flags bit3=inspecao, bit4=concluida e novamente no centro estabilizado.
@@ -19,6 +21,12 @@
 //          posicao 0/1/2 = angulos nominais 45/90/135; cm=0x3FFF desconhecido.
 //          Um resultado por posicao: menor de tres ecos validos; qualquer falha invalida.
 //          Leituras direcionais nao atualizam distancia/frente/flags do pacote FC.
+//   sonar: 0xFF, 0xF9, angL, angH, cmL, cmH, seqL, seqH (seis bytes de 7 bits).
+//          Angulo comandado no disparo, cm=0x3FFF desconhecido, sequencia de 14 bits.
+//          Servo em movimento; nao mede angulo fisico nem garante um eco por grau.
+//          V modo 3 inicia/renova parado; status FB bit5 indica sonar ativo.
+//          V modo 4 prioriza frente e aceita renovacao durante movimento; FB bit6 indica modo 4.
+//          FC usa distancia frontal descontada por encoders nesse modo, nunca eco lateral.
 // Os bytes de pixel NUNCA valem 0xFF (o nível 15 é limitado a 14), então 0xFF só aparece como
 // marcador. Isso permite ao Pi ressincronizar a cada linha e descartar linhas corrompidas.
 //
@@ -39,17 +47,32 @@
 #define IDX_SENSORES 0xFC
 #define IDX_SERVO 0xFB // angulo L/H, centro_us L/H, flags (5 bytes de 7 bits)
 #define IDX_INSPECAO 0xFA // posicao 0/1/2=45/90/135, distancia L/H, rodada L/H (5 bytes)
+#define IDX_SONAR 0xF9 // angulo L/H, distancia L/H, sequencia L/H (6 bytes de 7 bits)
+#define IDX_MOTORES 0xF8 // magnitudes PWM E L/H, D L/H, flags (5 bytes de 7 bits)
+#define IDX_GUARDA_SONAR 0xF7 // um byte: motivos simultaneos da guarda frontal no modo4
+#define GUARDA_PERFIL 0x01
+#define GUARDA_SEM_FRENTE 0x02
+#define GUARDA_VENCIDA 0x04
+#define GUARDA_CONFIRMAR 0x08
+#define GUARDA_AVANCO 0x10
+#define GUARDA_DIVERGENCIA 0x20
+#define GUARDA_DISTANCIA 0x40
+// F8 flags: bits0/1 sinal negativo E/D; bit2 falha encoder; bit3 PI ativo;
+// bits4/5 fase de reforco pendente/ativa E/D. Diagnostico, nao comando ou calibracao.
 #define DIST_SEM_LEITURA 0x3FFF
 #define SERVO_FLAG_VARREDURA 0x01
 #define SERVO_FLAG_CENTRO_PRONTO 0x02
 #define SERVO_FLAG_ATIVO 0x04
 #define SERVO_FLAG_INSPECAO 0x08
 #define SERVO_FLAG_CONCLUIDA 0x10
+#define SERVO_FLAG_SONAR 0x20
+#define SERVO_FLAG_SONAR_MOVIMENTO 0x40 // modo 4, nao significa que foi liberado/calibrado
 
 #define CMD_START 0xAA
 #define CMD_MOTORES 'M'
 #define CMD_PARAR 'S'
-#define CMD_SERVO 'V' // a: 0=centro, 1=varrer, 2=inspecionar; b: ajuste do centro em 10 us
+// FC flags bits5/6: lateral esquerda/direita bloqueada; bit0 permanece frontal.
+#define CMD_SERVO 'V' // a: 0=centro, 1=varrer, 2=inspecionar, 3=sonar, 4=sonar em movimento
 #define CMD_BUZINA 'H'
 #define CMD_XOR 0x5A
 

@@ -2,6 +2,7 @@
 #include "config.h"
 #include "protocolo.h"
 #include "servo.h"
+#include "sonar_movimento.h"
 
 #if USAR_SENSORES   // com a câmera OV7670 os pinos do ultrassom e dos encoders são da câmera: este módulo fica desligado
 
@@ -10,12 +11,20 @@ static volatile uint16_t g_encEsq = 0, g_encDir = 0;
 static uint16_t g_dist = DIST_SEM_LEITURA;
 static uint8_t g_estado = 0;
 static uint32_t g_t0 = 0, g_tEco = 0, g_proxMs = 0;
+static uint32_t g_ultimoDisparoUs = 0;
 static uint32_t g_ultimaValidaMs = 0;
 static uint8_t g_perto = 0, g_longe = 0, g_invalidas = OBSTACULO_LEITURAS;
 static bool g_bloqueado = true, g_falha = true;
 
+void sensores_herdar_frente_sonar() {
+  if (!servo_frontal_pronto() || g_falha || g_dist == DIST_SEM_LEITURA ||
+      millis() - g_ultimaValidaMs > SENSOR_TIMEOUT_MS) return;
+  sonar_movimento_herdar_frente(g_dist, g_ultimaValidaMs, g_bloqueado,
+                              g_perto >= OBSTACULO_LEITURAS);
+}
+
 static void registrarLeitura(uint16_t cm, bool valida) {
-  if (servo_em_inspecao()) {
+  if (servo_em_inspecao() || servo_em_sonar()) {
     servo_registrar_leitura(cm, valida);
     return; // leituras direcionais nunca alimentam a protecao frontal
   }
@@ -61,15 +70,16 @@ void sensores_iniciar() {
 
 // Medição em 4 estados, sem pulseIn (que travaria o loop por até dezenas de ms e faria perder comandos).
 //   0: espera a hora da próxima medição e dispara o pulso de 10 us
-//   1: espera o eco subir (até 6 ms)     2: mede a duração do eco (até 14 ms ~ 2,4 m)     3: descansa
+//   1: espera o eco subir (até 6 ms)  2: mede eco ate a faixa configurada (4 m)  3: descansa
 void sensores_atualizar() {
   if (!servo_frontal_pronto()) {
-    // Aborta inclusive um eco iniciado antes de o sensor mudar de direcao.
+    // Fora do sonar, aborta eco iniciado antes de mudar de direcao.
+    // No sonar, mede durante o movimento com angulo registrado no disparo.
     // Leitura lateral nunca atualiza a distancia/validade frontal.
     if (!servo_medicao_pronta()) {
       digitalWrite(PIN_TRIG, LOW);
       g_estado = 0;
-      g_proxMs = millis();
+      // Preserva o intervalo entre disparos mesmo ao cancelar uma medicao.
     }
     g_dist = DIST_SEM_LEITURA;
     g_perto = g_longe = 0;
@@ -79,11 +89,14 @@ void sensores_atualizar() {
   }
   switch (g_estado) {
     case 0:
-      if ((int32_t)(millis() - g_proxMs) >= 0) {
+      if ((int32_t)(millis() - g_proxMs) >= 0 && micros() - g_ultimoDisparoUs >= 60000UL) {
+        servo_iniciar_medicao();
+        g_proxMs = millis() + 60; // minimo entre disparos, inclusive se houver cancelamento
         digitalWrite(PIN_TRIG, HIGH);
         delayMicroseconds(10);
         digitalWrite(PIN_TRIG, LOW);
         g_t0 = micros();
+        g_ultimoDisparoUs = g_t0;
         g_estado = 1;
       }
       break;
@@ -100,9 +113,9 @@ void sensores_atualizar() {
       if (!digitalRead(PIN_ECHO)) {
         const uint32_t us = micros() - g_tEco;
         const uint16_t cm = (uint16_t)(us / 58UL);
-        registrarLeitura(cm, cm >= 2 && cm <= 400);
+        registrarLeitura(cm, cm >= 2 && cm <= ULTRASSOM_DIST_MAX_CM);
         g_estado = 3;
-      } else if (micros() - g_tEco > 14000UL) {
+      } else if (micros() - g_tEco > ULTRASSOM_ECO_MAX_US) {
         registrarLeitura(0, false);
         g_estado = 3;
       }
@@ -118,10 +131,16 @@ void sensores_atualizar() {
   }
 }
 
-uint16_t sensores_distancia_cm() { return g_dist; }
-bool sensores_avanco_bloqueado() { return g_bloqueado || g_falha; }
-bool sensores_falha() { return g_falha; }
-bool sensores_obstaculo_confirmado() { return !g_falha && g_perto >= OBSTACULO_LEITURAS; }
+uint16_t sensores_distancia_cm() {
+  return servo_em_sonar_movimento() ? sonar_movimento_distancia_cm() : g_dist;
+}
+bool sensores_avanco_bloqueado() {
+  return servo_em_sonar_movimento() ? sonar_movimento_bloqueado() : g_bloqueado || g_falha;
+}
+bool sensores_falha() { return servo_em_sonar_movimento() ? sonar_movimento_falha() : g_falha; }
+bool sensores_obstaculo_confirmado() {
+  return servo_em_sonar_movimento() ? sonar_movimento_obstaculo() : !g_falha && g_perto >= OBSTACULO_LEITURAS;
+}
 
 uint16_t sensores_encoder_esq() {
   noInterrupts();
@@ -140,6 +159,7 @@ uint16_t sensores_encoder_dir() {
 #else  // sem sensores (modo com câmera): funções vazias, para o resto do código compilar igual
 
 void sensores_iniciar() {}
+void sensores_herdar_frente_sonar() {}
 void sensores_atualizar() {}
 uint16_t sensores_distancia_cm() { return DIST_SEM_LEITURA; }
 uint16_t sensores_encoder_esq() { return 0; }

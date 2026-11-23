@@ -10,3 +10,4 @@ uint16_t sensores_encoder_dir();
 bool sensores_avanco_bloqueado();
 bool sensores_falha();
 bool sensores_obstaculo_confirmado();
+void sensores_herdar_frente_sonar();

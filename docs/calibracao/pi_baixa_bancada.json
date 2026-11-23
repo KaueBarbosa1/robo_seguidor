@@ -1,0 +1,51 @@
+{
+  "schema": 1,
+  "status": "referencias_provisorias_para_revisao_do_pi",
+  "origem": "logs_enviados_pelo_usuario_nesta_conversa",
+  "condicao": "avanco_com_rodas_suspensas_sem_sonar",
+  "pi_anterior_alvo_pps": 4,
+  "pi_anterior_pico_esq_dir_pps": [65.5, 67.5],
+  "pwm_direto_com_zero_pulsos_em_ambas": [30, 40],
+  "pwm_direto_60_ultima_janela_esq_dir_pps": [48.0, 48.0],
+  "partida_60_sustentacao_40": "somente_direita_partiu_em_1_s",
+  "partida_80_sustentacao_40_ultima_janela_esq_dir_pps": [15.9, 15.9],
+  "partida_80_sustentacao_32": {
+    "cauda_esq_pps": [4.0, 4.0, 6.0, 6.0],
+    "cauda_dir_pps": [0.0, 0.0, 0.0, 0.0]
+  },
+  "partida_80_sustentacao_34": {
+    "esq_pps": [11.9, 8.0, 7.9, 7.9, 7.9, 6.0],
+    "dir_pps": [17.9, 10.0, 7.9, 6.0, 4.0, 6.0]
+  },
+  "revisao_pi_implementada_no_firmware": {
+    "faixa_alvo_abs_max_pps": 8,
+    "reforco_pwm_ate_primeiro_pulso_por_roda": 80,
+    "integral_inicial_esq_dir_pwm": [32, 34],
+    "kp": 0.25,
+    "ki": 0.5,
+    "piso_condicional_avanco": {
+      "pwm_esq_dir": [32, 34],
+      "alvo_efetivo_min_pps": 4,
+      "alvo_efetivo_max_pps": 8,
+      "razao_medicao_alvo_max": 2.0,
+      "anti_windup": "congela_integracao_contra_piso"
+    },
+    "validada_no_carrinho": false
+  },
+  "ganhos_baixos": "escolha_de_software_verificada_em_planta_sintetica_nao_medicao_fisica",
+  "resultado_pi_primeira_revisao": {
+    "alvo_pps": 4,
+    "primeiras_janelas_esq_pps": [6.0, 6.0, 3.6, 2.0, 0.0],
+    "primeiras_janelas_dir_pps": [7.9, 8.0, 3.6, 0.0, 0.0],
+    "janelas_restantes": "ambas_em_zero",
+    "resultado": "falhou_em_sustentar_giro",
+    "causa_do_corte_no_firmware": "confirmada_falha_encoder_por_ausencia_de_pulsos",
+    "frente_bloqueada_no_log_F8": false,
+    "falha_sensor_no_log_F8": false,
+    "pwm_F8_antes_da_parada_esq_dir": [[31, 33], [30, 32], [31, 32], [32, 32]],
+    "causa_fisica": "torque_insuficiente_compativel_com_ensaios_nao_defeito_eletrico_comprovado"
+  },
+  "validado_com_carga_no_piso": false,
+  "validado_em_re": false,
+  "frenagem_medida_mm": null
+}

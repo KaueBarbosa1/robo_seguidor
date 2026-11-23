@@ -5,8 +5,8 @@ BASE_DIR = Path(__file__).resolve().parent
 
 # ------------------------------------------------- Serial (Pi <-> Arduino: imagem da OV7670 + comandos dos motores)
 # Caminho legado: OV7670 ligada ao Arduino, com imagem pela serial no modo com câmera.
-# A configuração abaixo está no modo sem câmera. A ESP32-CAM usa bancada separada;
-# integração e nova entrada da CNN pendentes: docs/13_contexto_e_plano_cnn.md.
+# O Uno está no modo sem câmera. ESP32 é fonte HTTP opcional, selecionável na main;
+# contrato da CNN para ESP32 ainda pendente: docs/13_contexto_e_plano_cnn.md.
 SERIAL_PORTA = "/dev/ttyACM0"      # Arduino UNO via USB costuma ser ttyACM0 (clones: ttyUSB0)
 FIRMWARE_COM_CAMERA = False       # True = firmware com USAR_CAMERA 1 (OV7670, 1 Mbaud, sem ultrassom/encoders);
                                    # False = USAR_CAMERA 0 (sem câmera: 115200 baud, COM ultrassom e encoders). Igual ao que foi gravado!
@@ -40,6 +40,15 @@ OBSTACULO_DIST_CM = 25             # distância de parada
 OBSTACULO_LIBERACAO_CM = 30       # precisa afastar até aqui para liberar (igual ao firmware)
 OBSTACULO_LEITURAS = 2             # leituras consecutivas para confirmar bloqueio/liberação
 SENSOR_TIMEOUT_S = 0.25            # sem pacote recente, diagnóstico remoto considera segurança indisponível
+# Modo 4 manual: varredura continua e obstaculo frontal no Uno (SONAR_MOV_CONTINUO=1).
+# Integracao exclusiva do controle MANUAL/Bluetooth; CNN/seguidor sao etapas futuras.
+SONAR_MOVIMENTO_ATIVO = True  # ativado pelo usuario; perfil experimental, sem validacao no piso
+RECUO_MANUAL_ATIVO = True  # somente Bluetooth com sonar 4; nao ha sensor traseiro
+RECUO_MANUAL_DIST_CM = 10
+RECUO_MANUAL_REPOUSO_S = 0.15
+RECUO_MANUAL_TEMPO_S = 0.35
+RECUO_MANUAL_PPS = 4
+RECUO_MANUAL_MAX_PULSOS = 2  # por roda; limites iniciais, nao distancia validada
 
 # ------------------------------------------------------- Controle remoto pelo celular (Bluetooth, Android)
 # O celular conecta no Bluetooth da Pi como "porta serial" (SPP/RFCOMM). Veja docs/07_controle_bluetooth.md.
@@ -61,6 +70,7 @@ REMOTO_BUZINA_LIGAR = ""
 REMOTO_BUZINA_DESLIGAR = ""
 REMOTO_BUZINA_PULSO = "Y"          # byte observado no app; toque limitado pelo firmware a 1,5 s
 REMOTO_LOG_BYTES = True           # True registra cada bloco Bluetooth em hexadecimal e texto legível (diagnóstico)
+REMOTO_DIAGNOSTICO_MOVIMENTO = True  # estado do pedido, guarda e PWM/F8 na main, no maximo 1/s salvo transicoes
 REMOTO_VEL_INICIAL = 6             # nível 0..10 ao conectar (10 = REMOTO_VEL_MAX)
 REMOTO_VEL_MAX = 200               # PWM no nível 10 e no analógico todo para o lado (limite de segurança do remoto; máx. 255)
 REMOTO_CURVA_FATOR = 0.4           # curvas (G/I/H/J): a roda de dentro anda esta fração da de fora
@@ -68,7 +78,7 @@ REMOTO_CURVA_FATOR = 0.4           # curvas (G/I/H/J): a roda de dentro anda est
 # ----------------------------------------------------------------- Visão
 # Câmera: OV7670 no Arduino (QQVGA 160x120, 4 bits de cinza, ~2,5 quadros/s). O robô trabalha com quadros cinza
 # 120x160 (uint8). Veja docs/01_ligacao_camera.md e docs/02_bringup_camera.md.
-FONTE_IMAGEM = "arduino"           # "arduino" (OV7670, pela serial), "simulada" (linha falsa), "nenhuma" ou "csi" (NÃO usada)
+FONTE_IMAGEM = "arduino"           # "arduino" (OV7670, pela serial), "simulada" (linha falsa), "nenhuma", "esp32" (opcional) ou "csi" (NÃO usada)
 # --- só para FONTE_IMAGEM = "csi" (Pi Camera Rev 1.3 no conector CSI; código mantido, mas a câmera não é a do projeto) ---
 CAMERA_FPS = 30                    # quadros por segundo pedidos ao sensor
 CAMERA_PRINCIPAL = (640, 480)      # stream principal (não usado, mas o picamera2 exige); modo nativo do OV5647
@@ -86,6 +96,12 @@ LIMIAR_FIXO = 100
 CONTRASTE_MIN = 40                 # (máx-mín) da ROI abaixo disto = sem linha (Otsu em piso liso inventa linha)
 AREA_MIN = 40                      # contornos menores que isto (em pixels de 160x120) são ruído
 MOSTRAR_DEBUG = False              # True abre janela do OpenCV (precisa de monitor/VNC)
+
+# Tracejado: usado na visão quando a fonte oferece metadados (ESP32).
+TRACEJADO_MAX_SEGMENTOS = 24       # excesso de candidatos provoca abstenção
+TRACEJADO_MEMORIA_S = 0.3          # associação visual; nunca autoriza avanço sem observação
+TRACEJADO_AMBIGUIDADE = 0.85       # alternativa com nota próxima provoca abstenção
+TRACEJADO_CONFIANCA_MIN = 0.25     # qualidade heurística inicial, não calibrada no piso
 
 # ------------------------------------------------------ Aprendizado online (pasta aprendizado/)
 # Veja docs/04_aprendizado_online.md. Desligado por padrão: precisa da câmera e da pista.
@@ -168,3 +184,14 @@ LIMIAR_CONFIANCA = {"pare": 0.40}
 # Mantem a interface do controle: escala -255..255 para -referencia..+referencia.
 CONTROLE_VELOCIDADE_ATIVO = True  # teste do PI com encoders e rodas suspensas
 VELOCIDADE_REFERENCIA_PPS = 60
+
+# ESP32 opcional: --fonte-imagem esp32 seleciona captura/visão/PD, sem alterar o padrão.
+# Sem resize: receptor confirma JPEG 320x240; hardware ainda deve ser conferido.
+ESP32_URL = "http://192.168.4.1/capture"
+ESP32_TIMEOUT_S = 1.0
+ESP32_IDADE_MAX_S = 0.3
+ESP32_RECONEXAO_S = 0.5
+
+# Antecipação geométrica em fração da altura da ROI, não velocidade física.
+TRACEJADO_ANTECIPACAO = 0.25
+TRACEJADO_VAO_FATOR = 0.5          # reduz saída nos vãos; prazo continua PERDA_LINHA_TIMEOUT_S

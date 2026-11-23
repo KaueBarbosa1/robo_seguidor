@@ -5,7 +5,7 @@ Pinagem confirmada para `USAR_CAMERA=0`, com `USAR_SINALIZACAO=1` (padrão nesse
 | Componente | Pino | Ligação |
 |---|---|---|
 | LED verde | A0 | A0 → resistor de 330 Ω → ânodo; cátodo ao GND |
-| LED amarelo | A1 | A1 → resistor de 330 Ω → ânodo; cátodo ao GND |
+| Antigo LED amarelo, desativado | A1 | Pino mantido em LOW; o LED pode ser desconectado |
 | LED vermelho | A3 | A3 → resistor de 330 Ω → ânodo; cátodo ao GND |
 | Buzzer ativo | D10 | Acionamento por transistor, descrito abaixo |
 
@@ -16,13 +16,28 @@ Para buzzer ativo de dois terminais, use NPN (por exemplo, BC337): D10 → resis
 
 ## Comportamento
 
-- Verde: leitura frontal válida, liberada e a pelo menos 60 cm.
-- Amarelo: aproximação abaixo de 60 cm, falha/ausência de leitura, bloqueio inicial ou servo fora do centro, sem obstáculo previamente confirmado.
-- Vermelho: obstáculo confirmado pelo ultrassom. Mantém o vermelho durante falha, inspeção ou histerese até novas leituras frontais liberarem o avanço.
+- Verde: guarda frontal liberada, servo permitindo movimento e nenhuma falha de encoder. Pode acender durante a varredura do modo 4 e na aproximacao, enquanto a guarda permitir avanco.
+- Vermelho: obstaculo confirmado, frente bloqueada/sem leitura valida, servo impedindo movimento ou falha de encoder. Um obstaculo confirmado mantem o vermelho ate novas leituras frontais liberarem o avanco.
 - Obstáculo confirmado: bipes de 150 ms a cada 800 ms; têm prioridade sobre a buzina manual.
 - Buzina manual: no máximo 1,5 segundo. Repetir ligar não prolonga; envie desligar antes de ligar novamente. Não renova o watchdog dos motores.
 
-As cores representam a proteção frontal, não o modo de condução ou a detecção da linha. O processamento não usa esperas bloqueantes.
+O amarelo foi desativado a pedido do usuario. A1 continua inicializado em LOW
+para manter apagado um LED que ainda esteja conectado; nunca e aceso pelo
+firmware nem pelo teste isolado de sinalizacao.
+
+Na revisao manual com `SONAR_MOV_CONTINUO=1`, a sonda nao para no centro e
+as rodas nao dependem do orcamento de encoder/revisita. Vermelho acompanha
+obstaculo frontal confirmado ou falha, verde acompanha liberacao. A main
+mantem re curta por obstaculo confirmado. O perfil anterior de reservas e
+memoria fica disponivel com `SONAR_MOV_CONTINUO=0`; detalhes e limites do
+perfil atual no [guia14](14_sonar_em_movimento.md).
+
+As cores apenas mostram o estado. A sinalizacao nao envia comandos de motor
+nem libera rodas. As protecoes de ultrassom, servo, encoders e watchdogs
+continuam independentes. Um bloqueio lateral pode impedir a curva para esse
+lado enquanto a frente liberada continua verde; verde nao garante todas as
+direcoes livres. Vermelho por falha sem obstaculo confirmado nao inicia o
+bipe de obstaculo. Nao ha espera bloqueante.
 
 ## Gravar e conferir
 
@@ -35,7 +50,12 @@ arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno arduino/robo_firmware
 
 Feche o Monitor Serial e qualquer ferramenta usando a porta antes de executar `main.py`. Mantenha `FIRMWARE_COM_CAMERA = False` no Python (115200 baud).
 
-Com a potência dos motores desligada, confira amarelo no início/sem eco, verde com frente livre a mais de 60 cm, amarelo aproximando entre 30 e 60 cm, vermelho e bipes abaixo de 25 cm após duas leituras. Afaste para mais de 30 cm para liberar; entre 30 e 60 cm fica amarelo. Evite tomar ausência de eco como passagem livre.
+Com potencia dos motores desligada, confira vermelho no inicio/sem eco,
+verde com frente valida e liberada, e vermelho com bipes apos duas leituras
+abaixo de25 cm. O amarelo deve permanecer apagado em todos os casos. No
+modo4, reservas e memoria podem bloquear antes de25 cm; consulte o guia14.
+Ausencia de eco continua bloqueando. Regravar o Uno para aplicar esta revisao;
+teste/compilacao nao comprovam funcionamento fisico.
 
 No terminal Bluetooth do celular, envie cada comando com Enter:
 
@@ -67,7 +87,8 @@ barreiras de obstáculo e a lógica de controle existente.
 Linha ausente ou leitura vencida por mais de `PERDA_LINHA_TIMEOUT_S`
 gera dois bipes de 100 ms a cada 1,2 s enquanto segue sem linha.
 A recuperação da leitura ou saída do modo cancela o aviso.
-Os LEDs continuam indicando exclusivamente a proteção frontal.
+Os LEDs mostram liberacao frontal ou bloqueio/falha conforme os dois estados
+acima. Buzina e avisos de conducao permanecem independentes das cores.
 
 Protocolo: `A`, argumento 0 cancela, 1 partida, 2 linha perdida;
 segundo argumento sempre zero. Pedidos são renovados pelo controle;

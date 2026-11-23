@@ -35,7 +35,9 @@ void comandos_byte(uint8_t b) {
   } else if (cmd == CMD_PARAR) {
     motores_parar();
     motores_marcar_comando();
-  } else if (cmd == CMD_SERVO && motores_parados()) {
+  } else if (cmd == CMD_SERVO && (motores_parados() ||
+             ((a == 4 || a == 0) && servo_em_sonar_movimento()))) {
+    if (a == 0 && servo_em_sonar_movimento()) motores_parar();
     servo_comandar(a, static_cast<int8_t>(bb));
   } else if (cmd == CMD_BUZINA && a <= 1 && bb == 0) {
     sinalizacao_buzina(a == 1);

@@ -2,6 +2,7 @@
 #include "config.h"
 #include "sensores.h"
 #include "servo.h"
+#include "motores.h"
 
 #if USAR_SINALIZACAO
 static_assert(PIN_LED_VERDE != PIN_LED_AMARELO && PIN_LED_VERDE != PIN_LED_VERMELHO &&
@@ -57,14 +58,15 @@ void sinalizacao_atualizar() {
   }
   // Preserva o vermelho durante inspecao/falha/histerese. So novas leituras
   // frontais liberadas pelo sensor apagam um obstaculo previamente confirmado.
-  if (servo_frontal_pronto() && !sensores_falha() && !sensores_avanco_bloqueado())
+  if (servo_movimento_permitido() && !sensores_falha() && !sensores_avanco_bloqueado())
     g_obstaculo = false;
 
-  const bool atencao = !servo_frontal_pronto() || sensores_falha() ||
-      sensores_avanco_bloqueado() || sensores_distancia_cm() < OBSTACULO_REDUZIR_CM;
-  digitalWrite(PIN_LED_VERMELHO, g_obstaculo ? HIGH : LOW);
-  digitalWrite(PIN_LED_AMARELO, !g_obstaculo && atencao ? HIGH : LOW);
-  digitalWrite(PIN_LED_VERDE, !g_obstaculo && !atencao ? HIGH : LOW);
+  const bool vermelho = g_obstaculo || !servo_movimento_permitido() || sensores_falha() ||
+      sensores_avanco_bloqueado() || motores_falha_encoder();
+  digitalWrite(PIN_LED_VERMELHO, vermelho ? HIGH : LOW);
+  digitalWrite(PIN_LED_VERDE, vermelho ? LOW : HIGH);
+  // A1 e inicializado em LOW e permanece assim: o LED amarelo foi desativado.
+  // A sinalizacao somente observa a guarda; nao envia comandos aos motores.
 
   if (g_obstaculo) g_buzina = false; // aviso tem prioridade; nao retoma buzina velha
   if (g_buzina && agora - g_inicioBuzina >= BUZINA_MAX_MS) g_buzina = false;

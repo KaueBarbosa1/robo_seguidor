@@ -16,6 +16,7 @@ extern volatile uint16_t TCNT1, ICR1, OCR1A;
 #define UDRE0 5
 #define U2X0 1
 #define RXEN0 4
+#define RXCIE0 7
 #define TXEN0 3
 #define UCSZ01 2
 #define UCSZ00 1
@@ -63,5 +64,37 @@ struct Ucsra { uint8_t v = 0; uint8_t operator=(uint8_t x) { v = x; return x; }
                         ((int32_t)(g_us - g_uartProntaUs) >= 0 ? _BV(UDRE0) : 0);
                } };
 extern Udr UDR0; extern Ucsra UCSR0A; extern volatile uint8_t UCSR0B, UCSR0C, UBRR0H, UBRR0L, MCUSR;
+// Modelo de recepcao: ISR guarda bytes, processamento de comandos so no loop.
+// O ensaio de rajada limita o hardware a dois bytes quando a ISR esta desligada.
+class HardwareSerialFalso {
+  std::deque<uint8_t> buffer;
+  void capturar() {
+    if (!(UCSR0B & _BV(RXCIE0))) return;
+    while (!g_rx.empty()) {
+      uint8_t b = UDR0;
+      if (buffer.size() < 63) buffer.push_back(b);
+    }
+  }
+ public:
+  void begin(unsigned long baud) {
+    UCSR0A = _BV(U2X0);
+    const uint16_t divisor = (F_CPU / 4 / baud - 1) / 2;
+    UBRR0H = divisor >> 8; UBRR0L = divisor;
+    UCSR0B = _BV(RXEN0) | _BV(TXEN0) | _BV(RXCIE0);
+    UCSR0C = _BV(UCSZ01) | _BV(UCSZ00);
+  }
+  int available() { capturar(); return buffer.size(); }
+  int read() {
+    capturar();
+    if (buffer.empty()) return -1;
+    const uint8_t b = buffer.front(); buffer.pop_front(); return b;
+  }
+  void injetarDurantePausa(uint8_t b) {
+    if (g_rx.size() < 2) g_rx.push_back(b);
+    capturar();
+    g_us += 87; // chegada de um byte a aproximadamente 115200 baud
+  }
+};
+extern HardwareSerialFalso Serial;
 #define WDTO_250MS 5
 inline void wdt_enable(int) {} inline void wdt_disable() {} extern int g_wdt; inline void wdt_reset() { g_wdt++; }

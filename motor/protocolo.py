@@ -8,6 +8,21 @@ IDX_STATUS = 0xFD
 IDX_SENSORES = 0xFC                # 7 bytes de 7 bits: distância, encoders, flags de segurança
 IDX_SERVO = 0xFB                   # 5 bytes de 7 bits: angulo nominal, centro_us, flags
 IDX_INSPECAO = 0xFA               # posicao 0/1/2, cm L/H, rodada L/H; todos de 7 bits
+IDX_SONAR = 0xF9                  # angulo L/H, cm L/H, sequencia L/H
+IDX_MOTORES = 0xF8                # magnitudes PWM E L/H, D L/H, flags
+IDX_GUARDA_SONAR = 0xF7          # um byte com motivos da guarda frontal no modo4
+GUARDA_SONAR_MOTIVOS = ('perfil_invalido', 'sem_frente', 'frente_vencida',
+                       'confirmando_frente', 'limite_avanco', 'divergencia_rodas', 'distancia_reserva')
+BYTES_MOTORES = 5
+MOTORES_FLAG_NEG_ESQ = 0x01
+MOTORES_FLAG_NEG_DIR = 0x02
+MOTORES_FLAG_FALHA_ENCODER = 0x04
+MOTORES_FLAG_PI = 0x08
+MOTORES_FLAG_REFORCO_ESQ = 0x10
+MOTORES_FLAG_REFORCO_DIR = 0x20
+BYTES_SONAR = 6
+SERVO_FLAG_SONAR = 0x20
+SERVO_FLAG_SONAR_MOVIMENTO = 0x40
 BYTES_INSPECAO = 5
 SERVO_FLAG_INSPECAO = 0x08
 SERVO_FLAG_CONCLUIDA = 0x10
@@ -21,6 +36,10 @@ BYTES_SENSORES = 7
 SENSOR_FLAG_BLOQUEADO = 0x01
 SENSOR_FLAG_FALHA = 0x02
 SENSOR_FLAG_OBSTACULO = 0x04
+SENSOR_FLAG_SONAR_NAO_CALIBRADO = 0x08
+SENSOR_FLAG_SONAR_EXPERIMENTAL = 0x10
+SENSOR_FLAG_LATERAL_ESQ = 0x20
+SENSOR_FLAG_LATERAL_DIR = 0x40
 
 CMD_START = 0xAA
 CMD_MOTORES = ord("M")
@@ -81,6 +100,16 @@ def comando_servo(varrer: bool = False, ajuste_us: int = 0) -> bytes:
 def comando_inspecao() -> bytes:
     """Rodada parada: 45, 90, 135 graus e retorno ao centro; renovar antes de 400 ms."""
     return montar_comando(CMD_SERVO, 2, 0)
+
+
+def comando_sonar() -> bytes:
+    """Sonar continuo parado; renovar antes de 400 ms. Usa o centro do firmware."""
+    return montar_comando(CMD_SERVO, 3, 0)
+
+
+def comando_sonar_movimento() -> bytes:
+    """Modo 4: sonar manual durante marcha; perfil selecionado no firmware."""
+    return montar_comando(CMD_SERVO, 4, 0)
 
 
 def comando_buzina(ligada: bool = True) -> bytes:

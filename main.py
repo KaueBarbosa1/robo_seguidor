@@ -4,12 +4,11 @@
     voz      -> classifica comandos e chama aplicar_comando() (prioridade absoluta)
     controle -> único que escreve nos motores (via ArduinoSerial)
     remoto   -> (opcional) celular Android por Bluetooth serial: anda/para pelo modo MANUAL (remoto/)
-    A imagem vem da OV7670 ligada ao Arduino (pela serial); o mesmo Arduino aciona os motores (L298N).
+    Imagem pela fonte selecionada (inclui ESP32 HTTP); motores e sensores continuam no Arduino.
 """
 import argparse
 import logging
 import signal
-import sys
 import threading
 import time
 
@@ -37,7 +36,7 @@ def abrir_fonte(nome: str, motor):
     try:
         fonte = criar_fonte(nome, motor)
         if hasattr(fonte, "iniciar"):
-            fonte.iniciar()                                 # só a câmera CSI (opcional) precisa abrir
+            fonte.iniciar()                                 # fontes com captura em segundo plano
     except Exception as e:
         log.error("CÂMERA INDISPONÍVEL (%s). Sem imagem o robô NÃO segue linha; comandos de voz continuam. "
                   "Confira docs/02_bringup_camera.md e python tools/verificar_ambiente.py", e)
@@ -49,58 +48,76 @@ def main() -> None:
     ap = argparse.ArgumentParser(description="Robô seguidor de linha com voz")
     ap.add_argument("--sem-arduino", action="store_true",
                     help="não abre a serial: motores/sensores simulados (testa câmera, visão e voz sem o Arduino)")
+    ap.add_argument("--fonte-imagem", choices=("arduino", "csi", "nenhuma", "simulada", "esp32"),
+                    default=cfg.FONTE_IMAGEM, help="seleciona a fonte sem alterar config.py")
     args = ap.parse_args()
+    if args.fonte_imagem == "esp32" and cfg.APRENDIZADO_ATIVO:
+        ap.error("ESP32 com aprendizado ativo exige contrato CNN compatível; mantenha APRENDIZADO_ATIVO=False")
 
     parar = threading.Event()
     estado = EstadoRobo()
     motor = ArduinoNulo() if args.sem_arduino else ArduinoSerial()
+    fonte = None
+    iniciadas = []
     try:
-        motor.conectar()
-    except Exception as e:
-        log.error("Não consegui abrir o Arduino em %s (%s). Confira a porta (ls /dev/ttyACM*) e SERIAL_PORTA em config.py; "
-                  "para testar sem ele: python main.py --sem-arduino", cfg.SERIAL_PORTA, e)
-        sys.exit(1)
-    fonte = abrir_fonte(cfg.FONTE_IMAGEM, motor)
+        try:
+            motor.conectar()
+        except Exception as e:
+            log.error("Não consegui abrir o Arduino em %s (%s). Para testar sem ele: --sem-arduino",
+                      cfg.SERIAL_PORTA, e)
+            raise SystemExit(1)
+        fonte = abrir_fonte(args.fonte_imagem, motor)
 
-    def ao_comando_de_voz(comando: str) -> None:
-        aplicar_comando(estado, motor, comando)
+        def ao_comando_de_voz(comando: str) -> None:
+            aplicar_comando(estado, motor, comando)
 
-    threads = [
-        ThreadControle(estado, motor, parar),
-        ThreadVisao(estado, parar, fonte),
-        ThreadVoz(ao_comando_de_voz, parar),
-    ]
+        threads = [
+            ThreadControle(estado, motor, parar, fonte),
+            ThreadVisao(estado, parar, fonte),
+            ThreadVoz(ao_comando_de_voz, parar),
+        ]
+        if cfg.APRENDIZADO_ATIVO:
+            from aprendizado.robo_real import ThreadAprendizado
+            threads.append(ThreadAprendizado(estado, motor, parar, fonte))
+        opcionais = []
+        if cfg.REMOTO_BT_ATIVO:
+            from remoto.bluetooth_spp import ThreadBluetooth
+            opcionais.append(ThreadBluetooth(estado, motor, parar))
+        def solicitar_parada(*_):
+            parar.set()
+            estado.encerrar()
 
-    if cfg.APRENDIZADO_ATIVO:
-        from aprendizado.robo_real import ThreadAprendizado
-        threads.append(ThreadAprendizado(estado, motor, parar, fonte))
-
-    opcionais = []                                          # falha aqui não derruba o robô (só avisa)
-    if cfg.REMOTO_BT_ATIVO:
-        from remoto.bluetooth_spp import ThreadBluetooth
-        opcionais.append(ThreadBluetooth(estado, motor, parar))
-
-    signal.signal(signal.SIGINT, lambda *_: parar.set())
-    signal.signal(signal.SIGTERM, lambda *_: parar.set())
-
-    for t in threads + opcionais:
-        t.start()
-    log.info("Robô pronto. Parado até ouvir 'siga'%s.", " ou receber comando do celular" if opcionais else "")
-
-    try:
+        signal.signal(signal.SIGINT, solicitar_parada)
+        signal.signal(signal.SIGTERM, solicitar_parada)
+        for t in threads + opcionais:
+            t.start()
+            iniciadas.append(t)
+        log.info("Robô pronto. Parado até ouvir 'siga'%s.",
+                 " ou receber comando do celular" if opcionais else "")
         while not parar.is_set():
-            if not all(t.is_alive() for t in threads):      # qualquer thread morta = parada de segurança
+            if not all(t.is_alive() for t in threads):
                 log.error("Uma thread morreu; encerrando.")
                 break
             time.sleep(0.2)
     finally:
         parar.set()
-        for t in threads + opcionais:
-            t.join(timeout=2.0)
-        motor.parar(repetir=3)
-        motor.fechar()
-        if hasattr(fonte, "parar"):
-            fonte.parar()
+        estado.encerrar()
+        # Parar antes de aguardar threads, inclusive se inicialização falhar.
+        try:
+            motor.parar(repetir=3)
+        finally:
+            try:
+                for t in iniciadas:
+                    t.join(timeout=2.0)
+            finally:
+                try:
+                    motor.parar(repetir=3)
+                finally:
+                    try:
+                        motor.fechar()
+                    finally:
+                        if fonte is not None and hasattr(fonte, "parar"):
+                            fonte.parar()
         log.info("Encerrado.")
 
 

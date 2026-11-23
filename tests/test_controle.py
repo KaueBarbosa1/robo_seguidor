@@ -129,7 +129,7 @@ class MotorInspecao(MotorFalso):
     def leituras_inspecao(self): return self.amostras
 
 
-def test_inspecao_espera_repouso_conclui_parada_e_nao_reutiliza_amostras():
+def test_inspecao_espera_repouso_conclui_em_espera_e_nao_reutiliza_amostras():
     est, mot = EstadoRobo(), MotorInspecao()
     est.definir_modo(Modo.SEGUINDO)
     t = ThreadControle(est, mot, threading.Event())
@@ -142,7 +142,8 @@ def test_inspecao_espera_repouso_conclui_parada_e_nao_reutiliza_amostras():
     assert est.modo is Modo.SEGUINDO  # amostras antigas nao concluem a nova rodada
     for a in mot.amostras: a.timestamp = 101.
     t._inspecionar_obstaculo(101.)
-    assert est.modo is Modo.PARADO and t._inspecao_inicio is None
+    assert est.modo is Modo.SEGUINDO and t._inspecao_inicio is None
+    assert t._inspecao_aguarda_frente
     assert mot.centros == [False] and all(c == (0, 0) for c in mot.cmds)
 
 
@@ -170,9 +171,10 @@ def test_manual_e_pare_interrompem_servo_sem_esperar_ciclo():
     est, mot = EstadoRobo(), MotorInspecao()
     est.definir_modo(Modo.SEGUINDO)
     aplicar_movimento_manual(est, mot, 80, 80)
-    assert est.modo is Modo.MANUAL and mot.centros == [False]
+    centros_esperados = [] if cfg.SONAR_MOVIMENTO_ATIVO else [False]
+    assert est.modo is Modo.MANUAL and mot.centros == centros_esperados
     aplicar_comando(est, mot, 'pare')
-    assert est.modo is Modo.PARADO and mot.centros == [False, False]
+    assert est.modo is Modo.PARADO and mot.centros == centros_esperados + [False]
     assert mot.cmds[-1] == (0, 0)
 
 if __name__ == "__main__":

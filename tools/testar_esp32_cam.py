@@ -2,59 +2,17 @@
 import argparse
 import csv
 import time
-from dataclasses import dataclass
-from datetime import datetime, timezone
-from http.client import HTTPException
-from urllib.request import build_opener, ProxyHandler, Request
-from urllib.error import URLError
+from urllib.request import build_opener, ProxyHandler
 
 import cv2
 import numpy as np
 
-MAX_JPEG = 2 * 1024 * 1024
-URL_PADRAO = "http://192.168.4.1/capture"
-ERROS_RECEPCAO = (URLError, OSError, HTTPException, ValueError, TypeError, cv2.error)
-
-
-@dataclass(frozen=True)
-class QuadroESP32:
-    jpeg: bytes
-    imagem: np.ndarray
-    recepcao_monotonica: float
-    recepcao_utc: str
-    http_ms: float
-    idade_envio_ms: float
-
-    @property
-    def idade_recepcao_limite_ms(self):
-        return self.idade_envio_ms + self.http_ms
-
-
-def receber_quadro(opener, url, timeout):
-    inicio = time.monotonic()
-    req = Request(url, headers={"Cache-Control": "no-cache"})
-    with opener.open(req, timeout=timeout) as resposta:
-        if resposta.status != 200:
-            raise ValueError(f"HTTP {resposta.status}")
-        if resposta.headers.get_content_type() != "image/jpeg":
-            raise ValueError("Resposta nao e image/jpeg")
-        idade_envio = float(resposta.headers["X-Frame-Age-Us"]) / 1000
-        dados = resposta.read(MAX_JPEG + 1)
-        recepcao = time.monotonic()
-        recepcao_utc = datetime.now(timezone.utc).isoformat(timespec="milliseconds")
-    if not np.isfinite(idade_envio) or idade_envio < 0:
-        raise ValueError("Idade do quadro invalida")
-    if len(dados) > MAX_JPEG or not dados.startswith(b"\xff\xd8") or not dados.endswith(b"\xff\xd9"):
-        raise ValueError("JPEG truncado ou invalido")
-    imagem = cv2.imdecode(np.frombuffer(dados, dtype=np.uint8), cv2.IMREAD_COLOR)
-    if imagem is None or imagem.shape[:2] != (240, 320):
-        raise ValueError("JPEG invalido ou resolucao diferente de 320x240")
-    return QuadroESP32(dados, imagem, recepcao, recepcao_utc, (recepcao - inicio) * 1000, idade_envio)
-
-
-def receber(opener, url, timeout):
-    quadro = receber_quadro(opener, url, timeout)
-    return quadro.imagem, quadro.http_ms, quadro.idade_envio_ms, quadro.idade_recepcao_limite_ms
+# Compatibilidade: coletor e testes continuam importando estas funções daqui.
+from pathlib import Path
+import sys
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+from visao.esp32_cam import (MAX_JPEG, URL_PADRAO, ERROS_RECEPCAO,
+                             QuadroESP32, receber_quadro, receber)
 
 
 def main():
@@ -63,7 +21,13 @@ def main():
     parser.add_argument("--timeout", type=float, default=3.0)
     parser.add_argument("--intervalo", type=float, default=0.05)
     parser.add_argument("--csv", default="esp32_cam_bancada.csv")
+    parser.add_argument("--tracejado", action="store_true",
+                        help="mostra segmentos OpenCV e trajetória, sem comandos de motor")
     args = parser.parse_args()
+    detector = None
+    if args.tracejado:
+        from visao.detector import DetectorLinha, desenhar_debug
+        detector = DetectorLinha(tracejado=True)
     if args.timeout <= 0 or args.intervalo < 0:
         parser.error("timeout deve ser positivo e intervalo nao negativo")
     opener = build_opener(ProxyHandler({})) # Rede local, sem proxy do ambiente.
@@ -83,6 +47,8 @@ def main():
                     imagem, http, idade, limite = receber(opener, args.url, args.timeout)
                 except ERROS_RECEPCAO as erro:
                     falhas += 1
+                    if detector is not None:
+                        detector.limpar_historico()
                     decorrido = (time.monotonic() - tentativa) * 1000
                     print(f"FALHA ({decorrido:.1f} ms): {erro}; tentando novamente", flush=True)
                     log.writerow([time.monotonic()-inicio, "falha", f"{decorrido:.2f}", "", "", "", str(erro)])
@@ -96,6 +62,16 @@ def main():
                     print(f"quadro={total} HTTP={http:.1f} ms idade_envio={idade:.1f} ms "
                           f"idade_recepcao<={limite:.1f} ms FPS={fps:.2f} falhas={falhas}", flush=True)
                     log.writerow([agora-inicio, "ok", f"{http:.2f}", f"{idade:.2f}", f"{limite:.2f}", f"{fps:.2f}", ""])
+                    if detector is not None:
+                        processamento_inicio = time.monotonic()
+                        resultado = detector.processar(imagem)
+                        processamento_ms = (time.monotonic() - processamento_inicio) * 1000
+                        imagem = desenhar_debug(imagem, resultado)
+                        cv2.putText(imagem, f"HTTP OK FPS={fps:.1f} visao={processamento_ms:.1f}ms",
+                                    (5, 33), cv2.FONT_HERSHEY_SIMPLEX, .4, (0, 0, 255), 1)
+                        print(f"visao={processamento_ms:.2f} ms segmentos={len(resultado.segmentos)} "
+                              f"erro={resultado.erro:+.3f} direcao={resultado.direcao:+.3f} "
+                              f"confianca={resultado.confianca:.2f} motivo={resultado.motivo}", flush=True)
                     cv2.imshow(janela, imagem)
                     if agora - janela_inicio >= 5:
                         janela_inicio, quadros = agora, 0

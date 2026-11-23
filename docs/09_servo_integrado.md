@@ -31,12 +31,100 @@ O ultrassom continua exercendo a funcao de protecao frontal quando o servo esta
 centralizado. O modo continuo `varrer` descarta os ecos; o novo modo `inspecionar`
 registra tres direcoes, como descrito a seguir.
 
+## Sonar continuo com medicao durante o movimento
+
+Esta secao descreve o modo 3, com rodas bloqueadas. O novo modo 4 experimental
+para rodas e sonar simultaneos esta em [sonar em movimento](14_sonar_em_movimento.md).
+
+O modo `sonar` move o servo continuamente, sem paradas por grau, inverte o
+sentido ao chegar ao extremo e repete ate Ctrl+C. O movimento usa passos
+nominais de um grau a cada 20 ms, como `varrer`, mas mede durante o percurso.
+Cada eco e associado ao **angulo comandado no disparo do ultrassom**.
+Diferente de `inspecionar`, nao termina apos tres posicoes. Implementado e
+verificado em simulacao; suavidade, distancias e angulos fisicos ainda precisam
+de validacao no carrinho.
+
+Primeiro regravar `arduino/robo_firmware/robo_firmware.ino` no Uno, com
+`USAR_CAMERA=0`. Parar `robo.service`/`main.py`, fechar o Monitor Serial e manter
+a potencia dos motores desligada. Entao, no terminal da Raspberry:
+
+```bash
+.venv/bin/python tools/testar_servo.py --modo sonar
+```
+
+Esse comando nao tem limite de duracao. Para limitar um ensaio:
+
+```bash
+.venv/bin/python tools/testar_servo.py --modo sonar --tempo 60
+```
+
+A saida mostra `Sonar: 90 graus nominais no disparo | 50 cm | sequencia=1`.
+Nao ha mais a pausa de 200 ms por grau da primeira versao do sonar. Movimento
+e medicao sao independentes: o servo continua mesmo enquanto aguarda eco ou
+transmite uma amostra. Os disparos mantem intervalo minimo de 60 ms;
+portanto a saida salta alguns graus entre medidas.
+O servo percorre todos os comandos intermediarios, mas **nao ha uma medicao
+em cada grau**. Sem eco/eco invalido gera `DESCONHECIDA`, sem parar a varredura.
+
+O angulo informado nao e a posicao fisica medida: pode haver atraso do servo
+e movimento durante a ida e volta do som. Um grau de passo nao comprova
+resolucao acustica ou mecanica de um grau. Essas leituras em movimento sao
+para diagnostico, nao autorizam avancar ou escolher um desvio. O modo
+`inspecionar` continua esperando estabilizacao e medindo com o servo parado.
+
+Os extremos ficam em `SONAR_ANGULO_MIN=45` e `SONAR_ANGULO_MAX=135`, mantendo
+a correspondencia atual de pulsos de 1000 a 2000 us. **Isso ainda nao cobre
+fisicamente 0 a 180 graus.** Nao basta mudar o texto dos angulos: a amplitude
+fisica exige calibrar pulsos, centro e limites mecanicos do servo/suporte.
+Nao foram ampliados os pulsos sem essa calibracao. O sonar usa o centro do
+firmware, sem `--ajuste-us` temporario.
+
+O sonar e um modo parado: bloqueia frente e re inclusive quando passa por 90
+graus; as leituras direcionais nunca atualizam a protecao frontal. Ctrl+C
+solicita centro. Perda dos comandos por mais de 400 ms cancela o sonar e
+recentraliza; somente apos estabilizacao e novas leituras frontais a protecao
+pode liberar avanco. Isso nao retoma as rodas automaticamente. A ferramenta
+tambem encerra se faltar confirmacao do modo ou se deixarem de chegar medidas.
+Nao e iniciado pelo boot, por `main.py` ou pelo controle Bluetooth nesta etapa.
+
+Protocolo adicional: `V` com modo 3 inicia/renova o sonar e exige motores
+parados. O status `FB` usa bit5 para indicar sonar. O pacote
+`FF F9 angL angH cmL cmH seqL seqH` transmite seis bytes de sete bits:
+angulo nominal no disparo, distancia (`0x3FFF` desconhecida) e sequencia de 14 bits com
+volta em 16384. Os pacotes de sensores e da inspecao de tres posicoes continuam
+iguais. `ArduinoSerial.consumir_leituras_sonar()` retira as medidas recebidas
+de uma fila limitada a 256 entradas, com timestamp de recepcao na Pi. Esse
+timestamp nao mede o instante da captura no Arduino. Firmware e Python precisam
+ser atualizados juntos.
+
+O usuario identificou um GND mal encaixado na trilha negativa da protoboard
+durante o diagnostico de falta de movimento e relatou outros maus contatos.
+Isso nao confirma a estabilidade do ultrassom: repetir o ensaio com alvo fixo
+depois de corrigir as conexoes. Compilacao e testes simulados nao substituem
+essa verificacao.
+
+Na primeira versao passaram 35 testes Python e os harnesses C++ com/sem servo;
+o firmware compilou para Uno. Depois do upload, o usuario enviou logs de
+comandos de ida e volta e de ecos, mas relatou pequenos movimentos rapidos.
+As pausas de 200 ms por grau dessa versao foram removidas a pedido dele.
+Os logs nao validam a posicao real: houve sequencias longas desconhecidas e
+distancias diferentes em passagens pelo mesmo angulo, sem registro de alvo
+fixo. A versao com movimento continuo precisa de novo upload e ensaio fisico.
+
+Verificacao da revisao sem pausas: 35 testes Python passaram; os harnesses
+C++ com e sem servo passaram. O teste de sonar confere passos sem saltos,
+ausencia de pausas de 200 ms, inversoes, ecos ausentes e angulo no disparo
+mesmo quando ha movimento antes de terminar o eco. Compilacao para Uno
+confirmada: integrado 9450/167 bytes de flash/RAM; sem servo 7310/122;
+camera legada 5072/321. Esses resultados nao comprovam suavidade fisica.
+
 ## Aproximacao e inspecao de obstaculo — primeira etapa
 
 Implementado, ainda sem validacao fisica integrada:
 
-1. Arduino reduz proporcionalmente os dois PWM quando a frente fica abaixo de
-   60 cm. Preserva a proporcao da curva. O fator vai de 100% do comando a 60 cm
+1. Arduino reduz proporcionalmente os comandos quando a frente fica abaixo de
+   60 cm: PWM no modo direto, alvos em pulsos/s no PI, sem atenuar novamente
+   a saida do regulador. Preserva a proporcao da curva. O fator vai de 100% do comando a 60 cm
    ate 40% a 25 cm; isso nao corresponde a uma velocidade medida em cm/s.
 2. A barreira anterior permanece: duas leituras abaixo de 25 cm bloqueiam
    avanco; duas a partir de 30 cm liberam. Falha de sensor continua bloqueando.

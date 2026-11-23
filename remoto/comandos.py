@@ -194,6 +194,8 @@ def _misturar_joystick(x: float, y: float) -> tuple[int, int]:
         return 0, 0
     escala = min(1.0, (r - zona) / (1.0 - zona)) / r
     lateral, frente = x * escala, y * escala
+    # A curva lateral muda a geometria, nao a intensidade radial do operador.
+    velocidade = math.hypot(lateral, frente)
     if abs(frente) < 1e-9:                                 # só lateral: avança em curva, sem girar parado
         frente = abs(lateral)
         intensidade_curva = 1.0
@@ -202,7 +204,6 @@ def _misturar_joystick(x: float, y: float) -> tuple[int, int]:
     intensidade_curva = max(0.0, min(1.0, intensidade_curva))
     fator_dentro = max(0.0, min(1.0, cfg.REMOTO_CURVA_FATOR))
     dentro = 1.0 - intensidade_curva * (1.0 - fator_dentro)
-    velocidade = math.hypot(lateral, frente)                # mantém a resposta radial e o teto nas diagonais
     sinal = -1.0 if frente < 0 else 1.0
     if lateral < 0:                                         # curva à esquerda: roda esquerda é a interna
         esq, dir_ = sinal * velocidade * dentro, sinal * velocidade
