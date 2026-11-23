@@ -1,5 +1,14 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de 23/11/2026. A orientação do professor passa a colocar RL na
+escolha das ações, com CNN fornecendo referência perceptiva. O protótipo
+`tools/treinar_rl_simulado.py` implementa Q-learning tabular sobre referência
+CNN congelada e compara com PD discretizado em pistas sintéticas. A CNN do
+protótipo é treinada em imagens e rótulos sintéticos próprios desse ambiente.
+Confira o [guia de RL com referência CNN](16_rl_com_referencia_cnn.md).
+A integração com ESP32, controle e hardware permanece pendente. Os registros
+anteriores abaixo descrevem a evolução histórica e a imitação legada.
+
 Registro de continuidade em 16/11/2026. Consolida o código disponível e as
 decisões propostas pelo usuário. Este documento e os comentários associados
 não implementam nem ativam o plano. Os valores de calibração e critérios
