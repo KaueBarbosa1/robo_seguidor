@@ -5,6 +5,15 @@ escolha das ações, com CNN fornecendo referência perceptiva. O protótipo
 `tools/treinar_rl_simulado.py` implementa Q-learning tabular sobre referência
 CNN congelada e compara com PD discretizado em pistas sintéticas. A CNN do
 protótipo é treinada em imagens e rótulos sintéticos próprios desse ambiente.
+`tools/comparar_agentes_rl.py` acrescenta DQN e PPO via Stable-Baselines3,
+observações normalizadas e interface Gymnasium, com término por saída de
+pista e truncamento por tempo. O ensaio usa as mesmas onze ações e o mesmo
+orçamento de treino por algoritmo e semente. A validação seleciona os
+checkpoints antes do teste. A CNN é compartilhada e permanece congelada.
+No primeiro ensaio DQN/PPO, três sementes por algoritmo e 8.192 interações
+por treino produziram maior progresso médio com DQN, acompanhado de maior
+erro lateral que o PD. PPO variou mais entre sementes. Os resultados são
+exclusivos da dinâmica sintética; a medição de inferência foi na CPU Windows.
 Confira o [guia de RL com referência CNN](16_rl_com_referencia_cnn.md).
 A integração com ESP32, controle e hardware permanece pendente. Os registros
 anteriores abaixo descrevem a evolução histórica e a imitação legada.

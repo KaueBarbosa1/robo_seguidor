@@ -87,6 +87,113 @@ exploração e representação temporal antes de promover uma política. A
 avaliação usa uma única semente de treino e cinco pistas sintéticas. Ela
 exercita o pipeline e orienta experimentos posteriores em simulação.
 
+## Comparação entre DQN, PPO e PD
+
+`aprendizado/ambiente_gym.py` disponibiliza a mesma dinâmica, recompensa,
+referência CNN e onze ações discretas pela interface Gymnasium. O vetor
+de observação contém sete valores limitados a `[-1, 1]`, incluindo previsão,
+variação da previsão, velocidade simulada, idade, memória vigente e direção
+e velocidade pedidas no passo anterior. A geometria real da pista aparece
+na recompensa e nas métricas. A referência CNN fica congelada.
+
+Saída de pista encerra o episódio com `terminated=True`. Atingir o limite
+de passos gera `truncated=True`. O Stable-Baselines3 pode assim usar o valor
+da observação final para bootstrap nos cortes por tempo. O protótipo tabular
+anterior conserva sua interface e seus registros históricos. O comparador
+Gymnasium recebe observações contínuas normalizadas.
+
+O ensaio usa Stable-Baselines3 para DQN e PPO, com redes de duas camadas de
+64 unidades, ativação tanh, desconto 0,97 e taxa de aprendizado 0,0003.
+As particularidades de cada algoritmo são as seguintes.
+
+| Parâmetro | DQN | PPO |
+|---|---|---|
+| Memória de transições | 20.000 | 128 passos por rodada |
+| Início das atualizações | após 512 interações | após 128 interações |
+| Lote | 64 | 64 |
+| Atualizações | uma a cada quatro interações | dez épocas por rodada |
+| Rede alvo | atualização a cada 512 interações | estimador de valor da própria política |
+| Exploração | epsilon decresce até 0,05 na primeira metade | bônus de entropia 0,01 |
+
+Por padrão são três sementes de treino, 7, 17 e 27, e exatamente 8.192
+interações por algoritmo e semente. A avaliação de validação ocorre após
+as atualizações, a cada 2.048 interações e ao final. Cada checkpoint é
+selecionado pelo retorno médio nas mesmas três pistas de validação. Todos
+os checkpoints são selecionados antes de executar o teste nas cinco pistas
+reservadas. O PD discretizado é avaliado uma vez nessas mesmas condições.
+
+Treinamento somente com o carrinho parado. Instale as dependências opcionais
+no ambiente de experimentos e use uma pasta nova para a saída.
+
+```bash
+.venv/bin/python -m pip install -r requirements-rl.txt
+OPENBLAS_NUM_THREADS=1 .venv/bin/python tools/comparar_agentes_rl.py \
+  --saida dataset_pista/resultados/comparacao_dqn_ppo_01
+```
+
+O comando treina uma única CNN sintética de referência com os parâmetros
+do primeiro ensaio e a reutiliza em todos os agentes. Para usar a referência
+de um ensaio tabular já existente, acrescente
+`--referencia dataset_pista/resultados/rl_cnn_simulado_01`. O contrato e
+o hash são conferidos ao carregar. `--interacoes` e `--avaliar-cada`
+aceitam múltiplos de 128, permitindo orçamento igual para DQN e PPO.
+
+Cada pasta de agente e semente contém `melhor.zip`, `validacao.csv` e
+`episodios_treino.csv`. A pasta principal guarda a CNN, `avaliacao.csv`,
+`latencia.csv`, `curvas.png`, `RELATORIO.md` e `experimento.json` com versões,
+hiperparâmetros, configuração do PD e hashes de fontes e checkpoints.
+As curvas mostram média e desvio-padrão da validação entre sementes.
+
+O relatório mede retorno, progresso, erro lateral, saídas da pista,
+tempo parado, bloqueios e variação de direção. O tempo parado usa
+velocidade simulada abaixo de 0,005 m/s. A latência usa as mesmas entradas
+pré-processadas para todos os agentes, com dez chamadas de aquecimento e
+cem medições por política salva. Ela inclui a inferência da CNN e a escolha
+da ação, em CPU com uma thread do PyTorch. A plataforma do ensaio aparece
+no manifesto. A medição na Raspberry com câmera e sensores segue pendente.
+
+Esses hiperparâmetros e o orçamento inicial permitem uma comparação
+exploratória. A dinâmica continua hipotética, as pistas vêm do gerador
+sintético existente e a velocidade observada é ideal. O teste não deve
+ser reutilizado para escolher hiperparâmetros. Novas rodadas de ajuste
+precisam de validação e reserva de novos cenários para avaliação final.
+
+Referências de implementação no [Gymnasium](https://gymnasium.farama.org/api/env/),
+[DQN](https://stable-baselines3.readthedocs.io/en/master/modules/dqn.html) e
+[PPO](https://stable-baselines3.readthedocs.io/en/master/modules/ppo.html).
+
+### Ensaio de 23/11/2026
+
+Executados seis treinos, três sementes por algoritmo, cada um com 8.192
+interações. A referência do ensaio tabular foi reutilizada e seu hash
+permaneceu igual ao final. O teste usou as mesmas cinco pistas e os mesmos
+estados iniciais por política. Os agregados DQN/PPO têm quinze episódios
+por agente, correspondentes às três políticas treinadas sobre cinco pistas.
+
+| Controlador | Retorno médio | Progresso médio | Erro lateral médio | Saídas | Tempo parado |
+|---|---:|---:|---:|---:|---:|
+| PD discretizado | 13,740 | 0,704 m | 0,0092 m | 0/5 | 0,0% |
+| DQN | 21,378 | 1,189 m | 0,0323 m | 0/15 | 0,0% |
+| PPO | 13,350 | 0,926 m | 0,0472 m | 2/15 | 16,1% |
+
+O DQN apresentou maior retorno e progresso médio neste orçamento, junto
+com maior erro lateral que o PD. As três sementes de DQN ficaram entre
+1,154 e 1,224 m de progresso médio. PPO teve 1,363 m na semente 7,
+1,242 m na 17 e 0,172 m na 27. A semente 27 concentrou as duas saídas
+de pista do PPO. Os retornos de validação oscilaram em ambos os algoritmos.
+A seleção pela validação preservou checkpoints anteriores ao fim do treino
+em parte das execuções.
+
+A mediana de CNN mais escolha da ação na CPU Windows foi 0,456 ms para
+PD, 0,710 ms para DQN e 0,882 ms para PPO, sobre entradas previamente
+processadas. São medidas do computador deste ensaio. A captura e o
+desempenho integrado na Raspberry permanecem pendentes.
+
+O teste de ponta a ponta exerceu treino e recarga dos modelos, além da
+avaliação pelo checkpoint persistido. Treze testes direcionados de ambiente,
+CNN, persistência e Q-learning passaram. Verificador Stable-Baselines3,
+contagem de interações e hashes dos checkpoints/fontes também conferidos.
+
 ## Etapas físicas e evolução
 
 O fechamento de 22/11 registra zero bytes recebidos do Uno na Raspberry.
