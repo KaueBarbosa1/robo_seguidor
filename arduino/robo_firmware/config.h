@@ -91,7 +91,7 @@
 #endif
 
 // Sem um comando válido da Pi por este tempo, os motores param sozinhos.
-#define MOTOR_ESQ_INVERTIDO (!USAR_CAMERA) // montagem sem camera: frente girava para tras
+#define MOTOR_ESQ_INVERTIDO 0 // 24/11: inverter apenas a esquerda em relacao a revisao anterior
 #define MOTOR_DIR_INVERTIDO (!USAR_CAMERA)
 #define MOTORES_WATCHDOG_MS 400
 

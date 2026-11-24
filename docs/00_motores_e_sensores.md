@@ -16,10 +16,10 @@ A sinalização atual usa LEDs verde/amarelo/vermelho em **A0/A1/A3** sem buzzer
 
 | Componente | Pino do componente | Arduino UNO | Observação |
 |---|---|---|---|
-| L298N | ENA | D5 (PWM) | motor A = esquerdo; tirar o jumper do ENA |
-| L298N | ENB | D6 (PWM) | motor B = direito; tirar o jumper do ENB |
-| L298N | IN1 / IN2 | D7 / D8 | motor esquerdo |
-| L298N | IN3 / IN4 | **D13** / D12 | motor direito. A planilha se contradiz (D11 em duas abas, D13 em "L298N e motores"); **você confirmou D13 e D12 na montagem**, e o firmware usa isso |
+| L298N | ENA | D5 (PWM) | canal logico direito; tirar o jumper do ENA |
+| L298N | ENB | D6 (PWM) | canal logico esquerdo; tirar o jumper do ENB |
+| L298N | IN1 / IN2 | D7 / D8 | motor direito |
+| L298N | IN3 / IN4 | **D13** / D12 | motor esquerdo. A planilha se contradiz (D11 em duas abas, D13 em "L298N e motores"); **você confirmou D13 e D12 na montagem**, e o firmware usa isso |
 | L298N | GND | GND do Arduino | comum com a bateria |
 | HC-SR04 | TRIG / ECHO | **D4 / D11** | ligação atual; ECHO é 5 V: ok no UNO, nunca direto na Pi |
 | HC-SR04 | VCC / GND | 5V / GND | |
@@ -42,7 +42,7 @@ O HC-05 (A0/A1 do projeto antigo) não é usado: a comunicação com a Pi é pel
 4. **GND comum:** GND do L298N, do Arduino e da bateria precisam estar ligados entre si.
 5. Resistores de **10 kΩ de IN1, IN2, IN3 e IN4 para o GND** (opcional, mas evita os motores dispararem
    enquanto o Arduino reinicia).
-6. Se uma roda girar ao contrário, troque os **dois fios** dela no L298N. Não mexa no código.
+6. A polaridade eletrica e ajustada em `MOTOR_ESQ_INVERTIDO`/`MOTOR_DIR_INVERTIDO` no firmware. Na revisao de24/11, esquerda=0 e direita=`!USAR_CAMERA`: o usuario relatou esquerda em re e direita em frente ao pedir avanco. Requer regravar o Uno e conferir com rodas suspensas; nao troque tambem os fios ao aplicar essa correcao.
 7. Encoders: confirme o tipo de saída e a tensão (precisa ser no máximo 5V no UNO). O firmware usa pull-up interno.
 
 ## Ordem de testes (cada passo só depois do anterior)

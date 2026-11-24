@@ -1054,3 +1054,20 @@ teste artificiais em diretorio temporario; nao apresentados como treinamento.
 CLI/sintaxe/diff conferidos. Sem camera fisica, serial, treino, upload,
 reinicio de servico ou rede. Guia17 detalha uso, contrato e pendencias.
 Treinamento somente com o carrinho parado; autonomia fisica nao validada.
+
+
+## Correcao de sentido da roda esquerda — 24/11/2026
+
+No teste pelo app Bluetooth, o usuario relatou esquerda em re e direita em
+frente. A pedido, MOTOR_ESQ_INVERTIDO mudou de !USAR_CAMERA para0: inverte
+somente a saida eletrica esquerda no perfil atual sem camera; perfil legado
+com camera ja tinha valor0. Direita preservada. Comandos positivos continuam
+significando avanco no PI, diagnostico e protecoes de obstaculo. Sem alterar
+pinos, parser Bluetooth, ganhos, velocidades ou guardas. Guia00 alinha nomes
+logicos aos canais ja existentes no codigo e explica o ajuste de polaridade.
+Requer regravar o Uno e repetir frente/re com rodas suspensas. Nenhum upload,
+reinicio de servico ou ensaio fisico foi executado nesta alteracao.
+
+Validacao desta correcao: harness C++ TUDO_OK, zero falhas, incluindo sentido
+frente/re, PI, guarda de obstaculo e watchdog. Compilacao Uno aprovada:
+12660 bytes flash/365 bytes RAM. Sentido fisico apos upload ainda pendente.
