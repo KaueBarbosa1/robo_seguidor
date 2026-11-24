@@ -1111,3 +1111,17 @@ Harness C++ padrao e sem servo: TUDO_OK, zero falhas. Conferem marcha manual
 com eco ausente por2 s simulados, nenhum TRIG, watchdog independente, S,
 restauracao e obstaculo no autonomo. Uno compilado12974 bytes flash/370 RAM;
 perfil legado com camera compilado5084/322. Nao valida autonomia/frenagem.
+
+
+## Aumento do teto de velocidade Bluetooth — 24/11/2026
+
+Apos retirar ultrassom do manual, usuario relatou rodas muito lentas. O teto
+manual mantido em4 pulsos/s foi ampliado para12 na Pi e no Uno, apenas no
+modo U/F8 sem ultrassom. Limite global, autonomo, sonar legado, ganhos PI,
+polaridade, watchdogs e encoder preservados. Esse e teto de alvo, nao taxa
+fisica comprovada. Requer regravar Uno e reiniciar main; nenhum upload ou
+ensaio fisico foi realizado nesta alteracao. Guia07 atualizado.
+
+Verificacao:11 testes do manual sem ultrassom aprovados, harness C++ padrao
+TUDO_OK com zero falhas e compilacao Uno12972 bytes flash/370 RAM. Atualizada
+expectativa da faixa PI acima de8 pulsos/s; ganhos existentes preservados.

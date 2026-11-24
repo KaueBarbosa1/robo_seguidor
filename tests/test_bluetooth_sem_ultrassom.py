@@ -43,7 +43,7 @@ class TestBluetoothSemUltrassom(unittest.TestCase):
     def test_callback_ignora_distancia_frente_laterais_e_nao_recuar(self):
         aplicar_movimento_manual(self.e,self.ard,120,70,validade_s=float('inf'))
         self.assertIn(P.comando_manual_sem_ultrassom(True),self.tx)
-        self.assertEqual(self.tx[-1],P.comando_velocidade(4,2))
+        self.assertEqual(self.tx[-1],P.comando_velocidade(12,6))
         self.assertFalse(self.t._recuar_manual(self.tempo,self.e.ler_manual()))
         self.assertFalse(self.t._lateral_bloqueada((120,70)))
         self.assertIsNone(self.t._recuo)
@@ -54,7 +54,7 @@ class TestBluetoothSemUltrassom(unittest.TestCase):
         self.rodar(40)
         velocidades=[p for p in self.tx if p[1]==P.CMD_VELOCIDADE]
         self.assertEqual(len(velocidades),40)
-        self.assertTrue(all(p==P.comando_velocidade(4,4) for p in velocidades))
+        self.assertTrue(all(p==P.comando_velocidade(12,12) for p in velocidades))
         self.assertFalse(any(p[1]==P.CMD_PARAR for p in self.tx))
         self.assertFalse(any(p==P.comando_sonar_movimento() for p in self.tx))
 
@@ -64,7 +64,7 @@ class TestBluetoothSemUltrassom(unittest.TestCase):
         self.assertFalse(any(p[1]==P.CMD_VELOCIDADE for p in self.tx))
         self.telemetria(manual=True);self.tx.clear()
         self.rodar()
-        self.assertIn(P.comando_velocidade(4,4),self.tx)
+        self.assertIn(P.comando_velocidade(12,12),self.tx)
 
     def test_firmware_antigo_ou_ack_vencido_nao_recebe_velocidade(self):
         for manual,t in ((False,100.),(True,99.)):

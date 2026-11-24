@@ -950,7 +950,7 @@ int main() {
   CHECK(motores_parados() && motores_manual_sem_ultrassom(), "U nao alimenta watchdog de movimento");
   cmd('R', 60, 60); step(20);
   motores_diagnostico(manualE, manualD, manualFlags);
-  CHECK((manualFlags & 0x30) == 0x30, "manual conserva teto baixo de velocidade antes usado no sonar");
+  CHECK((manualFlags & 0x08) && !(manualFlags & 0x30), "manual ampliado usa PI sem reforco exclusivo da faixa ate8 PPS");
   cmd('S', 0, 0); step(20);
   CHECK(motores_parados(), "S interrompe manual sem ultrassom");
   cmd('U', 0, 0); cmd('M', 60, 60); step(60);

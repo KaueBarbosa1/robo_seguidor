@@ -212,4 +212,4 @@ CNN_RL_PACOTE = None
 
 # Bluetooth manual sem HC-SR04/varredura/recuo. Autonomo conserva ultrassom.
 ULTRASSOM_BLUETOOTH_ATIVO = False
-MANUAL_SEM_ULTRASSOM_MAX_PPS = 4  # mesmo teto efetivo anterior do modo4; nao aumenta velocidade
+MANUAL_SEM_ULTRASSOM_MAX_PPS = 12  # teto manual ampliado a pedido; autonomo/sonar preservados

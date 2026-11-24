@@ -7,7 +7,8 @@ Bluetooth MANUAL nao ha disparos do HC-SR04, varredura, bloqueios por distancia,
 eco ausente ou lateral, nem recuo automatico por obstaculo. O operador controla
 frente/re/curvas. Parar pelo app/voz, prazo do Bluetooth, telemetria serial,
 watchdogs e falha de encoder continuam interrompendo o movimento. O alvo PI
-manual conserva o teto anterior de4 pulsos/s, na Pi e no Uno; nao e garantia
+manual tem teto de12 pulsos/s, ampliado de4 apos relato de lentidao,
+na Pi e no Uno; nao e garantia
 de velocidade fisica. Ganhos PI e polaridade das rodas nao mudaram.
 
 O Uno precisa do firmware desta revisao, e a main precisa ser reiniciada.
