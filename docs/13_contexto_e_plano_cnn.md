@@ -956,3 +956,19 @@ Mantidos uma roda por vez, pulso maximo1 s, verificacoes de telemetria,
 ultrassom, exclusividade e parada final. Nenhum ganho PI, firmware ou
 velocidade de operacao alterado. CLI aceita80 e recusa82/79; sem abrir
 serial ou realizar movimento nesta verificacao. Resultado fisico pendente.
+
+## Painel de coleta local — 24/11/2026
+
+A pedido do usuario, adicionado `tools/painel_coleta.py` para acompanhar pelo
+navegador do PC a captura da ESP32 enquanto dirige separadamente pelo Bluetooth.
+Servidor local HTTP:8080, sem comandos de motor ou acesso serial. Reutiliza o
+coletor JPEG existente com callback opcional apos escrita e evento de parada.
+Nao restaura o antigo painel de joystick nem altera controle, firmware,
+fontes operacionais ou aprendizado. Coleta inicia pelo terminal, tem prazo e
+encerra com Ctrl+C; JPEGs, CSV e manifesto mantem formato existente. Mostra
+contador, falhas, idade e ultimo JPEG salvo; oculta previa vencida/falha.
+Sem MP4, rotulacao ou integracao CNN nova. Treino somente parado.
+Quatro testes unittest simulados passaram e CLI/diff verificados. Suite antiga
+pytest do coletor nao executada: pytest ausente nos Pythons locais consultados.
+Sem ensaio fisico, serial, camera, navegador real ou alteracao de rede/servico.
+Procedimento e limites no guia12. Resultado de seguir pista permanece pendente.

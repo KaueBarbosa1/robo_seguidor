@@ -483,3 +483,44 @@ Confirmação adicional por GET direto, fora do sandbox: HTTP000 e timeout de
 conexão em2,001 s. Nesta tentativa nem cabeçalhos HTTP foram recebidos; não foi
 uma rejeição de resolução ou JPEG pelo detector. Não se alterou a rede para
 contornar essa indisponibilidade.
+
+## Painel local de gravacao — 24/11/2026
+
+Na Pi, dentro do projeto e com acesso HTTP a ESP32:
+
+```bash
+python3 tools/painel_coleta.py --saida dados_pista/sessao_01 --duracao 180
+```
+
+No PC, abra `http://IP_DA_PI:8080`. Consulte `hostname -I` na Pi e use o
+endereco acessivel ao PC, nao o IP da camera. Ambos precisam de conectividade
+entre si; por exemplo, na mesma rede Carrinho-CAM, se ela permitir acesso
+entre clientes. Nao requer VNC nem interface grafica na Pi. Use Python com
+OpenCV e NumPy, como no coletor existente.
+
+A coleta inicia no terminal; nao ha botoes de movimento, inicio ou parada no
+navegador. Ctrl+C no terminal encerra a captura e o servidor. Ao terminar o
+prazo, o painel permanece consultavel como COLETA ENCERRADA ate Ctrl+C.
+Abrir/fechar abas nao inicia nem interrompe a coleta. O coletor consulta a
+camera uma vez por captura; os navegadores recebem a ultima imagem em memoria,
+sem abrir outras capturas na ESP32. JPEGs originais, CSV e manifesto ficam na
+pasta nova escolhida. Nao produz MP4 nem rotulos de treino.
+
+GRAVANDO significa que houve JPEG salvo ha menos de dois segundos e a ultima
+tentativa nao falhou. A imagem apresentada e publicada somente depois da
+escrita do JPEG e registro CSV; representa o ultimo quadro salvo, nao video
+sem atraso. Falha HTTP, atraso, erro de disco ou perda da conexao do navegador
+exibem aviso; previa antiga e ocultada. Escrita concluida nao e garantia de
+persistencia contra queda de energia. Ultimo JPEG permanece em memoria;
+nao se acumula fila de imagens.
+
+Servidor HTTP sem autenticacao, destinado apenas a rede local confiavel;
+nao encaminhe a porta para a internet. Padrao 0.0.0.0:8080; `--host 127.0.0.1`
+restringe ao computador local. Nenhum acesso serial, alteracao de servico,
+rede, firmware ou controle foi acrescentado. Para dirigir, use o controle
+Bluetooth existente separadamente e acompanhe o carrinho diretamente: a
+previa pode atrasar. Treinar somente com o carrinho parado.
+
+Validacao simulada: quatro testes de gravacao antes da publicacao, falha e
+recuperacao, parada solicitada, erro de disco e respostas HTTP sem cache.
+Navegador, Wi-Fi, camera e percurso reais ainda pendentes.

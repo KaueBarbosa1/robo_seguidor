@@ -76,14 +76,14 @@ def esperar(intervalo, com_janela):
             return True
 
 
-def capturar(args, recorte, csv_sessao, inicio):
+def capturar(args, recorte, csv_sessao, inicio, observar=None, parar=None):
     opener = build_opener(ProxyHandler({}))
     com_janela = not args.sem_janela
     total = falhas = tentativa = 0
     limite = inicio + args.duracao if args.duracao is not None else math.inf
     estado = "encerrada"
     try:
-        while time.monotonic() < limite and (args.quadros is None or total < args.quadros):
+        while (parar is None or not parar.is_set()) and time.monotonic() < limite and (args.quadros is None or total < args.quadros):
             tentativa += 1
             inicio_get = time.monotonic()
             linha = {"tentativa": tentativa}
@@ -114,6 +114,8 @@ def capturar(args, recorte, csv_sessao, inicio):
                 intervalo = args.intervalo
             if csv_sessao is not None:
                 csv_sessao.writerow(linha)
+            if observar is not None:
+                observar(linha, quadro.jpeg if linha["status"] == "ok" else None)
             if com_janela:
                 cv2.imshow(JANELA, montar_previa(imagem, recorte, status))
             if args.quadros is not None and total >= args.quadros:
@@ -125,7 +127,7 @@ def capturar(args, recorte, csv_sessao, inicio):
     return total, falhas, estado
 
 
-def executar(args, recorte):
+def executar(args, recorte, observar=None, parar=None):
     com_janela = not args.sem_janela
     if com_janela:
         try:
@@ -154,7 +156,7 @@ def executar(args, recorte):
                 csv_sessao = csv.DictWriter(arquivo, fieldnames=CAMPOS) if arquivo is not None else None
                 if csv_sessao is not None:
                     csv_sessao.writeheader()
-                total, falhas, estado = capturar(args, recorte, csv_sessao, inicio)
+                total, falhas, estado = capturar(args, recorte, csv_sessao, inicio, observar, parar)
         except Exception:
             if manifesto is not None:
                 manifesto.update(estado="erro", fim_utc=utc_agora())
