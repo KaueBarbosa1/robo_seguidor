@@ -203,3 +203,8 @@ PAINEL_COLETA_PORTA = 8080
 PAINEL_COLETA_DIR = BASE_DIR / "dados_pista"
 PAINEL_COLETA_DURACAO_S = 180.0  # por sessao; novo clique cria outra pasta
 PAINEL_COLETA_INTERVALO_S = 0.1
+
+# CNN/RL congelados: carregar pacote pareado explicitamente. Nao ativa treino.
+# opencv | cnn-rl-sombra (nao segue com motores) | cnn-rl (exige pacote ESP32).
+POLITICA_LINHA = "opencv"
+CNN_RL_PACOTE = None

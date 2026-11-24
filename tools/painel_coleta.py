@@ -24,6 +24,7 @@ HTML = '''<!doctype html><html lang="pt-BR"><meta charset="utf-8">
 <section><strong id="estado">Conectando…</strong><p id="dados">Aguardando câmera</p>
 <button id="iniciar" disabled>Iniciar gravação</button><button id="parar" disabled>Parar gravação</button>
 <p id="mensagem" role="status"></p><small id="pasta"></small></section>
+<section><strong>CNN + RL</strong><p id="rl">OpenCV/PD selecionado. Sem modelo CNN/RL ativo.</p></section>
 <img id="imagem" alt="Prévia atual da câmera do carrinho" hidden>
 <p>Abrir esta página não inicia movimento nem gravação. Dirija pelo Bluetooth. Gravar ou parar a gravação não altera o modo do carrinho.</p>
 <p>A prévia pode atrasar. Acompanhe também o carrinho diretamente. São salvos JPEGs originais para preparar o treinamento.</p></main>
@@ -39,6 +40,7 @@ async function atualizar(){try{
  document.getElementById('pasta').textContent=s.pasta+(s.erro?' · ERRO: '+s.erro:'');
  document.getElementById('iniciar').disabled=ocupado||s.gravando||!s.camera_ok;
  document.getElementById('parar').disabled=ocupado||!s.gravando;
+ document.getElementById('rl').textContent=s.rl?`${s.rl.modo} · ${s.rl.dominio} · ${s.rl.status} · ação ${s.rl.acao??'—'} · inferência ${s.rl.inferencia_ms===undefined?'—':s.rl.inferencia_ms.toFixed(1)+' ms'}`:'OpenCV/PD selecionado. Sem modelo CNN/RL ativo.';
  const im=document.getElementById('imagem');im.hidden=!s.camera_ok;
  if(s.frame_id!==ultimo){im.src='/quadro?v='+s.frame_id;ultimo=s.frame_id;}
  }catch(e){document.getElementById('estado').textContent='SEM CONEXÃO COM A PI';document.getElementById('imagem').hidden=true;document.getElementById('iniciar').disabled=true;document.getElementById('parar').disabled=true;}
@@ -65,6 +67,7 @@ class Coleta:
         self.erro = ''
         self.ultimo_salvo = None
         self.inicio = 0.
+        self.diagnostico_rl = None
 
     def iniciar_worker(self):
         self.thread = threading.Thread(target=self._loop, name='painel-coleta', daemon=True)
@@ -160,8 +163,9 @@ class Coleta:
                 self.fim.wait(.2)
 
     def status(self):
+        rl = self.diagnostico_rl() if self.diagnostico_rl else None
         with self.lock:
-            return dict(gravando=self.arquivo is not None, camera_ok=self._camera_ok(),
+            return dict(rl=rl, gravando=self.arquivo is not None, camera_ok=self._camera_ok(),
                         camera_status=self.fonte.saude()['status'], frame_id=self.frame_id,
                         quadros=self.total, pasta=str(self.pasta or ''), erro=self.erro,
                         restante_s=max(0., self.duracao-(time.monotonic()-self.inicio)) if self.arquivo else None,

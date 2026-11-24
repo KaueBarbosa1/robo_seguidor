@@ -190,12 +190,13 @@ class DecisaoLinha:
 
 
 class ThreadControle(threading.Thread):
-    def __init__(self, estado: EstadoRobo, motor, parar: threading.Event, fonte=None):
+    def __init__(self, estado: EstadoRobo, motor, parar: threading.Event, fonte=None, inferencia_rl=None):
         super().__init__(name="controle", daemon=True)
         self._estado = estado
         self._motor = motor
         self._parar = parar
         self._fonte = fonte
+        self._inferencia_rl = inferencia_rl
         self._linha_geracao = None
         self._linha_sessao = -1
         self._linha_min_t = 0.0
@@ -320,6 +321,43 @@ class ThreadControle(threading.Thread):
         fator *= 1. - idade / cfg.PERDA_LINHA_TIMEOUT_S
         return DecisaoLinha(int(esq * fator), int(dir_ * fator), "vao_limitado",
                            self._linha_erro, True, idade)
+
+    def decidir_cnn_rl(self, agora, bloqueado=False):
+        """RL escolhe; guarda visual existente e ultrassom podem vetar, nunca substituir por PD."""
+        base = self.decidir_linha(agora, bloqueado)
+        if self._inferencia_rl.sombra:
+            return DecisaoLinha(0, 0, "cnn_rl_sombra")
+        if base.motivo not in {"observada", "vao_limitado"}:
+            return DecisaoLinha(0, 0, base.motivo)
+        diagnostico = getattr(self._motor, 'estado_motores', lambda: None)()
+        if (diagnostico is None or not 0 <= time.monotonic()-diagnostico.timestamp <= cfg.SENSOR_TIMEOUT_S or
+                diagnostico.falha_encoder):
+            return DecisaoLinha(0, 0, "diagnostico_motor_rl_indisponivel")
+        a = self._estado.ler_acao_rl()
+        if a is None:
+            return DecisaoLinha(0, 0, "aguardando_cnn_rl")
+        camera = self._fonte.saude()
+        limite = min(cfg.LEITURA_VALIDADE_S, self._fonte.idade_max_s)
+        numeros = (a.steer, a.vel_fator, a.timestamp, a.idade_captura_s, a.erro_cnn, a.visibilidade)
+        if (not all(math.isfinite(v) for v in numeros) or not -1 <= a.steer <= 1 or
+                not 0 <= a.vel_fator <= 1 or not -1 <= a.erro_cnn <= 1 or
+                not 0 <= a.visibilidade <= 1 or a.idade_captura_s < 0):
+            return DecisaoLinha(0, 0, "acao_rl_invalida")
+        if (camera['status'] != 'ok' or a.geracao_camera != camera['geracao'] or
+                a.sessao != self._estado.sessao_visao or not 0 <= agora-a.timestamp or
+                not 0 <= a.idade(agora) <= limite):
+            return DecisaoLinha(0, 0, "acao_rl_vencida")
+        if a.timestamp < self._linha_min_t:
+            return DecisaoLinha(0, 0, "aguardando_rl_apos_bloqueio")
+        if a.motivo != 'cnn_rl':
+            return DecisaoLinha(0, 0, a.motivo)
+        from aprendizado.politica import direcao_para_pwm
+        esq, direita = direcao_para_pwm(a.steer, a.vel_fator)
+        if base.estimada:
+            fator = max(0., min(1., cfg.TRACEJADO_VAO_FATOR)) * self._linha_ultima.confianca
+            fator *= max(0., 1.-base.idade_observacao_s/cfg.PERDA_LINHA_TIMEOUT_S)
+            esq, direita = int(esq*fator), int(direita*fator)
+        return DecisaoLinha(esq, direita, "cnn_rl", a.erro_cnn, base.estimada, a.idade(agora))
 
     def _diagnosticar_manual(self, manual, motivo):
         """Somente leitura/log: nao altera o pedido nem envia comandos de motor."""
@@ -610,7 +648,8 @@ class ThreadControle(threading.Thread):
                             esq, dir_ = direcao_para_pwm(acao.steer, acao.vel_fator)
                             self._motor.motores(esq, dir_)
                     else:
-                        decisao = self.decidir_linha(time.monotonic(), bloqueado)
+                        decisao = (self.decidir_cnn_rl(time.monotonic(), bloqueado) if self._inferencia_rl is not None
+                                   else self.decidir_linha(time.monotonic(), bloqueado))
                         self.decisao_linha = decisao
                         self._diagnosticar_parada(motivo_sensor or
                                                  (decisao.motivo if not (decisao.esq or decisao.dir) else None))

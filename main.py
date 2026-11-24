@@ -51,7 +51,20 @@ def main() -> None:
                     help="não abre a serial: motores/sensores simulados (testa câmera, visão e voz sem o Arduino)")
     ap.add_argument("--fonte-imagem", choices=("arduino", "csi", "nenhuma", "simulada", "esp32"),
                     default=cfg.FONTE_IMAGEM, help="seleciona a fonte sem alterar config.py")
+    ap.add_argument("--politica", choices=("opencv", "cnn-rl-sombra", "cnn-rl"), default=cfg.POLITICA_LINHA)
+    ap.add_argument("--pacote-cnn-rl", default=cfg.CNN_RL_PACOTE, help="manifesto do par CNN/RL treinado")
     args = ap.parse_args()
+    pacote = None
+    if args.politica != "opencv":
+        if args.fonte_imagem != "esp32" or cfg.APRENDIZADO_ATIVO or not args.pacote_cnn_rl:
+            ap.error("CNN/RL exige fonte esp32, pacote pareado e aprendizado online desligado")
+        from aprendizado.inferencia_esp32 import Pacote
+        try:
+            pacote = Pacote(args.pacote_cnn_rl)
+            if args.politica == "cnn-rl":
+                pacote.validar_motores()
+        except (ValueError, OSError, KeyError, TypeError) as exc:
+            ap.error(str(exc))
     if args.fonte_imagem == "esp32" and cfg.APRENDIZADO_ATIVO:
         ap.error("ESP32 com aprendizado ativo exige contrato CNN compatível; mantenha APRENDIZADO_ATIVO=False")
 
@@ -60,6 +73,7 @@ def main() -> None:
     motor = ArduinoNulo() if args.sem_arduino else ArduinoSerial()
     fonte = None
     painel = None
+    inferencia = None
     iniciadas = []
     try:
         try:
@@ -69,12 +83,20 @@ def main() -> None:
                       cfg.SERIAL_PORTA, e)
             raise SystemExit(1)
         fonte = abrir_fonte(args.fonte_imagem, motor)
+        if pacote is not None:
+            if not isinstance(fonte, CameraESP32):
+                raise RuntimeError("CNN/RL sem fonte ESP32 disponivel")
+            from aprendizado.inferencia_esp32 import ThreadInferencia
+            inferencia = ThreadInferencia(estado, motor, parar, fonte, pacote,
+                                         sombra=args.politica == "cnn-rl-sombra")
         if cfg.PAINEL_COLETA_ATIVO and isinstance(fonte, CameraESP32):
             from tools.painel_coleta import Painel
             try:
                 painel = Painel(fonte, cfg.PAINEL_COLETA_DIR, cfg.PAINEL_COLETA_HOST,
                                 cfg.PAINEL_COLETA_PORTA, cfg.PAINEL_COLETA_DURACAO_S,
                                 cfg.PAINEL_COLETA_INTERVALO_S)
+                if inferencia is not None:
+                    painel.coleta.diagnostico_rl = inferencia.status
                 painel.iniciar()
                 log.info("Painel da camera em http://IP_DA_PI:%s — aguardando clique para gravar.",
                          cfg.PAINEL_COLETA_PORTA)
@@ -86,10 +108,14 @@ def main() -> None:
             aplicar_comando(estado, motor, comando)
 
         threads = [
-            ThreadControle(estado, motor, parar, fonte),
+            (ThreadControle(estado, motor, parar, fonte, inferencia_rl=inferencia) if inferencia is not None
+             else ThreadControle(estado, motor, parar, fonte)),
             ThreadVisao(estado, parar, fonte),
             ThreadVoz(ao_comando_de_voz, parar),
         ]
+        if inferencia is not None:
+            threads.append(inferencia)
+            log.warning("Politica %s: dominio=%s; inferencia congelada, sem treinamento.", args.politica, pacote.dominio)
         if cfg.APRENDIZADO_ATIVO:
             from aprendizado.robo_real import ThreadAprendizado
             threads.append(ThreadAprendizado(estado, motor, parar, fonte))

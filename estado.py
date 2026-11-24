@@ -50,15 +50,35 @@ class Acao:
     timestamp: float
 
 
+@dataclass(frozen=True)
+class AcaoRL:
+    steer: float
+    vel_fator: float
+    timestamp: float  # recepcao do frame; inferencia nao rejuvenesce a captura
+    idade_captura_s: float
+    frame_id: int
+    geracao_camera: int
+    sessao: int
+    motivo: str
+    erro_cnn: float
+    visibilidade: float
+    indice: int
+
+    def idade(self, agora):
+        return agora-self.timestamp+self.idade_captura_s
+
+
 class EstadoRobo:
     def __init__(self):
         self.lock = threading.RLock()
         self._modo = Modo.PARADO            # começa parado: só anda depois de ouvir "siga"
         self._encerrando = False
         self._sessao_visao = 0
+        self._sessao_visao_inicio = time.monotonic()
         self._partida_ate = 0.0
         self._fim_manobra = 0.0
         self._leitura = Leitura(0.0, False, 0.0)
+        self._acao_rl: AcaoRL | None = None
         self._acao: Acao | None = None
         self._manual: tuple[int, int, float, float | None] | None = None   # (PWM esq, PWM dir, instante, validade em s ou None)
         self._recuo_bloqueia_avanco = False
@@ -89,6 +109,7 @@ class EstadoRobo:
     def encerrar(self) -> None:
         with self.lock:
             self._encerrando = True
+            self._acao_rl = None
             self.definir_modo(Modo.PARADO)
             self._partida_ate = 0.0
 
@@ -101,6 +122,8 @@ class EstadoRobo:
         # Chamado sob lock: até um pare/siga entre dois ciclos invalida a visão.
         if self._modo is not modo:
             self._sessao_visao += 1
+            self._sessao_visao_inicio = time.monotonic()
+            self._acao_rl = None
             self._leitura = Leitura(0.0, False, 0.0, camera_ok=False,
                                     sessao=self._sessao_visao)
         self._modo = modo
@@ -164,3 +187,20 @@ class EstadoRobo:
     def ler_acao(self) -> Acao | None:
         with self.lock:
             return self._acao
+
+
+    def publicar_acao_rl(self, acao: AcaoRL) -> bool:
+        with self.lock:
+            if (self._encerrando or acao.sessao != self._sessao_visao or
+                    acao.timestamp < self._sessao_visao_inicio):
+                return False
+            self._acao_rl = acao
+            return True
+
+    def ler_acao_rl(self):
+        with self.lock:
+            return self._acao_rl
+
+    def limpar_acao_rl(self):
+        with self.lock:
+            self._acao_rl = None

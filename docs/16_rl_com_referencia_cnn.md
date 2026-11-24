@@ -213,3 +213,14 @@ treino, executar inferência sem rodas para medir idade das observações e
 latência. A integração com o escritor único dos motores deve conservar voz,
 parada manual, watchdogs e guardas de câmera, encoder e ultrassom. O contorno
 de obstáculos requer ambiente, ações, recompensa e avaliação adicionais.
+
+
+## Integracao de inferencia com ESP32 — 24/11/2026
+
+O caminho opt-in de inferencia congelada foi implementado em
+[Integracao CNN/RL/ESP32](17_integracao_cnn_rl_esp32.md). Os experimentos acima
+podem ser empacotados para modo sombra na camera, com verificacao do par
+CNN/politica. Isso nao promove os checkpoints sinteticos para motores reais.
+Main/painel exibem diagnosticos e mantem guardas. Pesos RL nao estao presentes
+nesta Pi; nenhuma transferencia fisica ou autonomia foi validada. A coleta,
+rotulacao e treino pareado real/calibracao continuam pendentes. Treino parado.

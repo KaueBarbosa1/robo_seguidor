@@ -3,7 +3,10 @@
 Atualização de 24/11/2026: main seleciona ESP32 por padrão e abre painel local
 com prévia e gravação por botões, compartilhando a câmera com a visão OpenCV.
 A gravação começa apenas por clique; não inicia movimento. Seguimento/parada
-no piso e integração da CNN continuam sem validação física. Veja registro ao
+no piso e integração da CNN continuam sem validação física. A integração
+congelada CNN/RL com a fonte ESP32 foi implementada em software, opt-in e
+com pesos pareados, conforme guia17; nenhum checkpoint RL está disponível
+localmente e o padrão permanece OpenCV/PD. Veja registro ao
 fim deste documento e guia12 para disponibilidade no boot e uso.
 
 Atualização de 23/11/2026. A orientação do professor passa a colocar RL na
@@ -765,7 +768,7 @@ testes de software, mas zera modo e saídas. Nenhum firmware, protocolo, Wi-Fi,
 serviço ou arquivo da CNN foi alterado. Aprendizado próprio permanece desativado;
 ESP32 com aprendizado ativo é recusado até existir contrato de entrada compatível.
 
-Validação:25 testes novos e63 regressões selecionadas aprovados. O fluxo com
+Validação:26 testes novos e63 regressões selecionadas aprovados. O fluxo com
 HTTP/JPEG, threads de visão/controle, estado e sensores/rodas falsos exerceu
 linha, vão, timeout, falha/reconexão e nova observação. Baseline confirmou o
 problema de avanço inicial sem linha; versão nova não avançou nesse cenário.
@@ -1010,3 +1013,44 @@ com camera falsa, fonte compartilhada, clique repetido, disco cheio, expiracao,
 recuperacao e main PARADA/limpeza). Regressao selecionada:fonte5, decisao25,
 visual15, controle11 e seguranca22, total91 aprovados incluindo painel.
 Sem camera fisica, serial, navegador automatizado, boot ou ensaio na pista.
+
+
+## Inferencia CNN/RL conectada a camera — 24/11/2026
+
+Implementada integracao opt-in CameraESP32 -> CNN -> politica Q/DQN/PPO ->
+AcaoRL no estado -> escritor unico ThreadControle. Fonte compartilhada com
+painel e OpenCV; inferencia congelada no maximo10 Hz, sem treino ou exploracao.
+Main aceita --politica cnn-rl-sombra|cnn-rl e --pacote-cnn-rl. Padrao permanece
+opencv; aprendizado legado continua desligado. Modo sombra calcula/mostra
+acoes mas envia zero em SEGUINDO; Bluetooth manual continua manual. Painel
+exibe modo/dominio/acao/tempo, sem comandos novos de movimento.
+
+Pacote cnn_rl_esp32_v1 verifica arquivos SHA256, hash CNN, observacao, escalas,
+onze acoes e visibilidade supervisionada. Empacotador de experimentos existentes
+copia par congelado, sempre com dominio sintetico e restricao a sombra. DQN/PPO
+carregam via SB3 CPU deterministico, dependencias nao instaladas aqui. Q usa
+NumPy sem exploracao. Adaptador sintetico320x240->160x120->ROI40 existe apenas
+para diagnostico; nao transforma pesos simulados em modelo de hardware.
+Contrato real usa ROI ESP32 normalizada, semantica de referencia igual a usada
+pelo agente e conversao encoder calibrada declarada. Mudar metadados nao valida
+nem adapta modelo. CNNs de fotos y075 existentes continuam incompatíveis
+(visibilidade nao supervisionada, outra semantica e ROI que nao cabe).
+Nao ha checkpoint RL local; nenhum modelo foi treinado ou ativado no carrinho.
+
+Controle RL exige F8 recente/sem falha e conserva veto visual OpenCV,
+obstaculo/inspecao, encoder, voz,
+manual, watchdogs, limites e validade. Nao usa direcao PD como fallback.
+Acao mantem timestamp ORIGINAL do frame, sessao e geracao. Pare/siga, frame
+anterior a sessao, reconexao, vencimento e bloqueio impedem reaproveitamento.
+Velocidade usa duas amostras de ticks/tempo, com escala declarada por roda;
+a referencia atual e provisoria e nao comprova odometria/frenagem. Ferramenta
+isolada sem serial oferece diagnostico com velocidade explicitamente simulada.
+
+Validacao:26 testes novos e108 regressoes selecionadas, total134 aprovados.
+Fluxo HTTP/JPEG falso com threads visao/CNN/RL/controle confirmou emissao de
+acao e veto por obstaculo/camera, retorno sem linha e pare, em motores falsos.
+Testes DQN/PPO usaram API injetada, nao ZIP real nem SB3 instalado. Pesos de
+teste artificiais em diretorio temporario; nao apresentados como treinamento.
+CLI/sintaxe/diff conferidos. Sem camera fisica, serial, treino, upload,
+reinicio de servico ou rede. Guia17 detalha uso, contrato e pendencias.
+Treinamento somente com o carrinho parado; autonomia fisica nao validada.

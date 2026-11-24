@@ -9,8 +9,9 @@ O diagrama abaixo descreve a arquitetura legada. A configuração atual usa Uno
 sem câmera e ESP32-CAM por HTTP para visão OpenCV/PD. A main também abre um
 painel local em `http://IP_DA_PI:8080`: prévia ao vivo e botões para iniciar e
 parar gravações JPEG, sem iniciar movimento. Câmera e gravação compartilham
-a mesma captura. A integração da CNN e a validação do seguimento/parada no
-piso permanecem pendentes. Consulte o contexto antes de usar as etapas históricas.
+a mesma captura. A inferência CNN/RL é opt-in e exige pesos pareados; confira o
+[guia de integração](docs/17_integracao_cnn_rl_esp32.md). Pesos RL locais e
+validação do seguimento/parada no piso permanecem pendentes. Consulte o contexto antes de usar as etapas históricas.
 
 Teste independente da ESP32-CAM OV2640: [guia de bancada](docs/12_esp32_cam_bancada.md).
 Firmware e receptor separados; validação física e decisão sobre CNN ficam em etapas distintas.
