@@ -192,6 +192,16 @@ class CameraESP32:
                 return None
             return self._id, self._quadro.imagem, self._metadados(self._quadro)
 
+    def proximo_jpeg_detalhado(self, apos_id, timeout=.2):
+        """Snapshot original para coleta; compartilha captura, id e validade da visao."""
+        with self._cond:
+            self._cond.wait_for(lambda: self._fim.is_set() or
+                                (self._id > apos_id and self._quadro is not None), timeout)
+            if (self._fim.is_set() or self._status_atual() != "ok" or
+                    self._quadro is None or self._id <= apos_id):
+                return None
+            return self._id, self._quadro
+
     def proximo_quadro(self, apos_id, timeout=1.):
         quadro = self.proximo_quadro_detalhado(apos_id, timeout)
         return quadro[:2] if quadro is not None else None

@@ -18,6 +18,7 @@ from motor.nulo import ArduinoNulo
 from motor.serial_com import ArduinoSerial
 from visao.detector import ThreadVisao
 from visao.fontes import criar_fonte
+from visao.esp32_cam import CameraESP32
 import config as cfg
 from voz.reconhecimento import ThreadVoz
 
@@ -58,6 +59,7 @@ def main() -> None:
     estado = EstadoRobo()
     motor = ArduinoNulo() if args.sem_arduino else ArduinoSerial()
     fonte = None
+    painel = None
     iniciadas = []
     try:
         try:
@@ -67,6 +69,18 @@ def main() -> None:
                       cfg.SERIAL_PORTA, e)
             raise SystemExit(1)
         fonte = abrir_fonte(args.fonte_imagem, motor)
+        if cfg.PAINEL_COLETA_ATIVO and isinstance(fonte, CameraESP32):
+            from tools.painel_coleta import Painel
+            try:
+                painel = Painel(fonte, cfg.PAINEL_COLETA_DIR, cfg.PAINEL_COLETA_HOST,
+                                cfg.PAINEL_COLETA_PORTA, cfg.PAINEL_COLETA_DURACAO_S,
+                                cfg.PAINEL_COLETA_INTERVALO_S)
+                painel.iniciar()
+                log.info("Painel da camera em http://IP_DA_PI:%s — aguardando clique para gravar.",
+                         cfg.PAINEL_COLETA_PORTA)
+            except OSError as exc:
+                log.error("Painel indisponivel (%s); confira se outro painel ocupa a porta. Visao continua.", exc)
+
 
         def ao_comando_de_voz(comando: str) -> None:
             aplicar_comando(estado, motor, comando)
@@ -116,8 +130,12 @@ def main() -> None:
                     try:
                         motor.fechar()
                     finally:
-                        if fonte is not None and hasattr(fonte, "parar"):
-                            fonte.parar()
+                        try:
+                            if painel is not None:
+                                painel.parar()
+                        finally:
+                            if fonte is not None and hasattr(fonte, "parar"):
+                                fonte.parar()
         log.info("Encerrado.")
 
 

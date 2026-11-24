@@ -6,9 +6,11 @@ e as propostas de trajetória em três alturas, validade supervisionada, memóri
 para os vãos e colaboração com o futuro planejador de obstáculos.
 
 O diagrama abaixo descreve a arquitetura legada. A configuração atual usa Uno
-sem câmera; a ESP32-CAM tem receptor de bancada separado e sua integração à
-CNN/controle ainda está pendente. Consulte o contexto antes de seguir as etapas
-históricas ou considerar alguma capacidade validada no carrinho físico.
+sem câmera e ESP32-CAM por HTTP para visão OpenCV/PD. A main também abre um
+painel local em `http://IP_DA_PI:8080`: prévia ao vivo e botões para iniciar e
+parar gravações JPEG, sem iniciar movimento. Câmera e gravação compartilham
+a mesma captura. A integração da CNN e a validação do seguimento/parada no
+piso permanecem pendentes. Consulte o contexto antes de usar as etapas históricas.
 
 Teste independente da ESP32-CAM OV2640: [guia de bancada](docs/12_esp32_cam_bancada.md).
 Firmware e receptor separados; validação física e decisão sobre CNN ficam em etapas distintas.

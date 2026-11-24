@@ -1,5 +1,11 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de 24/11/2026: main seleciona ESP32 por padrão e abre painel local
+com prévia e gravação por botões, compartilhando a câmera com a visão OpenCV.
+A gravação começa apenas por clique; não inicia movimento. Seguimento/parada
+no piso e integração da CNN continuam sem validação física. Veja registro ao
+fim deste documento e guia12 para disponibilidade no boot e uso.
+
 Atualização de 23/11/2026. A orientação do professor passa a colocar RL na
 escolha das ações, com CNN fornecendo referência perceptiva. O protótipo
 `tools/treinar_rl_simulado.py` implementa Q-learning tabular sobre referência
@@ -972,3 +978,35 @@ Quatro testes unittest simulados passaram e CLI/diff verificados. Suite antiga
 pytest do coletor nao executada: pytest ausente nos Pythons locais consultados.
 Sem ensaio fisico, serial, camera, navegador real ou alteracao de rede/servico.
 Procedimento e limites no guia12. Resultado de seguir pista permanece pendente.
+
+
+## Painel integrado com botoes e camera compartilhada — 24/11/2026
+
+O usuario solicitou deixar o painel disponivel ao iniciar a main e gravar
+somente por botao, sem acessar o terminal com o carrinho na pista. A revisao
+substitui o inicio imediato da ferramenta anterior: previa continua, botoes
+Iniciar/Parar, pastas unicas por sessao e prazo180 s com contador. Fonte padrao
+agora ESP32, antes arduino sem camera (na pratica sem imagem). A main abre
+HTTP:8080 em paralelo e permanece PARADA ate comando; nao inicia gravacao.
+Painel e ThreadVisao compartilham CameraESP32, sem duplicar captura HTTP.
+Snapshot JPEG novo preserva id, timestamp e validade da fonte. Gravar/parar
+nao muda controle nem encerra camera. Disco cheio interrompe apenas gravacao;
+falha/idade da camera oculta previa e continua coberta pelas guardas existentes.
+Mantidos ganhos, limites, firmware, serial, Bluetooth, sonar, aprendizado
+inativo e contrato CNN. Seguir o pontilhado usa OpenCV/PD; parar no obstaculo
+usa ultrassom, nao deteccao visual treinada. Autonomia fisica continua pendente.
+
+Servico existente usa main.py e passa a incluir o painel com essa configuracao.
+Restart=always recupera tambem termino inesperado com codigo zero; parada
+explicita pelo systemctl permanece respeitada.
+Guia12 inclui instalacao/linger e reinicio unico na Pi; nao foram executados
+instalacao, reinicio de servico, alteracao de rede ou movimento aqui. Endereco
+requer Pi ligada, main ativa e rede acessivel; nao e hospedagem externa.
+Dados locais ignorados no Git. Coleta guarda JPEGs originais/CSV/manifesto;
+nao gera video MP4 nem rotulos. Treinamento somente com carrinho parado.
+
+Validacao:13 testes do painel aprovados (inclui HTTP localhost fora do sandbox
+com camera falsa, fonte compartilhada, clique repetido, disco cheio, expiracao,
+recuperacao e main PARADA/limpeza). Regressao selecionada:fonte5, decisao25,
+visual15, controle11 e seguranca22, total91 aprovados incluindo painel.
+Sem camera fisica, serial, navegador automatizado, boot ou ensaio na pista.

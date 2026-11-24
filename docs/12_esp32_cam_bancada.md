@@ -484,43 +484,90 @@ conexão em2,001 s. Nesta tentativa nem cabeçalhos HTTP foram recebidos; não f
 uma rejeição de resolução ou JPEG pelo detector. Não se alterou a rede para
 contornar essa indisponibilidade.
 
-## Painel local de gravacao — 24/11/2026
+## Painel local de gravacao — revisao de 24/11/2026
 
-Na Pi, dentro do projeto e com acesso HTTP a ESP32:
+A main agora seleciona ESP32 como fonte padrao e abre o painel automaticamente:
 
 ```bash
-python3 tools/painel_coleta.py --saida dados_pista/sessao_01 --duracao 180
+python3 main.py
 ```
 
 No PC, abra `http://IP_DA_PI:8080`. Consulte `hostname -I` na Pi e use o
-endereco acessivel ao PC, nao o IP da camera. Ambos precisam de conectividade
-entre si; por exemplo, na mesma rede Carrinho-CAM, se ela permitir acesso
-entre clientes. Nao requer VNC nem interface grafica na Pi. Use Python com
-OpenCV e NumPy, como no coletor existente.
+endereco acessivel ao PC, nao `192.168.4.1` (camera). O painel nao requer VNC.
+PC e Pi precisam de conectividade entre si. Por exemplo, ambos na Carrinho-CAM,
+se a rede permitir acesso entre clientes; ao trocar de rede o IP pode mudar.
+Pode usar `http://NOME_DA_PI.local:8080` onde resolucao mDNS estiver disponivel.
+Sem alimentacao, rede ou main ativa, o endereco nao estara acessivel.
 
-A coleta inicia no terminal; nao ha botoes de movimento, inicio ou parada no
-navegador. Ctrl+C no terminal encerra a captura e o servidor. Ao terminar o
-prazo, o painel permanece consultavel como COLETA ENCERRADA ate Ctrl+C.
-Abrir/fechar abas nao inicia nem interrompe a coleta. O coletor consulta a
-camera uma vez por captura; os navegadores recebem a ultima imagem em memoria,
-sem abrir outras capturas na ESP32. JPEGs originais, CSV e manifesto ficam na
-pasta nova escolhida. Nao produz MP4 nem rotulos de treino.
+O painel abre sem gravar e sem alterar o modo PARADO inicial do carrinho.
+Mostra a imagem recente e habilita **Iniciar gravacao** quando a camera esta
+respondendo. O clique cria uma pasta unica em `dados_pista/`, sem digitar nome
+ou rodar outro comando no chao. **Parar gravacao** fecha a sessao e preserva os
+arquivos; a previa e a visao continuam ativas. Novo clique cria outra sessao.
+Cada sessao tem limite padrao de180 s, mostrado em contagem regressiva;
+`PAINEL_COLETA_DURACAO_S` ajusta esse limite antes da execucao.
+Fechar/abrir o navegador nao altera uma gravacao ativa. O estado persistente
+do arquivo registra encerramento quando a main recebe Ctrl+C/SIGTERM;
+queda de energia nao garante fechamento ou persistencia de dados em disco.
 
-GRAVANDO significa que houve JPEG salvo ha menos de dois segundos e a ultima
-tentativa nao falhou. A imagem apresentada e publicada somente depois da
-escrita do JPEG e registro CSV; representa o ultimo quadro salvo, nao video
-sem atraso. Falha HTTP, atraso, erro de disco ou perda da conexao do navegador
-exibem aviso; previa antiga e ocultada. Escrita concluida nao e garantia de
-persistencia contra queda de energia. Ultimo JPEG permanece em memoria;
-nao se acumula fila de imagens.
+A visao OpenCV e o painel consomem snapshots da MESMA CameraESP32 da main.
+Existe uma unica thread de captura HTTP da ESP32. Gravar/parar nao para a fonte,
+nao muda o modo do controle e nao escreve na serial. Nao execute o painel
+independente junto com a main: haveria disputa de porta e outra captura da
+camera. Para previa/coleta sem a main, existe o modo independente:
 
-Servidor HTTP sem autenticacao, destinado apenas a rede local confiavel;
-nao encaminhe a porta para a internet. Padrao 0.0.0.0:8080; `--host 127.0.0.1`
-restringe ao computador local. Nenhum acesso serial, alteracao de servico,
-rede, firmware ou controle foi acrescentado. Para dirigir, use o controle
-Bluetooth existente separadamente e acompanhe o carrinho diretamente: a
-previa pode atrasar. Treinar somente com o carrinho parado.
+```bash
+python3 tools/painel_coleta.py --saida dados_pista --duracao 180
+```
 
-Validacao simulada: quatro testes de gravacao antes da publicacao, falha e
-recuperacao, parada solicitada, erro de disco e respostas HTTP sem cache.
-Navegador, Wi-Fi, camera e percurso reais ainda pendentes.
+Nesse modo tambem e necessario clicar no navegador para iniciar gravacao;
+`--saida` agora e a pasta BASE, podendo existir. Cada clique cria uma subpasta.
+O coletor antigo `tools/coletar_esp32_cam.py` continua com sua CLI original.
+
+Para abrir automaticamente no boot, use o servico de usuario existente, na Pi,
+uma vez, com o carrinho imobilizado:
+
+```bash
+bash deploy/instalar_servico.sh
+systemctl --user restart robo.service
+```
+
+O servico reinicia a main se ela terminar inesperadamente, inclusive com
+codigo zero; `systemctl --user stop robo.service` continua sendo parada explicita.
+O instalador habilita o servico e solicita sudo local para habilitar linger;
+nao envie senha. Nao execute uma segunda main manual com o servico ativo.
+A main precisa iniciar corretamente, inclusive acesso ao Uno; confira:
+
+```bash
+systemctl --user status robo.service
+journalctl --user -u robo.service -n 40 --no-pager
+```
+
+Nao foi instalado/reiniciado servico nesta implementacao. Disponibilidade no
+boot e no Wi-Fi real exige verificar na Pi. O endereco nao fica publicado na
+internet. Servidor HTTP sem login, apenas em rede local confiavel, com token
+por processo nos comandos POST. GET/abrir pagina nao inicia gravacao. Configuracao
+em `PAINEL_COLETA_*` no config.py. Nenhuma mudanca de rede ou IP fixo automatica.
+
+A previa e AO VIVO, independente de estar gravando. O contador aumenta somente
+apos escrever JPEG original e linha CSV. Os arquivos mantem formato de sessao
+`coleta_esp32_v1`, com identidade, nota, timestamps e manifesto; nao gera MP4
+nem rotulos. Nao se preenche com quadros repetidos ou velhos. A validade e a
+mesma da visao (0,3 s), incluindo idade informada pela ESP32, HTTP e tempo na
+Pi. Falha/expiracao oculta a imagem; erro de disco encerra a sessao com aviso,
+sem desligar a fonte usada pelo controle. O manifesto desta coleta nao define
+recorte CNN, pois os JPEGs sao originais e o contrato de treino ainda e pendente.
+
+O carrinho so entra no seguimento apos comando existente de "siga"; o painel
+nao tem comando de movimento. Pontilhado e tratado pela visao OpenCV/PD;
+ultrassom trata obstaculos, preservando as guardas de leitura recente, falha,
+encoder e parada manual. Nao ha CNN treinada integrada nem desvio automatico.
+Treino somente parado. Validacao no piso continua pendente; confirmar correcao
+de direcao e parada primeiro com rodas suspensas, depois em trecho curto.
+Acompanhe tambem o carrinho diretamente: previa web pode atrasar.
+
+Validacao:13 testes do painel, incluindo HTTP localhost real com fonte falsa,
+botoes, disco cheio, desconexao/recuperacao, expiracao, sessoes distintas,
+fonte unica compartilhada e encerramento da main apos parada do motor. Mais
+78 regressoes selecionadas (fonte5, decisao25, visual15, controle11 e seguranca22)
+passaram. Sem navegador automatizado, camera/serial reais, boot ou percurso.
