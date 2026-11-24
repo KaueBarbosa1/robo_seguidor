@@ -25,14 +25,14 @@ def argumentos(argv=None):
     ap.add_argument("--roda", required=True, choices=("esquerda", "direita"))
     ap.add_argument("--sentido", choices=("frente", "re"), default="frente")
     modo = ap.add_mutually_exclusive_group(required=True)
-    modo.add_argument("--pwm", type=int, help="PWM direto: valor par entre 2 e 60")
+    modo.add_argument("--pwm", type=int, help="PWM direto: valor par entre 2 e 80")
     modo.add_argument("--pps", type=int, help="velocidade PI: alvo de 1 a 4 pulsos/s; NAO limita PWM")
     ap.add_argument("--tempo", type=float, default=.5, help="pulso maior que zero e de no maximo 1 s")
     a = ap.parse_args(argv)
     if not math.isfinite(a.tempo) or not 0 < a.tempo <= 1:
         ap.error("--tempo deve ser finito, maior que zero e no maximo 1 s")
-    if a.pwm is not None and (not 2 <= a.pwm <= 60 or a.pwm % 2):
-        ap.error("--pwm exige valor par entre 2 e 60")
+    if a.pwm is not None and (not 2 <= a.pwm <= 80 or a.pwm % 2):
+        ap.error("--pwm exige valor par entre 2 e 80")
     if a.pps is not None and not 1 <= a.pps <= 4:
         ap.error("--pps exige alvo de 1 a 4 pulsos/s")
     if cfg.FIRMWARE_COM_CAMERA:

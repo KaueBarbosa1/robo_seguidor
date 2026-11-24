@@ -947,3 +947,12 @@ Sem alteracao de motores, ganhos ou protecoes. Guia10 e mapa atualizados.
 Harness C++ passou (TUDO_OK, zero falhas), incluindo D10 preservado em LOW
 e HIGH, LEDs e watchdog. Compilacao Uno passou:12670 bytes flash/365 RAM.
 Nenhum upload ou ensaio fisico nesta alteracao; requer regravar Uno.
+
+## Aumento do PWM do teste isolado — 23/11/2026
+
+A pedido do usuario, tools/testar_motores.py permite PWM direto par de2 a80
+(antes ate60), para investigar partida da esquerda com rodas suspensas.
+Mantidos uma roda por vez, pulso maximo1 s, verificacoes de telemetria,
+ultrassom, exclusividade e parada final. Nenhum ganho PI, firmware ou
+velocidade de operacao alterado. CLI aceita80 e recusa82/79; sem abrir
+serial ou realizar movimento nesta verificacao. Resultado fisico pendente.
