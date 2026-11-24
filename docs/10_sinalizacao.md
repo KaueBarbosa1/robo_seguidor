@@ -35,3 +35,11 @@ arduino-cli upload -p /dev/ttyACM0 --fqbn arduino:avr:uno arduino/robo_firmware
 
 Feche ferramentas que usam a serial antes do upload. Mantenha a potencia
  dos motores desligada durante a gravacao.
+
+
+## Indicacao no manual sem ultrassom — 24/11/2026
+
+Com U/F8 manual ativo, a pausa intencional do HC-SR04 nao acende vermelho.
+Verde indica modo manual sem falha de encoder, nao caminho livre medido.
+Ao restaurar o autonomo, LEDs voltam a refletir sensor/servo/obstaculo/encoder
+como antes. A sinalizacao continua sem comandar ou liberar motores.

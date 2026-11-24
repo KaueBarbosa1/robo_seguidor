@@ -171,7 +171,7 @@ def test_manual_e_pare_interrompem_servo_sem_esperar_ciclo():
     est, mot = EstadoRobo(), MotorInspecao()
     est.definir_modo(Modo.SEGUINDO)
     aplicar_movimento_manual(est, mot, 80, 80)
-    centros_esperados = [] if cfg.SONAR_MOVIMENTO_ATIVO else [False]
+    centros_esperados = [] if cfg.ULTRASSOM_BLUETOOTH_ATIVO and cfg.SONAR_MOVIMENTO_ATIVO else [False]
     assert est.modo is Modo.MANUAL and mot.centros == centros_esperados
     aplicar_comando(est, mot, 'pare')
     assert est.modo is Modo.PARADO and mot.centros == centros_esperados + [False]

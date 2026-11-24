@@ -238,14 +238,14 @@ def test_manual_pare_de_voz_e_novo_modo_vencem():
     parar.set(); t.join(2)
 
 
-def test_manual_obstaculo_so_barra_a_frente():
+def test_manual_sem_ultrassom_nao_bloqueia_por_obstaculo():
     est, mot = EstadoRobo(), MotorFalso(); mot.obst = True; parar, t = _controle(est, mot)
     aplicar_movimento_manual(est, mot, 100, 100); time.sleep(0.2)
-    assert mot.ultimo() == (0, 0)                                         # frente bloqueada
+    assert mot.ultimo() == (100, 100)                                     # manual ignora obstaculo
     aplicar_movimento_manual(est, mot, -100, -100); time.sleep(0.2)
     assert mot.ultimo() == (-100, -100)                                   # ré livre
     aplicar_movimento_manual(est, mot, -80, 80); time.sleep(0.2)
-    assert mot.ultimo() == (0, 0)                                         # giro com uma roda avançando também bloqueia
+    assert mot.ultimo() == (-80, 80)                                      # giro manual tambem liberado
     parar.set(); t.join(2)
 
 

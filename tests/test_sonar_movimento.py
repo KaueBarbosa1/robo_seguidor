@@ -113,6 +113,7 @@ class MotorFalso:
         return SimpleNamespace(timestamp=time.monotonic(), falha_sensor=True, avanco_bloqueado=True)
 
 
+@patch.object(cfg, "ULTRASSOM_BLUETOOTH_ATIVO", True)
 def test_manual_nao_cancela_varredura_e_pare_continua_prioritario():
     est, mot = EstadoRobo(), MotorFalso()
     with patch.object(cfg, 'SONAR_MOVIMENTO_ATIVO', True):

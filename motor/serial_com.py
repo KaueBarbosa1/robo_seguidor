@@ -64,6 +64,7 @@ class EstadoMotores:
     reforco_esq: bool
     reforco_dir: bool
     timestamp: float
+    manual_sem_ultrassom: bool = False
 
 
 @dataclass(frozen=True)
@@ -102,6 +103,8 @@ class ArduinoSerial:
         self._motores: EstadoMotores | None = None
         self._guarda_sonar: tuple[int, float] | None = None
         self._sonar_manual = False
+        self._manual_sem_ultrassom = False
+        self._manual_saida_apos = None
         self._inspecao: dict[int, AmostraDirecional] = {}
         self._sonar: deque[MedidaSonar] = deque(maxlen=256)
         self._dists: deque = deque(maxlen=10)      # últimas leituras de distância (None = sem eco)
@@ -159,9 +162,48 @@ class ArduinoSerial:
             self.configurar_servo(False)
         self._sonar_manual = ativo
 
+    def usar_manual_sem_ultrassom(self, ativo: bool) -> None:
+        ativo = bool(ativo and not cfg.ULTRASSOM_BLUETOOTH_ATIVO)
+        d = self.estado_motores()
+        confirmado = d is not None and getattr(d, 'manual_sem_ultrassom', False)
+        if ativo:
+            self._manual_saida_apos = None
+        elif (self._manual_sem_ultrassom or confirmado) and self._manual_saida_apos is None:
+            self._manual_saida_apos = time.monotonic()
+        if ativo and not self._manual_sem_ultrassom:
+            self.parar()
+            self.configurar_servo(False)
+        if ativo or self._manual_sem_ultrassom or confirmado:
+            self._escrever(P.comando_manual_sem_ultrassom(ativo))
+        if not ativo and self._manual_sem_ultrassom:
+            self.parar()
+        self._manual_sem_ultrassom = ativo
+
     def motores(self, esq: int, dir_: int) -> None:
         esq = max(-cfg.VEL_MAX, min(cfg.VEL_MAX, int(esq)))
         dir_ = max(-cfg.VEL_MAX, min(cfg.VEL_MAX, int(dir_)))
+        if self._manual_sem_ultrassom:
+            if not cfg.CONTROLE_VELOCIDADE_ATIVO or cfg.FIRMWARE_COM_CAMERA:
+                raise RuntimeError('Manual sem ultrassom exige PI com encoders no perfil sem camera')
+            self.usar_manual_sem_ultrassom(True)
+            d = self.estado_motores()
+            agora = time.monotonic()
+            if (d is None or not getattr(d, 'manual_sem_ultrassom', False) or
+                    not 0 <= agora - d.timestamp <= cfg.SENSOR_TIMEOUT_S):
+                self.parar()  # espera U/F8 sem descartar a intencao mantida no estado
+                return
+        else:
+            d = self.estado_motores()
+            if d is not None and getattr(d, 'manual_sem_ultrassom', False):
+                self.usar_manual_sem_ultrassom(False)
+            if self._manual_saida_apos is not None:
+                if (d is None or getattr(d, 'manual_sem_ultrassom', False) or
+                        d.timestamp <= self._manual_saida_apos or
+                        not 0 <= time.monotonic()-d.timestamp <= cfg.SENSOR_TIMEOUT_S):
+                    self._escrever(P.comando_manual_sem_ultrassom(False))
+                    self.parar()
+                    return  # aguarda F8 novo confirmando restauracao
+                self._manual_saida_apos = None
         if self._sonar_manual and (esq or dir_):
             if not cfg.CONTROLE_VELOCIDADE_ATIVO or cfg.FIRMWARE_COM_CAMERA:
                 raise RuntimeError('Sonar em movimento exige PI com encoders e firmware sem OV7670')
@@ -177,8 +219,14 @@ class ArduinoSerial:
         if cfg.CONTROLE_VELOCIDADE_ATIVO:
             if cfg.FIRMWARE_COM_CAMERA:
                 raise RuntimeError("Encoders indisponiveis no firmware com camera")
-            self.velocidade(round(esq * cfg.VELOCIDADE_REFERENCIA_PPS / 255),
-                            round(dir_ * cfg.VELOCIDADE_REFERENCIA_PPS / 255))
+            e = round(esq * cfg.VELOCIDADE_REFERENCIA_PPS / 255)
+            d = round(dir_ * cfg.VELOCIDADE_REFERENCIA_PPS / 255)
+            if self._manual_sem_ultrassom:
+                maior = max(abs(e), abs(d))
+                teto = cfg.MANUAL_SEM_ULTRASSOM_MAX_PPS
+                if maior > teto:
+                    e, d = int(e*teto/maior), int(d*teto/maior)
+            self.velocidade(e, d)
         else:
             self._escrever(P.comando_motores(esq, dir_))
 
@@ -190,6 +238,9 @@ class ArduinoSerial:
     def pwm(self, esq: int, dir_: int) -> None:
         """PWM explicito para bancada, independente da conversao PI de motores()."""
         status = self.status_servo()
+        d = self.estado_motores()
+        if self._manual_sem_ultrassom or (d is not None and getattr(d, 'manual_sem_ultrassom', False)):
+            raise RuntimeError('PWM de bancada indisponivel durante manual sem ultrassom')
         if self._sonar_manual or (status is not None and status.sonar_movimento):
             raise RuntimeError('PWM direto indisponivel no sonar em movimento')
         if any(not isinstance(v, int) or isinstance(v, bool) or abs(v) > 254 for v in (esq, dir_)):
@@ -265,7 +316,8 @@ class ArduinoSerial:
                                           bool(flags & P.MOTORES_FLAG_FALHA_ENCODER),
                                           bool(flags & P.MOTORES_FLAG_PI),
                                           bool(flags & P.MOTORES_FLAG_REFORCO_ESQ),
-                                          bool(flags & P.MOTORES_FLAG_REFORCO_DIR), time.monotonic())
+                                          bool(flags & P.MOTORES_FLAG_REFORCO_DIR), time.monotonic(),
+                                          bool(flags & P.MOTORES_FLAG_MANUAL_SEM_ULTRASSOM))
 
     def _ao_servo(self, angulo: int, centro_us: int, flags: int) -> None:
         with self._lock_sens:

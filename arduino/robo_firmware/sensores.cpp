@@ -3,6 +3,7 @@
 #include "protocolo.h"
 #include "servo.h"
 #include "sonar_movimento.h"
+#include "motores.h"
 
 #if USAR_SENSORES   // com a câmera OV7670 os pinos do ultrassom e dos encoders são da câmera: este módulo fica desligado
 
@@ -71,7 +72,20 @@ void sensores_iniciar() {
 // Medição em 4 estados, sem pulseIn (que travaria o loop por até dezenas de ms e faria perder comandos).
 //   0: espera a hora da próxima medição e dispara o pulso de 10 us
 //   1: espera o eco subir (até 6 ms)  2: mede eco ate a faixa configurada (4 m)  3: descansa
+void sensores_invalidar_frente() {
+  digitalWrite(PIN_TRIG, LOW);
+  g_estado = 0;
+  g_dist = DIST_SEM_LEITURA;
+  g_perto = g_longe = 0;
+  g_invalidas = OBSTACULO_LEITURAS;
+  g_bloqueado = g_falha = true;
+}
+
 void sensores_atualizar() {
+  if (motores_manual_sem_ultrassom()) {
+    sensores_invalidar_frente();
+    return; // encoder/FC continuam; nenhum pulso TRIG no Bluetooth manual
+  }
   if (!servo_frontal_pronto()) {
     // Fora do sonar, aborta eco iniciado antes de mudar de direcao.
     // No sonar, mede durante o movimento com angulo registrado no disparo.
@@ -161,6 +175,7 @@ uint16_t sensores_encoder_dir() {
 void sensores_iniciar() {}
 void sensores_herdar_frente_sonar() {}
 void sensores_atualizar() {}
+void sensores_invalidar_frente() {}
 uint16_t sensores_distancia_cm() { return DIST_SEM_LEITURA; }
 uint16_t sensores_encoder_esq() { return 0; }
 uint16_t sensores_encoder_dir() { return 0; }

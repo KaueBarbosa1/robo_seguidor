@@ -69,7 +69,7 @@ class TestDiagnosticoManual(unittest.TestCase):
                 self.d.falha_encoder = True
                 with self.assertLogs('controle', level='INFO') as logs:
                     self.registrar()
-                self.assertIn('motivo=aguardando_modo4', logs.output[0])
+                self.assertIn('motivo=aguardando_manual_sem_ultrassom', logs.output[0])
                 self.assertIn('falha_encoder=indisponivel', logs.output[0])
                 self.assertIn('frente_bloqueada=indisponivel', logs.output[0])
                 self.assertIn('frente_cm=indisponivel angulo_nominal=indisponivel', logs.output[0])

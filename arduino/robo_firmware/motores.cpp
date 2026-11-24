@@ -5,7 +5,11 @@
 #include "servo.h"
 #include "sonar_movimento.h"
 
+static bool g_manualSemUltrassom = false;
+static uint32_t g_manualRenovacao = 0;
+
 static bool movimento_permitido(int16_t esq, int16_t dir) {
+  if (g_manualSemUltrassom) return true;
   if (servo_em_sonar_movimento()) return sonar_movimento_permitido(esq, dir);
   return servo_movimento_permitido();
 }
@@ -35,6 +39,7 @@ static_assert(OBSTACULO_PWM_PERCENT_MIN > 0 && OBSTACULO_PWM_PERCENT_MIN <= 100,
 
 static void limitarAproximacao(int16_t &esq, int16_t &dir) {
 #if USAR_SENSORES
+  if (g_manualSemUltrassom) return;
   // Manual continuo usa alvo baixo fixo ate o obstaculo confirmado. A antiga
   // rampa levava alvo4 abaixo do torque de sustentacao antes da parada.
   if (SONAR_MOV_CONTINUO && servo_em_sonar_movimento()) return;
@@ -87,7 +92,7 @@ void motores_set(int16_t esq, int16_t dir) {
   if (servo_em_sonar_movimento() && !g_interno) esq = dir = 0;
   // Proteção local ao ponto que efetivamente aciona a ponte H. Ré segue liberada;
   // qualquer roda positiva é tratada como avanço/manobra com avanço.
-  if (sensores_avanco_bloqueado() && (esq > 0 || dir > 0)) esq = dir = 0;
+  if (!g_manualSemUltrassom && sensores_avanco_bloqueado() && (esq > 0 || dir > 0)) esq = dir = 0;
   g_esqPedido = esq;
   g_dirPedido = dir;
   // No PI a aproximacao ja reduz o alvo em pulsos/s. Atenuar tambem o PWM
@@ -111,10 +116,29 @@ void motores_parar() {
   g_parado = true;
 }
 
+bool motores_manual_sem_ultrassom() { return g_manualSemUltrassom; }
+
+void motores_usar_manual_sem_ultrassom(bool ativo) {
+#if USAR_SENSORES
+  if (ativo != g_manualSemUltrassom) {
+    motores_parar();
+    servo_comandar(0, 0);
+    sensores_invalidar_frente();
+    g_manualSemUltrassom = ativo;
+  }
+  if (ativo) g_manualRenovacao = millis();
+#else
+  (void)ativo; // legado com camera nao oferece esse modo nem confirmacao F8
+#endif
+}
+
 void motores_marcar_comando() { g_ultimoComandoMs = millis(); }
 bool motores_parados() { return g_parado; }
 
 void motores_watchdog() {
+  if (g_manualSemUltrassom && millis() - g_manualRenovacao > MOTORES_WATCHDOG_MS) {
+    motores_usar_manual_sem_ultrassom(false);
+  }
   if (!g_parado && (millis() - g_ultimoComandoMs) > MOTORES_WATCHDOG_MS) {
     motores_parar();
   }
@@ -126,7 +150,7 @@ void motores_aplicar_seguranca() {
     motores_parar();
     return;
   }
-  if (sensores_avanco_bloqueado() && (g_esqAtual > 0 || g_dirAtual > 0)) {
+  if (!g_manualSemUltrassom && sensores_avanco_bloqueado() && (g_esqAtual > 0 || g_dirAtual > 0)) {
     motores_parar();
     return;
   }
@@ -154,23 +178,25 @@ void motores_diagnostico(int16_t &esq, int16_t &dir, uint8_t &flags) {
   esq = g_esqAtual; dir = g_dirAtual;
   flags = (esq < 0 ? 0x01 : 0) | (dir < 0 ? 0x02 : 0) |
           (g_falhaEncoder ? 0x04 : 0) | (g_velocidade ? 0x08 : 0) |
-          (g_partidaBaixa[0] ? 0x10 : 0) | (g_partidaBaixa[1] ? 0x20 : 0);
+          (g_partidaBaixa[0] ? 0x10 : 0) | (g_partidaBaixa[1] ? 0x20 : 0) |
+          (g_manualSemUltrassom ? 0x40 : 0);
 }
 
 void motores_velocidade(int16_t esq, int16_t dir) {
 #if USAR_SENSORES
   if (g_falhaEncoder) return;
   if (abs(esq) > VELOCIDADE_MAX_PPS || abs(dir) > VELOCIDADE_MAX_PPS) return;
-  if (servo_em_sonar_movimento()) {
+  if (g_manualSemUltrassom || servo_em_sonar_movimento()) {
     const int16_t maior = abs(esq) > abs(dir) ? abs(esq) : abs(dir);
-    if (maior > SONAR_MOV_MAX_PPS) {
-      esq = static_cast<int32_t>(esq) * SONAR_MOV_MAX_PPS / maior;
-      dir = static_cast<int32_t>(dir) * SONAR_MOV_MAX_PPS / maior;
+    const int16_t teto = g_manualSemUltrassom ? MANUAL_SEM_ULTRASSOM_MAX_PPS : SONAR_MOV_MAX_PPS;
+    if (maior > teto) {
+      esq = static_cast<int32_t>(esq) * teto / maior;
+      dir = static_cast<int32_t>(dir) * teto / maior;
     }
     if (esq || dir) servo_configurar_marcha(esq, dir);
   }
   if (!movimento_permitido(esq, dir) ||
-      (sensores_avanco_bloqueado() && (esq > 0 || dir > 0))) {
+      (!g_manualSemUltrassom && sensores_avanco_bloqueado() && (esq > 0 || dir > 0))) {
     motores_parar();
     return;
   }
@@ -228,7 +254,7 @@ void motores_regular_velocidade() {
   const uint32_t agora = millis(), dt = agora - g_amostra;
   if (agora - g_ultimoComandoMs > MOTORES_WATCHDOG_MS ||
       !movimento_permitido(g_alvo[0], g_alvo[1]) ||
-      (sensores_avanco_bloqueado() && (g_alvo[0] > 0 || g_alvo[1] > 0))) {
+      (!g_manualSemUltrassom && sensores_avanco_bloqueado() && (g_alvo[0] > 0 || g_alvo[1] > 0))) {
     motores_parar();
     return;
   }

@@ -1,5 +1,11 @@
 # Sonar com um sensor e rodas em movimento — modo 4 experimental
 
+> Atualizacao24/11/2026: o Bluetooth atual usa modo manual sem HC-SR04
+> (`ULTRASSOM_BLUETOOTH_ATIVO=False`), com confirmacao U/F8. O modo4 abaixo
+> permanece como perfil legado/ferramenta explicita. O seguimento autonomo
+> conserva a protecao frontal. Veja [guia Bluetooth](07_controle_bluetooth.md).
+
+
 ## Comportamento atual: manual com varredura continua
 
 Esta secao substitui o perfil de revisita descrito no historico abaixo.

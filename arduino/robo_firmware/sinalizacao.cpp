@@ -35,8 +35,10 @@ void sinalizacao_atualizar() {
   if (servo_movimento_permitido() && !sensores_falha() && !sensores_avanco_bloqueado())
     g_obstaculo = false;
 
-  const bool vermelho = g_obstaculo || !servo_movimento_permitido() || sensores_falha() ||
-      sensores_avanco_bloqueado() || motores_falha_encoder();
+  const bool manual = motores_manual_sem_ultrassom();
+  if (manual) g_obstaculo = false;
+  const bool vermelho = motores_falha_encoder() || (!manual &&
+      (g_obstaculo || !servo_movimento_permitido() || sensores_falha() || sensores_avanco_bloqueado()));
   digitalWrite(PIN_LED_VERMELHO, vermelho ? HIGH : LOW);
   digitalWrite(PIN_LED_VERDE, vermelho ? LOW : HIGH);
   // A1 e inicializado em LOW e permanece assim: o LED amarelo foi desativado.

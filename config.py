@@ -41,8 +41,9 @@ OBSTACULO_LIBERACAO_CM = 30       # precisa afastar até aqui para liberar (igua
 OBSTACULO_LEITURAS = 2             # leituras consecutivas para confirmar bloqueio/liberação
 SENSOR_TIMEOUT_S = 0.25            # sem pacote recente, diagnóstico remoto considera segurança indisponível
 # Modo 4 manual: varredura continua e obstaculo frontal no Uno (SONAR_MOV_CONTINUO=1).
-# Integracao exclusiva do controle MANUAL/Bluetooth; CNN/seguidor sao etapas futuras.
-SONAR_MOVIMENTO_ATIVO = True  # ativado pelo usuario; perfil experimental, sem validacao no piso
+# Perfil legado opcional, subordinado a ULTRASSOM_BLUETOOTH_ATIVO.
+# No padrao atual, Bluetooth nao usa sonar; autonomo mantem ultrassom frontal.
+SONAR_MOVIMENTO_ATIVO = True  # legado; nao e acionado com ULTRASSOM_BLUETOOTH_ATIVO=False
 RECUO_MANUAL_ATIVO = True  # somente Bluetooth com sonar 4; nao ha sensor traseiro
 RECUO_MANUAL_DIST_CM = 10
 RECUO_MANUAL_REPOUSO_S = 0.15
@@ -208,3 +209,7 @@ PAINEL_COLETA_INTERVALO_S = 0.1
 # opencv | cnn-rl-sombra (nao segue com motores) | cnn-rl (exige pacote ESP32).
 POLITICA_LINHA = "opencv"
 CNN_RL_PACOTE = None
+
+# Bluetooth manual sem HC-SR04/varredura/recuo. Autonomo conserva ultrassom.
+ULTRASSOM_BLUETOOTH_ATIVO = False
+MANUAL_SEM_ULTRASSOM_MAX_PPS = 4  # mesmo teto efetivo anterior do modo4; nao aumenta velocidade

@@ -149,6 +149,7 @@ class TestDecisao(unittest.TestCase):
         self.publicar(10.2, erro=-.4)
         d = self.decidir(10.21)
         self.assertEqual((d.esq, d.dir), calcular_motores(-.4, 0.))
+    @patch.object(cfg, "ULTRASSOM_BLUETOOTH_ATIVO", True)
     def test_sensor_invalido_bloqueia_seguir_e_manual_v4(self):
         self.m.falha = True; self.m.distancia = None
         self.m.status = SimpleNamespace(ativo=True, sonar_movimento=True, timestamp=time.monotonic())

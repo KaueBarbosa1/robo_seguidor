@@ -1,5 +1,57 @@
 # 7. Controlar o carrinho pelo celular (Bluetooth, Android)
 
+## Modo atual — ultrassom somente no autonomo, 24/11/2026
+
+A pedido do usuario, `ULTRASSOM_BLUETOOTH_ATIVO=False` e o padrao. No
+Bluetooth MANUAL nao ha disparos do HC-SR04, varredura, bloqueios por distancia,
+eco ausente ou lateral, nem recuo automatico por obstaculo. O operador controla
+frente/re/curvas. Parar pelo app/voz, prazo do Bluetooth, telemetria serial,
+watchdogs e falha de encoder continuam interrompendo o movimento. O alvo PI
+manual conserva o teto anterior de4 pulsos/s, na Pi e no Uno; nao e garantia
+de velocidade fisica. Ganhos PI e polaridade das rodas nao mudaram.
+
+O Uno precisa do firmware desta revisao, e a main precisa ser reiniciada.
+Com o carrinho imobilizado, antes do upload na IDE:
+
+```bash
+systemctl --user stop robo.service
+```
+
+Grave `arduino/robo_firmware` como Arduino Uno na porta correta, feche o
+Monitor Serial e depois execute:
+
+```bash
+systemctl --user start robo.service
+```
+
+Esses comandos de servico e o upload NAO foram executados nesta alteracao.
+A simples mudanca de config.py nao remove a guarda local de um firmware antigo.
+A main aguarda F8 confirmando o novo modo antes de pedir movimento; firmware
+antigo fica em `aguardando_manual_sem_ultrassom`, sem cair num modo diferente.
+A confirmacao inicial e aguardada sem exigir outro toque no app.
+
+Na serial, `U,1,0` dentro do pacote existente de5 bytes inicia/renova o modo;
+F8 bit6 confirma. `U,0,0` para e restaura o ultrassom. O modo exige renovacao
+em menos de400 ms. U nao alimenta o watchdog dos motores: R/M continuam tendo
+seu proprio prazo, e S continua parando imediatamente. Boot ou vencimento do
+modo restaura protecao e zera motores. A ida para "siga" encerra o modo manual,
+aguarda F8 novo confirmando saida e leituras frontais novas. Nenhuma distancia
+anterior ao manual libera automaticamente o autonomo.
+
+No seguimento autonomo OpenCV/PD ou CNN/RL, ultrassom, inspecao parada e
+bloqueios por obstaculo/leitura invalida permanecem. O painel de camera nao
+comanda esse modo nem altera motores. No manual, FC pode mostrar distancia
+DESCONHECIDA/falha por medicao propositalmente pausada; F8 diferencia isso de
+falha de encoder. LED verde no manual considera o modo sem sonar e ausencia
+de falha de encoder; nao representa verificacao de caminho livre.
+
+As secoes historicas abaixo sobre modo4/recuo descrevem o perfil anterior,
+ainda disponivel em ferramentas de bancada e testes com ativacao explicita,
+mas nao acionado pelo Bluetooth na configuracao atual. A persistencia fisica
+do giro deve ser repetida com rodas suspensas apos upload; nao atribuir todas
+as pausas ao ultrassom sem observar telemetria de encoder/comunicacao.
+
+
 > **O que foi testado e o que não foi.** O código foi testado só em **simulação**: interpretador de comandos, modo manual do controle,
 > sessões de celular e o servidor registrado num BlueZ **falso** (`python tests/test_remoto.py`). **Não foi testado** com o Bluetooth
 > real da Pi, com o BlueZ real do Debian 13.7, nem com um celular, nem com o carrinho andando. A parte mais sujeita a surpresa é o
@@ -16,7 +68,7 @@ apos remover a interface web, encerre qualquer processo antigo dela com
 Ctrl+C e execute `.venv/bin/python main.py`. As ferramentas independentes
 de camera/coleta continuam disponiveis em `tools/`.
 
-As melhorias do ultrassonico permanecem: sonar durante marcha/curvas,
+No perfil anterior, as melhorias do ultrassonico eram: sonar durante marcha/curvas,
 bloqueio da curva para lateral ocupada, memoria frontal limitada com retry,
 recuo curto por obstaculo frontal confirmado e PI de baixa velocidade.
 Parar pelo app cancela movimento e sonar. Veja o

@@ -37,6 +37,8 @@ class Motor:
     def obstaculo(self, *a): return False
 
 
+# Perfil legado explicitamente habilitado para verificar sua compatibilidade.
+@patch.object(cfg, "ULTRASSOM_BLUETOOTH_ATIVO", True)
 class Seguranca(unittest.TestCase):
     def setUp(self):
         self.agora = 100.

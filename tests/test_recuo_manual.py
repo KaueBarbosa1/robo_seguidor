@@ -27,6 +27,8 @@ class Motor:
     def parar(self, repetir=1): self.cmds.append(('stop', 0, 0))
 
 
+# Perfil legado explicitamente habilitado para verificar sua compatibilidade.
+@patch.object(cfg, "ULTRASSOM_BLUETOOTH_ATIVO", True)
 class RecuoManual(unittest.TestCase):
     def setUp(self):
         self.est, self.motor = EstadoRobo(), Motor()

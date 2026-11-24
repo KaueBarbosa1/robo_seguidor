@@ -72,3 +72,11 @@ movimento. Uma compilacao separada, somente para a planta SINTETICA, acrescenta:
 Esses numeros NAO sao calibracao do carrinho e nao devem ser gravados no Uno.
 Esse teste verifica rodas em movimento durante observacao lateral, revisita
 frontal, memoria por encoder, timeout e parada local, limites e cancelamento.
+
+
+O modo manual sem ultrassom acrescenta teste de U/F8: sustenta PWM por2 s
+com eco ausente, sem novos disparos TRIG; U sozinho nao renova movimento;
+S para; R nao renova o modo; timeout/boot restauram protecao. U0 invalida
+frente antiga e exige ecos novos antes de liberar avanco autonomo. Tambem
+verifica o teto baixo do PI manual e argumentos U invalidos. Passa nos perfis
+padrao e sem servo. Isso valida logica simulada, nao movimento fisico.

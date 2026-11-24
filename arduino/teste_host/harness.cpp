@@ -931,6 +931,40 @@ int main() {
   CHECK(!servo_em_sonar_movimento() && motores_parados(), "buffer RX nao prolonga watchdog sem novos comandos");
   printf("  RX em rajadas: perdas de modo=%d, visitas 60/120=%d/%d\n", perdasRx, visitou60Rx, visitou120Rx);
 #endif
+  // Bluetooth manual sem HC-SR04: lease separado do watchdog dos motores.
+  cmd('S', 0, 0); cmd('V', 0, 0); step(300);
+  g_echoDistCm = 0; step(300);
+  cmd('U', 1, 0); step(20);
+  CHECK(motores_manual_sem_ultrassom(), "U1 confirma modo manual sem ultrassom");
+  const uint32_t ultimoTriggerManual = g_trigFallUs;
+  for (int k = 0; k < 40; k++) {
+    cmd('U', 1, 0); cmd('M', 60, 60); step(50);
+    CHECK(g_pwm[PIN_ENA] == 120 && g_pwm[PIN_ENB] == 120,
+          "manual sustentado nao corta por eco ausente nem pede novo comando Bluetooth");
+  }
+  CHECK(g_trigFallUs == ultimoTriggerManual && !g_pinDig[PIN_TRIG], "manual pausa disparos HC-SR04");
+  int16_t manualE, manualD; uint8_t manualFlags;
+  motores_diagnostico(manualE, manualD, manualFlags);
+  CHECK(manualFlags & 0x40, "F8 confirma manual sem ultrassom");
+  for (int k = 0; k < 10; k++) { cmd('U', 1, 0); step(50); }
+  CHECK(motores_parados() && motores_manual_sem_ultrassom(), "U nao alimenta watchdog de movimento");
+  cmd('R', 60, 60); step(20);
+  motores_diagnostico(manualE, manualD, manualFlags);
+  CHECK((manualFlags & 0x30) == 0x30, "manual conserva teto baixo de velocidade antes usado no sonar");
+  cmd('S', 0, 0); step(20);
+  CHECK(motores_parados(), "S interrompe manual sem ultrassom");
+  cmd('U', 0, 0); cmd('M', 60, 60); step(60);
+  CHECK(!motores_manual_sem_ultrassom() && sensores_avanco_bloqueado() && motores_parados(),
+        "U0 restaura protecao sem reutilizar eco antigo");
+  g_echoDistCm = 15; step(300); cmd('M', 60, 60); step(20);
+  CHECK(motores_parados(), "autonomo continua bloqueado por obstaculo depois de U0");
+  g_echoDistCm = 80; step(300); cmd('M', 60, 60); step(20);
+  CHECK(g_pwm[PIN_ENA] == 120 && g_pwm[PIN_ENB] == 120, "dois ecos livres novos liberam autonomo");
+  cmd('S', 0, 0); cmd('U', 1, 0); step(20); g_echoDistCm = 0;
+  for (int k = 0; k < 10; k++) { cmd('R', 4, 4); step(50); }
+  CHECK(!motores_manual_sem_ultrassom() && motores_parados(), "R nao renova lease manual; timeout para e restaura ultrassom");
+  cmd('U', 2, 0); step(10);
+  CHECK(!motores_manual_sem_ultrassom(), "U com argumento invalido ignorado");
   printf("%s (falhas=%d)\n", falhas ? "REPROVADO" : "TUDO_OK", falhas);
   return falhas ? 1 : 0;
 }

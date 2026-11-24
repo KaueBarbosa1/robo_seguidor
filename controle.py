@@ -58,6 +58,11 @@ def _motivo_sensor(estado, motor, agora=None):
         agora = time.monotonic()
     if s is None or not 0 <= agora - s.timestamp <= cfg.SENSOR_TIMEOUT_S:
         return "telemetria_vencida"
+    if estado.modo is Modo.MANUAL and not cfg.ULTRASSOM_BLUETOOTH_ATIVO:
+        return None  # exige telemetria, mas distancia/falha do HC-SR04 nao controlam Bluetooth
+    d = getattr(motor, 'estado_motores', lambda: None)()
+    if d is not None and getattr(d, 'manual_sem_ultrassom', False):
+        return "aguardando_ultrassom_autonomo"
     if s.falha_sensor:
         return "eco_invalido"
     distancia = getattr(s, "distancia_cm", None)
@@ -73,7 +78,9 @@ def _motivo_sensor(estado, motor, agora=None):
     return "obstaculo" if checar and checar(cfg.OBSTACULO_DIST_CM, cfg.OBSTACULO_LEITURAS) else None
 
 
-def _motivo_lateral(motor, manual, agora=None):
+def _motivo_lateral(motor, manual, agora=None, estado=None):
+    if estado is not None and estado.modo is Modo.MANUAL and not cfg.ULTRASSOM_BLUETOOTH_ATIVO:
+        return None
     s = getattr(motor, "sensores", lambda: None)()
     if agora is None:
         agora = time.monotonic()
@@ -92,6 +99,7 @@ def aplicar_comando(estado: EstadoRobo, motor, comando: str) -> None:
             return
         if comando in {"pare", "siga", "esquerda", "direita", "voltar"}:
             getattr(motor, 'usar_sonar_manual', lambda ativo: None)(False)
+            getattr(motor, 'usar_manual_sem_ultrassom', lambda ativo: None)(False)
         if comando in {"pare", "esquerda", "direita", "voltar"}:
             centrar = getattr(motor, "configurar_servo", None)
             if centrar:
@@ -149,9 +157,10 @@ def aplicar_movimento_manual(estado: EstadoRobo, motor, esq: int, dir_: int, val
     with estado.lock:
         if estado.encerrando:
             return
-        getattr(motor, 'usar_sonar_manual', lambda ativo: None)(bool(esq or dir_))
+        getattr(motor, 'usar_sonar_manual', lambda ativo: None)(bool(esq or dir_) and cfg.ULTRASSOM_BLUETOOTH_ATIVO)
+        getattr(motor, 'usar_manual_sem_ultrassom', lambda ativo: None)(not cfg.ULTRASSOM_BLUETOOTH_ATIVO)
         centrar = getattr(motor, "configurar_servo", None)
-        if centrar and (not cfg.SONAR_MOVIMENTO_ATIVO or not (esq or dir_)):
+        if centrar and (not cfg.ULTRASSOM_BLUETOOTH_ATIVO or not cfg.SONAR_MOVIMENTO_ATIVO or not (esq or dir_)):
             centrar(False)
         estado.definir_manual(esq, dir_, validade_s)
         seguranca = _seguranca(estado)
@@ -159,7 +168,7 @@ def aplicar_movimento_manual(estado: EstadoRobo, motor, esq: int, dir_: int, val
         motivo = _motivo_encoder(estado, motor, novo_comando=True)
         if not motivo and (esq > 0 or dir_ > 0):
             motivo = _motivo_sensor(estado, motor)
-        motivo = motivo or _motivo_lateral(motor, (esq, dir_))
+        motivo = motivo or _motivo_lateral(motor, (esq, dir_), estado=estado)
         if esq == 0 and dir_ == 0:
             seguranca.aguardando_comando = False
             motor.parar()
@@ -383,6 +392,9 @@ class ThreadControle(threading.Thread):
             guarda = '+'.join(nome for bit, nome in enumerate(GUARDA_SONAR_MOTIVOS) if g[0] & (1 << bit)) or 'livre'
         if motivo == 'pedido_movimento' and falha_encoder is True:
             motivo = 'falha_encoder_no_arduino'
+        elif motivo == 'pedido_movimento' and not cfg.ULTRASSOM_BLUETOOTH_ATIVO:
+            if not (diag_ok and getattr(d, 'manual_sem_ultrassom', False)):
+                motivo = 'aguardando_manual_sem_ultrassom'
         elif motivo == 'pedido_movimento' and cfg.SONAR_MOVIMENTO_ATIVO and modo4 is not True:
             motivo = 'aguardando_modo4'
         chave = (motivo, bloqueio, falha_sensor, falha_encoder, modo4, guarda)
@@ -392,19 +404,20 @@ class ThreadControle(threading.Thread):
         pedido = manual[:2] if manual else ('indisponivel', 'indisponivel')
         log.info('MANUAL motivo=%s | pedido E=%s D=%s | frente_bloqueada=%s falha_sensor=%s | '
                  'modo4=%s | PWM E=%s D=%s falha_encoder=%s | encoders E=%s D=%s | '
-                 'frente_cm=%s angulo_nominal=%s guarda=%s',
+                 'frente_cm=%s angulo_nominal=%s guarda=%s manual_sem_ultrassom=%s',
                  motivo, *pedido, bloqueio, falha_sensor, modo4,
                  d.pwm_esq if diag_ok else 'indisponivel', d.pwm_dir if diag_ok else 'indisponivel',
                  falha_encoder, getattr(s, 'ticks_esq', 'indisponivel') if sens_ok else 'indisponivel',
                  getattr(s, 'ticks_dir', 'indisponivel') if sens_ok else 'indisponivel',
                  getattr(s, 'distancia_cm', 'indisponivel') if sens_ok else 'indisponivel',
-                 getattr(v, 'angulo_nominal', 'indisponivel') if servo_ok else 'indisponivel', guarda)
+                 getattr(v, 'angulo_nominal', 'indisponivel') if servo_ok else 'indisponivel', guarda,
+                 getattr(d, 'manual_sem_ultrassom', False) if diag_ok else 'indisponivel')
 
     def _obstaculo(self) -> bool:
         return _motivo_sensor(self._estado, self._motor) is not None
 
     def _lateral_bloqueada(self, manual) -> bool:
-        return _motivo_lateral(self._motor, manual) is not None
+        return _motivo_lateral(self._motor, manual, estado=self._estado) is not None
 
     def _diagnosticar_parada(self, motivo):
         if motivo != self.motivo_parada:
@@ -435,7 +448,7 @@ class ThreadControle(threading.Thread):
             self._recuo = None
         if not avanco:
             return False  # re explicita do operador tem prioridade
-        habilitado = (cfg.RECUO_MANUAL_ATIVO and cfg.OBSTACULO_ATIVO and
+        habilitado = (cfg.ULTRASSOM_BLUETOOTH_ATIVO and cfg.RECUO_MANUAL_ATIVO and cfg.OBSTACULO_ATIVO and
                       cfg.SONAR_MOVIMENTO_ATIVO and cfg.CONTROLE_VELOCIDADE_ATIVO and
                       not cfg.FIRMWARE_COM_CAMERA and callable(getattr(motor, 'velocidade', None)))
         s = getattr(motor, 'sensores', lambda: None)()
@@ -538,11 +551,12 @@ class ThreadControle(threading.Thread):
                 if modo is not Modo.SEGUINDO:
                     self.decisao_linha = DecisaoLinha(0, 0, "modo_" + modo.name.lower())
                     self._cancelar_inspecao()
-                getattr(self._motor, 'usar_sonar_manual', lambda ativo: None)(modo is Modo.MANUAL)
+                getattr(self._motor, 'usar_sonar_manual', lambda ativo: None)(modo is Modo.MANUAL and cfg.ULTRASSOM_BLUETOOTH_ATIVO)
+                getattr(self._motor, 'usar_manual_sem_ultrassom', lambda ativo: None)(modo is Modo.MANUAL and not cfg.ULTRASSOM_BLUETOOTH_ATIVO)
 
                 # Renovar mesmo enquanto a guarda espera as primeiras leituras;
                 # V nao renova o watchdog dos motores e nao envia movimento.
-                if cfg.SONAR_MOVIMENTO_ATIVO and modo is Modo.MANUAL:
+                if cfg.ULTRASSOM_BLUETOOTH_ATIVO and cfg.SONAR_MOVIMENTO_ATIVO and modo is Modo.MANUAL:
                     getattr(self._motor, 'iniciar_sonar_movimento', lambda: None)()
 
                 leitura_aviso = self._estado.ler_leitura()
@@ -602,7 +616,7 @@ class ThreadControle(threading.Thread):
                         _seguranca(self._estado).aguardando_comando = True
                         motivo_manual = 'recuo_automatico' if self._recuo else 'aguardando_novo_comando_apos_recuo'
                     else:
-                        motivo_manual = _motivo_lateral(self._motor, manual)
+                        motivo_manual = _motivo_lateral(self._motor, manual, estado=self._estado)
                         if not motivo_manual and any(v > 0 for v in manual[:2]):
                             motivo_manual = _motivo_sensor(self._estado, self._motor)
                         seguranca = _seguranca(self._estado)

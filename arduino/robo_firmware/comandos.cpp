@@ -24,7 +24,9 @@ void comandos_byte(uint8_t b) {
   const uint8_t cmd = g_pkt[0], a = g_pkt[1], bb = g_pkt[2], chk = g_pkt[3];
   if (chk != (uint8_t)(cmd ^ a ^ bb ^ CMD_XOR)) return;
 
-  if (cmd == CMD_AVISO && a <= 2 && bb == 0) {
+  if (cmd == CMD_MANUAL_SEM_ULTRASSOM && a <= 1 && bb == 0) {
+    motores_usar_manual_sem_ultrassom(a == 1); // nao renova watchdog de movimento
+  } else if (cmd == CMD_AVISO && a <= 2 && bb == 0) {
     sinalizacao_aviso(a);
   } else if (cmd == CMD_VELOCIDADE) {
     motores_velocidade((int8_t)a, (int8_t)bb);
@@ -35,7 +37,7 @@ void comandos_byte(uint8_t b) {
   } else if (cmd == CMD_PARAR) {
     motores_parar();
     motores_marcar_comando();
-  } else if (cmd == CMD_SERVO && (motores_parados() ||
+  } else if (cmd == CMD_SERVO && (!motores_manual_sem_ultrassom() || a == 0) && (motores_parados() ||
              ((a == 4 || a == 0) && servo_em_sonar_movimento()))) {
     if (a == 0 && servo_em_sonar_movimento()) motores_parar();
     servo_comandar(a, static_cast<int8_t>(bb));

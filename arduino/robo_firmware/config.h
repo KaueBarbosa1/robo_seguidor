@@ -94,6 +94,7 @@
 #define MOTOR_ESQ_INVERTIDO 0 // 24/11: inverter apenas a esquerda em relacao a revisao anterior
 #define MOTOR_DIR_INVERTIDO (!USAR_CAMERA)
 #define MOTORES_WATCHDOG_MS 400
+#define MANUAL_SEM_ULTRASSOM_MAX_PPS 4 // mesmo teto anterior do Bluetooth; independente da calibracao sonar
 
 // ---------------------------------------------------------- Sensores (só sem câmera: pinos em conflito com a OV7670)
 #define PIN_TRIG 4          // HC-SR04 TRIG (ligação atual)

@@ -13,3 +13,6 @@ void motores_marcar_comando();                // chamar a cada comando válido (
 void motores_watchdog();                      // para os motores se a Pi ficou muda
 void motores_aplicar_seguranca();              // corta avanço imediatamente quando o sensor bloqueia
 bool motores_parados();
+
+void motores_usar_manual_sem_ultrassom(bool ativo);
+bool motores_manual_sem_ultrassom();

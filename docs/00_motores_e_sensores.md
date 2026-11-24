@@ -1,5 +1,10 @@
 # 0. Motores, ultrassom e encoders no Arduino (a câmera OV7670 também está nele)
 
+> Atualizacao24/11: no Bluetooth manual o HC-SR04 fica sem disparos e nao
+> bloqueia motores. No autonomo a protecao frontal permanece. Requer firmware
+> e main atualizados; [procedimento](07_controle_bluetooth.md).
+
+
 > **Dois mapas de pinos, conforme `USAR_CAMERA` em `arduino/robo_firmware/config.h`:**
 > - **`USAR_CAMERA 1` (padrão, é o robô):** a OV7670 ocupa D2..D7, D11, A4, A5. Motores: ENA=D9, ENB=D10, IN1=D8, IN2=D12,
 >   IN3=D13, IN4=A0. **Ultrassom e encoders ficam DESLIGADOS** (os pinos deles são da câmera). Serial a **1 Mbaud**

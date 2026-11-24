@@ -11,3 +11,5 @@ bool sensores_avanco_bloqueado();
 bool sensores_falha();
 bool sensores_obstaculo_confirmado();
 void sensores_herdar_frente_sonar();
+
+void sensores_invalidar_frente(); // exige ecos novos ao sair do modo manual

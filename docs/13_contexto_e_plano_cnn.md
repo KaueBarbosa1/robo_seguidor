@@ -1,5 +1,9 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de 24/11/2026: Bluetooth manual agora pausa o ultrassom, com
+modo explicito confirmado no Uno; autonomo conserva a protecao frontal.
+Veja registro final e guia07 para regravacao/reinicio.
+
 Atualização de 24/11/2026: main seleciona ESP32 por padrão e abre painel local
 com prévia e gravação por botões, compartilhando a câmera com a visão OpenCV.
 A gravação começa apenas por clique; não inicia movimento. Seguimento/parada
@@ -1071,3 +1075,39 @@ reinicio de servico ou ensaio fisico foi executado nesta alteracao.
 Validacao desta correcao: harness C++ TUDO_OK, zero falhas, incluindo sentido
 frente/re, PI, guarda de obstaculo e watchdog. Compilacao Uno aprovada:
 12660 bytes flash/365 bytes RAM. Sentido fisico apos upload ainda pendente.
+
+
+## Ultrassom desativado somente no Bluetooth — 24/11/2026
+
+Usuario relatou giro interrompido que so retorna com outro comando e pediu
+retirar ultrassom somente do Bluetooth, mantendo no autonomo. Implementado
+ULTRASSOM_BLUETOOTH_ATIVO=False. MANUAL ignora distancia/eco/laterais e nao
+executa recuo nem V4. Mantidos telemetria vencida, timeout Bluetooth, pare,
+watchdogs, encoder e teto efetivo anterior4 pulsos/s. Sem alterar ganhos,
+polaridade esquerda corrigida, pinos, baud, camera, CNN ou treino.
+
+Firmware recebe U a=1/0 b=0, protocolo5 bytes existente, com confirmacao F8
+bit6. U1 entra/renova modo manual e pausa disparos TRIG; encoders/FC/F8
+continuam. Protecoes de distancia/rampa sao ignoradas apenas nesse modo.
+Lease400 ms; U nao renova watchdog dos motores. S para, R/M nao renovam o
+modo; timeout/boot restauram protecao. U0 para, centraliza e invalida frente.
+Pi espera confirmacao inicial sem descartar intencao do app, e na saida exige
+F8 posterior ao pedido de restauracao. Autonomo exige novas leituras frontais,
+sem herdar eco antigo ou aproveitar o bypass. LED manual ignora falha de eco
+intencional; falha de encoder continua vermelha. Nao significa caminho livre.
+
+Novo firmware e reinicio da main sao necessarios; firmware antigo nao fornece
+confirmacao e a Pi nao pede velocidade nesse modo. Nao houve upload, abertura
+de serial fisica, movimento, treino, troca de rede ou reinicio de servico.
+A retirada dos bloqueios sonar nao comprova a causa original das pausas nem
+resolve eventual falta de pulsos/torque. Validacao fisica apos gravar pendente.
+
+Verificacao:11 testes novos de modo manual, mais209 regressoes selecionadas,
+total220 aprovados. Inclui Bluetooth27 com sockets/BlueZ falsos fora do sandbox,
+controle11, decisao25, CNN/RL26, velocidade20, seguranca22 (perfil antigo
+explicitamente habilitado), recuo12 (legado), sonar14, diagnostico7, serial8,
+servo11, calibracao8, visual15 e sinalizacao3. Nao e a suite completa.
+Harness C++ padrao e sem servo: TUDO_OK, zero falhas. Conferem marcha manual
+com eco ausente por2 s simulados, nenhum TRIG, watchdog independente, S,
+restauracao e obstaculo no autonomo. Uno compilado12974 bytes flash/370 RAM;
+perfil legado com camera compilado5084/322. Nao valida autonomia/frenagem.

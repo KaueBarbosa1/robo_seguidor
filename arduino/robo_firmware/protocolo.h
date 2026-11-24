@@ -39,6 +39,9 @@
 #pragma once
 #include <stdint.h>
 
+// U a=1: manual sem ultrassom, renovar em <400ms; a=0: parar e restaurar protecao. b=0.
+// Nao renova watchdog dos motores. Confirmacao F8 bit6; boot e timeout restauram protecao.
+#define CMD_MANUAL_SEM_ULTRASSOM 'U'
 #define CMD_VELOCIDADE 'R' // int8 por roda: pulsos/s; S cancela e rearma falha
 #define CMD_AVISO 'A' // a: 0 cancelar, 1 partida, 2 linha perdida; b=0
 #define SYNC 0xFF
@@ -58,7 +61,7 @@
 #define GUARDA_DIVERGENCIA 0x20
 #define GUARDA_DISTANCIA 0x40
 // F8 flags: bits0/1 sinal negativo E/D; bit2 falha encoder; bit3 PI ativo;
-// bits4/5 fase de reforco pendente/ativa E/D. Diagnostico, nao comando ou calibracao.
+// bit6 manual sem ultrassom; bits4/5 fase de reforco pendente/ativa E/D. Diagnostico, nao comando ou calibracao.
 #define DIST_SEM_LEITURA 0x3FFF
 #define SERVO_FLAG_VARREDURA 0x01
 #define SERVO_FLAG_CENTRO_PRONTO 0x02

@@ -20,6 +20,7 @@ MOTORES_FLAG_FALHA_ENCODER = 0x04
 MOTORES_FLAG_PI = 0x08
 MOTORES_FLAG_REFORCO_ESQ = 0x10
 MOTORES_FLAG_REFORCO_DIR = 0x20
+MOTORES_FLAG_MANUAL_SEM_ULTRASSOM = 0x40
 BYTES_SONAR = 6
 SERVO_FLAG_SONAR = 0x20
 SERVO_FLAG_SONAR_MOVIMENTO = 0x40
@@ -48,6 +49,7 @@ CMD_SERVO = ord("V")
 CMD_BUZINA = ord("H")
 CMD_AVISO = ord("A")
 CMD_VELOCIDADE = ord("R")
+CMD_MANUAL_SEM_ULTRASSOM = ord("U")
 CMD_XOR = 0x5A
 
 IMG_LARGURA = 160                  # iguais a IMG_LARGURA / IMG_ALTURA do config.h
@@ -129,3 +131,8 @@ def comando_velocidade(esq: int, dir_: int) -> bytes:
     if any(not isinstance(v, int) or isinstance(v, bool) or abs(v) > 120 for v in (esq, dir_)):
         raise ValueError("Velocidade deve ser inteira entre -120 e 120 pulsos/s")
     return montar_comando(CMD_VELOCIDADE, esq, dir_)
+
+
+def comando_manual_sem_ultrassom(ativo):
+    """U nao renova movimento; modo exige lease e confirmacao F8 bit6."""
+    return montar_comando(CMD_MANUAL_SEM_ULTRASSOM, int(bool(ativo)), 0)
