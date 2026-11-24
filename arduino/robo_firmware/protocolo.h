@@ -35,7 +35,7 @@
 //   cmd 'M': a = motor esquerdo, b = motor direito (int8; PWM = valor * 2, ou seja -254..+254)
 //   cmd 'S': parada total (a e b ignorados)
 //   cmd 'V': a=0 centro / a=1 varrer parado / a=2 inspecionar 45,90,135; b=offset do centro em unidades de 10 us.
-//   cmd 'H': a=0 desligar / a=1 buzinar (max 1500 ms); b=0. Nao renova motores.
+//   cmd 'H': legado, sem efeito (buzzer removido). Nao renova motores.
 #pragma once
 #include <stdint.h>
 

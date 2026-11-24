@@ -937,3 +937,13 @@ motores/servo sem potencia. Nenhuma nova abertura, alteracao de baud, upload,
 loopback, mudanca de watchdog ou teste de movimento foi autorizada no fechamento.
 Push e hash final devem ser conferidos no relato do terminal; estas evidencias
 nao demonstram autonomia, frenagem, torque ou seguimento fisico validados.
+
+## Remocao do buzzer — 23/11/2026
+
+Buzzer removido a pedido do usuario. Firmware sem camera nao configura nem
+escreve em D10; LEDs preservados. Comandos legados H/A permanecem aceitos
+sem efeito sonoro, mantendo compatibilidade e temporizacao do controle.
+Sem alteracao de motores, ganhos ou protecoes. Guia10 e mapa atualizados.
+Harness C++ passou (TUDO_OK, zero falhas), incluindo D10 preservado em LOW
+e HIGH, LEDs e watchdog. Compilacao Uno passou:12670 bytes flash/365 RAM.
+Nenhum upload ou ensaio fisico nesta alteracao; requer regravar Uno.

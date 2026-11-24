@@ -12,7 +12,7 @@
 
 ## Mapa de pinos do modo de bancada (`USAR_CAMERA 0`)
 Vem da planilha `Planilha_Conexoes_Carrinho_Robotico_1.xlsx` (aba "Mapa de pinos"), que é uma **proposta**: confira os fios.
-A sinalização atual usa LEDs verde/amarelo/vermelho em **A0/A1/A3** e buzzer ativo em **D10**. D4 permanece no TRIG. Ligação e teste: [10_sinalizacao.md](10_sinalizacao.md).
+A sinalização atual usa LEDs verde/amarelo/vermelho em **A0/A1/A3** sem buzzer; **D10 livre** no perfil sem camera. D4 permanece no TRIG. Ligação e teste: [10_sinalizacao.md](10_sinalizacao.md).
 
 | Componente | Pino do componente | Arduino UNO | Observação |
 |---|---|---|---|

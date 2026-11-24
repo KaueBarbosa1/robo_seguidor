@@ -18,8 +18,8 @@ simulados diferentes, falha lateral, pacote por rodada, bloqueio de ambas as
 rodas, cancelamento e timeout. Tambem confere reducao proporcional de PWM. O pulso eletrico real e o movimento nao sao simulados.
 Para conferir a opcao sem servo, adicionar `-DUSAR_SERVO=0` a compilacao.
 
-Com sinalização habilitada, confere LEDs, aviso intermitente, falha do sensor,
-buzina manual, limite de duração e independência do watchdog dos motores.
+Com sinalizacao habilitada, confere LEDs, falha do sensor, D10 livre apos
+remocao do buzzer e independencia do watchdog perante comandos legados.
 Para conferir sem sinalização, adicionar `-DUSAR_SINALIZACAO=0`.
 
 O sonar continuo e exercitado por mais de uma ida e volta, com movimento por

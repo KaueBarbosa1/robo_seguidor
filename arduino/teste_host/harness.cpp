@@ -349,43 +349,24 @@ int main() {
   CHECK(g_pinDig[PIN_LED_VERMELHO] && !g_pinDig[PIN_LED_VERDE] && !g_pinDig[PIN_LED_AMARELO],
         "falha sem obstaculo confirmado fica vermelha sem amarelo");
   g_echoDistCm = 80; step(300);
-  cmd('H', 1, 0); step(10);
-  CHECK(g_pinDig[PIN_BUZZER], "buzina manual liga");
-  cmd('H', 0, 0); step(10);
-  CHECK(!g_pinDig[PIN_BUZZER], "soltar desliga buzina");
-  cmd('H', 1, 0); step(10);
-  for (int i = 0; i < 16; i++) { cmd('H', 1, 0); step(100); }
-  CHECK(!g_pinDig[PIN_BUZZER], "repeticao nao estende limite da buzina");
-  cmd('H', 0, 0); step(10);
+  // D10 deve permanecer intocado, mesmo com comandos legados e obstaculos.
+  for (uint8_t nivel : {uint8_t(LOW), uint8_t(HIGH)}) {
+    g_pinDig[10] = nivel;
+    sinalizacao_iniciar();
+    cmd('H', 1, 0); cmd('A', 1, 0); step(200);
+    cmd('A', 2, 0); step(500);
+    g_echoDistCm = 20; step(400);
+    CHECK(g_pinDig[PIN_LED_VERMELHO] && !g_pinDig[PIN_LED_VERDE],
+          "obstaculo continua vermelho sem buzzer");
+    cmd('H', 0, 0); cmd('A', 0, 0);
+    g_echoDistCm = 80; step(400);
+    CHECK(g_pinDig[PIN_LED_VERDE], "frente livre continua verde");
+    CHECK(g_pinDig[10] == nivel, "sinalizacao nao escreve no antigo pino D10");
+  }
   cmd('M', 60, 60); step(20);
   for (int i = 0; i < 5; i++) { cmd('H', i % 2, 0); step(100); }
-  CHECK(motores_parados(), "buzina nao renova watchdog dos motores");
-  cmd('H', 0, 0); step(10);
-  cmd('H', 2, 0); step(10);
-  CHECK(!g_pinDig[PIN_BUZZER], "payload invalido nao liga buzina");
-  g_echoDistCm = 20;
-  for (int i = 0; i < 400 && !sensores_obstaculo_confirmado(); i++) step(1);
-  CHECK(g_pinDig[PIN_LED_VERMELHO] && !g_pinDig[PIN_LED_VERDE] &&
-        !g_pinDig[PIN_LED_AMARELO], "vermelho exclusivo no obstaculo");
-  CHECK(g_pinDig[PIN_BUZZER], "obstaculo inicia bipe");
-  step(200); CHECK(!g_pinDig[PIN_BUZZER], "intervalo silencioso do aviso");
-  step(600); CHECK(g_pinDig[PIN_BUZZER], "aviso repete sem bloquear loop");
-  g_echoDistCm = 0; step(300);
-  CHECK(g_pinDig[PIN_LED_VERMELHO], "falha nao apaga obstaculo anterior");
-  g_echoDistCm = 80; step(300);
-  CHECK(g_pinDig[PIN_LED_VERDE] && !g_pinDig[PIN_BUZZER], "novas leituras livres encerram aviso");
-  cmd('A', 1, 0); step(1);
-  CHECK(g_pinDig[PIN_BUZZER], "partida primeiro bipe");
-  step(110); CHECK(!g_pinDig[PIN_BUZZER], "partida intervalo");
-  cmd('A', 1, 0); step(100);
-  CHECK(g_pinDig[PIN_BUZZER], "renovacao nao reinicia partida");
-  cmd('A', 0, 0); step(1);
-  CHECK(!g_pinDig[PIN_BUZZER], "cancelamento imediato");
-  cmd('A', 2, 0); step(1);
-  CHECK(g_pinDig[PIN_BUZZER], "linha perdida primeiro bipe");
-  step(210); CHECK(g_pinDig[PIN_BUZZER], "linha perdida segundo bipe");
-  step(210); CHECK(!g_pinDig[PIN_BUZZER], "aviso expira sem renovacao");
-  printf("  sinalizacao: LEDs, bipes, buzina e watchdog conferidos\n");
+  CHECK(motores_parados(), "comando legado de buzina nao renova watchdog");
+  printf("  sinalizacao: LEDs, D10 livre e watchdog conferidos\n");
 #endif
 
 #if USAR_SENSORES

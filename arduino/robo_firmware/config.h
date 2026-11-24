@@ -184,21 +184,17 @@
 #define SONAR_MOV_MARGEM_MM 100
 #define SONAR_MOV_DESVIO_MAX_MM 20
 
-// ---------------------------------------------------------- LEDs e buzzer ativo
-// Buzzer em D10 via resistor/transistor; nao usa PWM/Timer1 do servo.
+// ---------------------------------------------------------- LEDs
+// Sem buzzer: D10 livre no perfil sem camera.
 #ifndef USAR_SINALIZACAO
 #define USAR_SINALIZACAO (!USAR_CAMERA)
 #endif
 #if USAR_SINALIZACAO && USAR_CAMERA
-#error "LED A0 e buzzer D10 conflitam com os motores da camera antiga"
+#error "LED A0 conflita com os motores da camera antiga"
 #endif
 #define PIN_LED_VERDE A0
 #define PIN_LED_AMARELO A1 // legado: apenas inicializado em LOW, sem indicacao amarela
 #define PIN_LED_VERMELHO A3
-#define PIN_BUZZER 10
-#define BUZINA_MAX_MS 1500UL
-#define AVISO_LIGADO_MS 150UL
-#define AVISO_PERIODO_MS 800UL
 
 // ------------------------------------------------------------------- Serial
 #if USAR_CAMERA
