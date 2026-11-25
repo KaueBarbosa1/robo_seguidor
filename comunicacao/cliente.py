@@ -3,6 +3,7 @@ import asyncio
 import ipaddress
 import secrets
 import time
+from datetime import datetime, timezone
 from urllib.parse import urlsplit
 
 from websockets.asyncio.client import connect
@@ -14,7 +15,7 @@ from comunicacao.servidor import oferecer
 
 
 class Cliente:
-    def __init__(self, url, opcoes, consumo_lento_s=0):
+    def __init__(self, url, opcoes, consumo_lento_s=0, distribuidor=None, receber_imagens=True):
         partes = urlsplit(url)
         if partes.scheme != 'ws' or partes.path not in {'', '/'} or partes.query or partes.fragment or partes.username:
             raise ValueError('Use ws://IP_LOCAL:PORTA sem credenciais/caminho')
@@ -31,9 +32,19 @@ class Cliente:
         self.ultimo_frame = None
         self.estados = {c: 'desconectado' for c in self.metricas}
         self.simulado = None
+        self.distribuidor = distribuidor
+        self.receber_imagens = receber_imagens
+
+    def evento(self, tipo, canal, ola):
+        if self.distribuidor is not None and ola is not None:
+            self.distribuidor.publicar('eventos', dict(tipo=tipo, canal=canal,
+                sessao=ola['sessao'], simulado=ola['simulado'], origem=ola['origem'],
+                versao=ola['versao'], timestamp=datetime.now(timezone.utc).isoformat(),
+                recepcao_mono_s=time.monotonic()))
 
     async def executar(self):
-        tarefas = [asyncio.create_task(self.canal(c)) for c in self.metricas]
+        tarefas = [asyncio.create_task(self.canal(c)) for c in self.metricas
+                   if c != 'imagens' or self.receber_imagens]
         try:
             await self.fim.wait()
         finally:
@@ -71,6 +82,7 @@ class Cliente:
         tentativas = 0
         while not self.fim.is_set():
             self.estados[canal] = 'conectando'
+            ola = None
             try:
                 async with connect(self.url+'/ws/'+canal,
                     additional_headers={'Authorization': 'Bearer '+self.op.token},
@@ -88,6 +100,7 @@ class Cliente:
                     metrica.ultima_sessao = ola['sessao']
                     self.estados[canal] = 'sincronizando'
                     self.simulado = ola['simulado']
+                    self.evento('conexao_estabelecida' if tentativas == 1 else 'reconexao', canal, ola)
                     self._limpar(canal)
                     await self.receber(ws, canal, ola)
             except (OSError, ConnectionClosed, InvalidHandshake, TimeoutError, ValueError):
@@ -96,6 +109,7 @@ class Cliente:
             finally:
                 if metrica.conectado_em is not None:
                     metrica.contar('desconexoes')
+                    self.evento('conexao_encerrada' if self.fim.is_set() else 'desconexao', canal, ola)
                 metrica.conectado_em = None
                 metrica.encerrar_rtt()
                 self.estados[canal] = 'desconectado'
@@ -189,7 +203,10 @@ class Cliente:
                         metrica.contar('descartes_antigos')
                         continue
                     msg['idade_limite_recepcao_s'] = idade_superior
+                    msg['recepcao_utc'] = datetime.now(timezone.utc).isoformat()
                     item = msg, jpeg, agora
+                    if self.distribuidor is not None:
+                        self.distribuidor.publicar(canal, item)
                     fila = self.imagens if jpeg is not None else self.telemetrias
                     metrica.contar('descartes_fila_local', oferecer(fila, item))
                     if jpeg is None:

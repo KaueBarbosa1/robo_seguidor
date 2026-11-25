@@ -67,6 +67,7 @@ class Amostras:
         idade_sistema = time.monotonic()-sistema_t if sistema_t is not None else None
         return dict(schema='benchmark_robo_v1', telemetria=telemetria, sistema=sistema,
                     sistema_host=self.host, sistema_plataforma=self.plataforma,
+                    sistema_monotonic_s=sistema_t,
                     sistema_idade_s=idade_sistema,
                     sistema_estado='indisponivel' if sistema is None else
                                    'atual' if idade_sistema is not None and idade_sistema <= 2.5 else 'desatualizado',

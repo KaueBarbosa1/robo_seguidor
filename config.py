@@ -236,3 +236,17 @@ REDE_FILA = 1
 REDE_MAX_JSON = 65536
 REDE_MAX_JPEG = 2 * 1024 * 1024
 REDE_MAX_CLIENTES = 4           # duas conexoes por cliente de diagnostico
+
+# Etapa 3: somente computador, opt-in. Nunca iniciado pela main da Raspberry.
+ARMAZ_DIR = BASE_DIR / 'dados_historico'
+ARMAZ_FILA_TELEMETRIA = 2048
+ARMAZ_FILA_EVENTOS = 128
+ARMAZ_FILA_IMAGENS = 8
+ARMAZ_LOTE = 128
+ARMAZ_INTERVALO_S = 0.2
+ARMAZ_IMAGENS_FPS = 1.0
+ARMAZ_MAX_BYTES = 2 * 1024**3             # quota administrativa DB+WAL+imagens
+ARMAZ_MAX_IMAGENS_BYTES = 500 * 1024**2
+ARMAZ_RESERVA_LIVRE_BYTES = 100 * 1024**2
+ARMAZ_ALERTA_TEMPERATURA_C = None        # limiar administrativo opcional, nao calibracao
+ARMAZ_ALERTA_CPU_PCT = None

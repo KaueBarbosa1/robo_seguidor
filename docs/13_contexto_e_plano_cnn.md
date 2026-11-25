@@ -1,5 +1,24 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de 25/11/2026 — Etapa 3 implementada no computador: cliente existente
+alimenta distribuidor local com filas limitadas e escritor SQLite/WAL em lotes.
+Sessões operacionais e gravações PC distintas, metadados/projeções/envelope fonte,
+eventos por transição, pausas/lacunas, JPEG opcional com hash/associação explícita,
+consultas/CSV/dataset não validado, backup online, restauração em pasta nova e
+replay somente leitura. Odometria apenas estrutura vazia. Interface local/CLI,
+sem HTTP público, banco na Pi, controle externo, dashboard ou Three.js.
+Correções mínimas: fan-out/UTC de recepção no cliente; frame_id e timestamp da
+amostra SO exportados para associação/deduplicação. Captura, firmware/pinos,
+PI/PD, Bluetooth, rede ESP32 e segurança preservados. Nenhum push.
+28 testes novos aprovados; regressão compatível397 passed,1 skipped,4 deselected,
+56 subtests passed (mesmas exclusões anteriores). CLI separada22 telemetrias em
+2,5 s, zero imagens por padrão, SQLite ok. Carga3 cenários4 s:35/133/40 telemetrias
+e6/8/7 JPEGs, zero falha SQLite/fila de armazenamento, descarte de JPEG por FPS
+explícito. Falhas/reconexões da rede simuladas não criaram nova sessão operacional.
+Testes de os._exit validaram recuperação e identificação de órfão sem apagar.
+Guias20/21 trazem modelo, tipos/unidades, comandos e resultados. Todos os ensaios
+são Windows/simulados; nenhum teste físico. Etapa4 fica preparada, não iniciada.
+
 Atualização de 25/11/2026 — Etapa 2 autorizada e implementada em simulação:
 WebSocket observacional com telemetria 10 Hz e JPEG binário 5 FPS, canais
 independentes, autenticação, heartbeat/RTT, reconexão, sessões/seq, validade e

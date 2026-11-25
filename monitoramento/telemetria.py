@@ -41,6 +41,7 @@ class Telemetria:
                 valida = leitura.timestamp > 0 and leitura.camera_ok
                 idade = leitura.idade(agora) if valida else None
                 saida['visao']['camera_ok'] = leitura.camera_ok
+                saida['visao']['frame_id'] = leitura.frame_id if valida else None
                 for k, v in [('erro', leitura.erro), ('linha_visivel', leitura.linha_visivel),
                              ('confianca_heuristica', leitura.confianca)]:
                     disponivel = valida and (k != 'erro' or leitura.linha_visivel)

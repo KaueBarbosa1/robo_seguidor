@@ -1,0 +1,2 @@
+# SQLite, filas, CSV e backup usam a biblioteca padrao. Transporte/simulador existentes:
+-r requirements-rede-pc.txt

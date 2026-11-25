@@ -40,3 +40,6 @@ resultados_esp32_wifi/
 dados_pista/
 dados_benchmark/
 dados_rede/
+dados_historico/
+*.db-wal
+*.db-shm

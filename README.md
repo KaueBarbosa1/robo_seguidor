@@ -178,4 +178,14 @@ Telemetria e JPEG usam canais independentes, token obrigatório e filas limitada
 `python tools/rede_servidor_simulado.py` e `python tools/rede_cliente.py --servidor
 ws://127.0.0.1:8765` permitem testar no Windows após configurar `ROBO_REDE_TOKEN`.
 Na main, `--rede` habilita somente observação; permanece desligada por padrão.
-Não há comando de movimento pelo PC, banco, dashboard ou renderização 3D.
+O transporte não possui comandos de movimento. O histórico no PC é descrito
+na Etapa 3 abaixo; dashboard e renderização 3D permanecem futuros.
+
+## Histórico no computador (Etapa 3)
+
+[Guia 20: SQLite, gravação, CSV, backup e replay](docs/20_armazenamento_historico.md)
+e [dicionário de dados](docs/21_dicionario_dados_historico.md).
+`python tools/historico.py gravar --servidor ws://127.0.0.1:8765` usa o cliente
+existente e inicia com gravação manual; JPEGs ficam desligados por padrão.
+Dados locais em `dados_historico/`, sem banco histórico na Raspberry.
+Não há movimento pelo PC, dashboard, renderização ou odometria calculada.
