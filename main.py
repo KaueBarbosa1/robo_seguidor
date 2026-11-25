@@ -8,6 +8,7 @@
 """
 import argparse
 import logging
+import os
 import signal
 import threading
 import time
@@ -56,7 +57,18 @@ def main() -> None:
     ap.add_argument('--benchmark', action='store_true', help='grava metricas locais; nao inicia movimento')
     ap.add_argument('--benchmark-dir', default=str(cfg.BENCHMARK_DIR))
     ap.add_argument('--benchmark-nota', default='', help='condicoes do ensaio, pista, alimentacao e repeticao')
+    ap.add_argument('--rede', action='store_true', default=cfg.REDE_ATIVA, help='WebSocket observacional autenticado')
+    ap.add_argument('--rede-host', default=cfg.REDE_HOST, help='IP local explicito para o servidor')
+    ap.add_argument('--rede-porta', type=int, default=cfg.REDE_PORTA)
     args = ap.parse_args()
+    opcoes_rede = None
+    if args.rede:
+        try:
+            from comunicacao.configuracao import Opcoes
+            opcoes_rede = Opcoes.central(os.environ.get(cfg.REDE_TOKEN_ENV, ''),
+                                        host=args.rede_host, porta=args.rede_porta)
+        except ValueError as exc:
+            ap.error(str(exc))
     pacote = None
     if args.politica != "opencv":
         if args.fonte_imagem != "esp32" or cfg.APRENDIZADO_ATIVO or not args.pacote_cnn_rl:
@@ -78,6 +90,7 @@ def main() -> None:
     painel = None
     inferencia = None
     benchmark = None
+    rede = None
     iniciadas = []
     try:
         try:
@@ -145,6 +158,27 @@ def main() -> None:
                 log.info('Benchmark local: %s', benchmark.iniciar())
             except (OSError, ValueError) as exc:
                 log.error('Benchmark indisponivel; controle preservado: %s', exc)
+                if benchmark is not None:
+                    benchmark.parar()
+                benchmark = None
+        if opcoes_rede is not None:
+            try:
+                from comunicacao.amostras import Amostras
+                from comunicacao.servidor import Servidor
+                from monitoramento.telemetria import Telemetria
+                amostras = Amostras(Telemetria(estado, motor, fonte, threads[0], inferencia,
+                    args.sem_arduino, args.politica, fonte_simulada=args.fonte_imagem == 'simulada'),
+                    opcoes_rede.telemetria_hz, benchmark)
+                rede = Servidor(opcoes_rede, amostras,
+                    fonte if isinstance(fonte, CameraESP32) else None,
+                    simulado=args.sem_arduino or args.fonte_imagem == 'simulada')
+                rede.iniciar()
+                if benchmark is not None:
+                    benchmark.diagnostico_rede = rede.metricas.snapshot
+                log.info('WebSocket observacional em %s:%s; comandos externos desabilitados',
+                         opcoes_rede.host, rede.porta)
+            except (ImportError, OSError, RuntimeError) as exc:
+                log.error('Rede indisponivel; controle embarcado preservado: %s', exc)
         def solicitar_parada(*_):
             parar.set()
             estado.encerrar()
@@ -186,8 +220,12 @@ def main() -> None:
                                 if fonte is not None and hasattr(fonte, "parar"):
                                     fonte.parar()
                             finally:
-                                if benchmark is not None:
-                                    benchmark.parar()
+                                try:
+                                    if rede is not None:
+                                        rede.parar()
+                                finally:
+                                    if benchmark is not None:
+                                        benchmark.parar()
         log.info("Encerrado.")
 
 

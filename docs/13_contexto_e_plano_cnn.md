@@ -1,5 +1,24 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de 25/11/2026 — Etapa 2 autorizada e implementada em simulação:
+WebSocket observacional com telemetria 10 Hz e JPEG binário 5 FPS, canais
+independentes, autenticação, heartbeat/RTT, reconexão, sessões/seq, validade e
+filas limitadas. Fonte da main compartilhada; sem segunda captura da ESP32,
+serial concorrente, mudança de firmware/pinos/ganhos/rede ou comandos externos.
+Main mantém rede desligada por padrão e autonomia independente do PC. Guia19
+documenta formato, métricas, scripts Windows, topologias e roteiro físico.
+20 testes novos e regressão compatível:369 passed,1 skipped,4 deselected,
+56 subtests passed. Mesmas exclusões da Fase1, não suíte completa verde.
+Carga localhost4 cenários (10/5,50/15,100/30 com atraso e30/10 com falhas),
+filas limitadas e encerramento verificados. Taxas alvos não garantidas; o cenário
+100 Hz descartou intermediários. Resultados do Windows, não da Raspberry.
+CLI cliente/servidor em processos separados aprovadas (28 telemetrias/15 JPEGs
+no diagnóstico de3 s, ambos exit0). Sem validação física, reinício de serviço,
+treino, banco/dashboard ou processamento externo. Nenhum push.
+Modelo3D localizado fora do repositório em Documentos/modelo_carrinho, com
+GLB e JSON de eixos; originais preservados, sem integração nesta etapa.
+Fase3 permanece apenas planejada. Registros anteriores abaixo são históricos.
+
 Atualização de 25/11/2026: implementada somente Fase 1 de diagnóstico/benchmark
 da futura arquitetura distribuída. Monitoramento local opt-in (`main --benchmark`),
 SO a 1 Hz, tempos OpenCV/CNN/RL/voz/serial/câmera/controle, sessões JSONL e CSV,

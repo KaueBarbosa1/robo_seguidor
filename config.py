@@ -219,3 +219,20 @@ BENCHMARK_INTERVALO_S = 1.0        # SO/telemetria em worker; minimo 1 s
 BENCHMARK_CAPACIDADE = 512        # amostras por metrica por janela, descarta mais antigas
 BENCHMARK_MAX_BYTES = 50_000_000  # para somente o benchmark ao atingir limite por sessao
 BENCHMARK_DIR = BASE_DIR / 'dados_benchmark'
+
+# Etapa 2: observação WebSocket opt-in, sem comandos de movimento.
+REDE_ATIVA = False
+REDE_HOST = '127.0.0.1'          # bind local; informar IP privado da Pi explicitamente
+REDE_SIM_HOST = '127.0.0.1'      # carga automatizada somente no loopback
+REDE_PORTA = 8765
+REDE_TOKEN_ENV = 'ROBO_REDE_TOKEN'
+REDE_TELEMETRIA_HZ = 10.0
+REDE_IMAGENS_FPS = 5.0
+REDE_HEARTBEAT_S = 2.0
+REDE_TIMEOUT_S = 5.0
+REDE_RECONEXAO_S = 1.0
+REDE_VALIDADE_S = 0.5
+REDE_FILA = 1
+REDE_MAX_JSON = 65536
+REDE_MAX_JPEG = 2 * 1024 * 1024
+REDE_MAX_CLIENTES = 4           # duas conexoes por cliente de diagnostico

@@ -170,3 +170,12 @@ de processamento distribuído estão no [guia 18](docs/18_benchmark_e_arquitetur
 `python tools/benchmark.py --modo simulado --duracao 60` exercita a ferramenta
 sem hardware; `python main.py --benchmark` observa a operação existente sem
 iniciar movimento. Resultados locais em `dados_benchmark/`, sem push automático.
+
+## Comunicação observacional (Etapa 2)
+
+[Guia 19: WebSocket, diagnóstico, rede e testes](docs/19_comunicacao_websocket.md).
+Telemetria e JPEG usam canais independentes, token obrigatório e filas limitadas.
+`python tools/rede_servidor_simulado.py` e `python tools/rede_cliente.py --servidor
+ws://127.0.0.1:8765` permitem testar no Windows após configurar `ROBO_REDE_TOKEN`.
+Na main, `--rede` habilita somente observação; permanece desligada por padrão.
+Não há comando de movimento pelo PC, banco, dashboard ou renderização 3D.

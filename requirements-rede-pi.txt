@@ -1,0 +1,3 @@
+# WebSocket assíncrono sem framework HTTP/ASGI; versão validada no Windows.
+websockets>=14.2,<15
+psutil>=5.9,<8

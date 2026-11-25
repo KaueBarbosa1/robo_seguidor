@@ -16,7 +16,7 @@ from monitoramento.sistema import Sistema
 log = logging.getLogger('benchmark')
 TEMPOS = ('opencv_s', 'cnn_s', 'rl_s', 'voz_s', 'camera_http_s', 'camera_decode_s',
           'serial_escrita_s', 'serial_intervalo_sensores_s', 'controle.trabalho_s',
-          'controle.periodo_s', 'controle.jitter_s', 'controle.idade_frame_s')
+          'controle.periodo_s', 'controle.jitter_s', 'controle.idade_frame_s', 'rede.rtt_s')
 
 
 def utc():
@@ -42,6 +42,8 @@ class Benchmark:
         self.bytes = 0
         self._ciclos = self._quadros = None
         self._anterior_t = None
+        self.ultima_amostra = None
+        self.diagnostico_rede = None
 
     def iniciar(self):
         if self.thread is not None:
@@ -56,7 +58,7 @@ class Benchmark:
             estado='iniciando', fim_utc=None,
             natureza_sistema='medido no host executor, inclusive quando carga e simulada',
             indisponiveis_fixos=dict(serial_rtt_s='protocolo nao tem ACK/eco correlacionado',
-                computador_rtt_s='canal externo nao implementado nesta fase',
+                computador_rtt_s='null se canal WebSocket nao ativo; RTT por sonda, nunca sentido unico',
                 mensagens_perdidas='nao ha sequencia ponta a ponta no protocolo atual',
                 frames_perdidos_na_camera='ESP32 nao exporta sequencia de captura'))
         import config as cfg
@@ -99,6 +101,10 @@ class Benchmark:
                                        for k, v in dados['tempos_s'].items() if v is None}
         periodo = tempos.get('controle.periodo_s')
         dados['controle_hz_por_periodo'] = (1/periodo['media'] if periodo and periodo['media'] > 0 else None)
+        dados['comunicacao'] = self.diagnostico_rede() if self.diagnostico_rede else None
+        dados['computador_rtt_s'] = (dados['comunicacao']['rtt_s']['mediana']
+            if dados['comunicacao'] and dados['comunicacao']['rtt_s'] else None)
+        self.ultima_amostra = dados
         return dados
 
     def _loop(self):

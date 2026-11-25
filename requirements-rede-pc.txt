@@ -1,0 +1,5 @@
+websockets>=14.2,<15
+# Somente servidor simulado/imagens de teste (cliente não importa OpenCV):
+numpy
+opencv-python-headless
+psutil>=5.9,<8
