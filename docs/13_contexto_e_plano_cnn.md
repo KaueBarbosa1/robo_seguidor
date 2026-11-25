@@ -1,5 +1,23 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de 25/11/2026: implementada somente Fase 1 de diagnóstico/benchmark
+da futura arquitetura distribuída. Monitoramento local opt-in (`main --benchmark`),
+SO a 1 Hz, tempos OpenCV/CNN/RL/voz/serial/câmera/controle, sessões JSONL e CSV,
+ferramenta de bancada com motores nulos. Sem firmware, pinos, ganhos, rede,
+serviço, treino ou política de segurança alterados. Fase 2 aguarda aprovação.
+Veja [guia 18](18_benchmark_e_arquitetura_distribuida.md), incluindo a divergência
+entre a proteção desejada no controle externo e o bypass Bluetooth atual.
+
+Verificação local Windows: 18 testes novos aprovados; regressão compatível
+com 349 testes e 44 subtestes aprovados, 1 skipped e 4 deselected, excluindo
+os arquivos test_integracao_robo e test_esp32_wifi. Não é a suíte completa:
+PTY/termios e scripts Wi-Fi dependem de Linux; um caso BlueZ depende de
+dbus-fast ausente. Falhas do ciclo sintético e do Mock de sinalização também
+reproduzidas em cópia isolada de d16c55a. Benchmark sintético de 5 s gerou
+6 amostras e CSV, sem descarte de instrumentação observado. Recursos medidos
+são do Windows; Pi, câmera/serial reais, refrigeração e percurso não validados.
+Sintaxe e diff conferidos. Nenhum push; commit local após verificações.
+
 Atualização de 24/11/2026: Bluetooth manual agora pausa o ultrassom, com
 modo explicito confirmado no Uno; autonomo conserva a protecao frontal.
 Veja registro final e guia07 para regravacao/reinicio.

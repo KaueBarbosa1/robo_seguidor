@@ -213,3 +213,9 @@ CNN_RL_PACOTE = None
 # Bluetooth manual sem HC-SR04/varredura/recuo. Autonomo conserva ultrassom.
 ULTRASSOM_BLUETOOTH_ATIVO = False
 MANUAL_SEM_ULTRASSOM_MAX_PPS = 12  # teto manual ampliado a pedido; autonomo/sonar preservados
+
+# Benchmark Fase 1: opt-in, local, sem interface de comandos ou mudanca de controle.
+BENCHMARK_INTERVALO_S = 1.0        # SO/telemetria em worker; minimo 1 s
+BENCHMARK_CAPACIDADE = 512        # amostras por metrica por janela, descarta mais antigas
+BENCHMARK_MAX_BYTES = 50_000_000  # para somente o benchmark ao atingir limite por sessao
+BENCHMARK_DIR = BASE_DIR / 'dados_benchmark'

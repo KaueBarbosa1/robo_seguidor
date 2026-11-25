@@ -19,6 +19,7 @@ import numpy as np
 
 import config as cfg
 from estado import EstadoRobo, Modo
+from monitoramento import medir
 
 log = logging.getLogger("visao")
 
@@ -49,6 +50,7 @@ class DetectorLinha:
         self._kernel = np.ones((3, 3), np.uint8)
         self._tipo = cv2.THRESH_BINARY_INV if cfg.LINHA_ESCURA else cv2.THRESH_BINARY
 
+    @medir('opencv_s')
     def processar(self, frame: np.ndarray) -> ResultadoLinha:
         h, w = frame.shape[:2]
         y0 = int(h * cfg.ROI_INICIO)

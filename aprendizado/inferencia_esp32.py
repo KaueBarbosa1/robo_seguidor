@@ -17,6 +17,7 @@ from aprendizado.dados import normalizar, preparar_entrada
 from aprendizado.rl_simulado import ACOES
 from estado import AcaoRL
 from visao.recorte_esp32 import RecorteESP32
+from monitoramento import medir
 
 CONTRATO = 'cnn_rl_esp32_v1'
 OBS_GYM = 'rl_cnn_gym_discreto_v1'
@@ -116,6 +117,7 @@ class Pacote:
             return preparar_entrada(cv2.resize(cinza, (160, 120), interpolation=cv2.INTER_AREA))
         return normalizar(self.recorte.reduzir(frame)[None])
 
+    @medir('rl_s')
     def escolher(self, erro, delta, velocidade, idade, anterior):
         if not all(math.isfinite(v) for v in (erro, delta, velocidade, idade)):
             raise ValueError('Observacao RL nao finita')

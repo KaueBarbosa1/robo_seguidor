@@ -22,6 +22,7 @@ import serial
 
 import config as cfg
 from motor import protocolo as P
+from monitoramento import medir, observar, contar, publicar_pedido
 
 log = logging.getLogger("serial")
 
@@ -139,15 +140,18 @@ class ArduinoSerial:
             self._ser = None
 
     # ------------------------------------------------------------ envio
+    @medir('serial_escrita_s')
     def _escrever(self, pacote: bytes, repetir: int = 1) -> None:
         for i in range(repetir):
             with self._lock_tx:
                 if not self._ser or not self._ser.is_open:
                     return                              # a thread de leitura está reconectando
                 try:
-                    self._ser.write(pacote)
+                    enviados = self._ser.write(pacote)
+                    contar('serial_tx_bytes', enviados)
                 except (serial.SerialException, OSError) as e:
                     log.error("Erro de escrita serial: %s", e)
+                    contar('serial_erros_tx')
                     self._ser = None                    # sinaliza para a thread de leitura reconectar
                     return
             if i + 1 < repetir:
@@ -228,11 +232,13 @@ class ArduinoSerial:
                     e, d = int(e*teto/maior), int(d*teto/maior)
             self.velocidade(e, d)
         else:
+            publicar_pedido('pwm_direto_esq_dir', (esq, dir_))
             self._escrever(P.comando_motores(esq, dir_))
 
     def velocidade(self, esq: int, dir_: int) -> None:
         if cfg.FIRMWARE_COM_CAMERA:
             raise RuntimeError("Controle de velocidade exige firmware sem camera")
+        publicar_pedido('referencia_pps_esq_dir', (esq, dir_))
         self._escrever(P.comando_velocidade(esq, dir_))
 
     def pwm(self, esq: int, dir_: int) -> None:
@@ -245,9 +251,11 @@ class ArduinoSerial:
             raise RuntimeError('PWM direto indisponivel no sonar em movimento')
         if any(not isinstance(v, int) or isinstance(v, bool) or abs(v) > 254 for v in (esq, dir_)):
             raise ValueError('PWM deve ser inteiro entre -254 e 254')
+        publicar_pedido('pwm_direto_esq_dir', (esq, dir_))
         self._escrever(P.comando_motores(esq, dir_))
 
     def parar(self, repetir: int = 1) -> None:
+        publicar_pedido('parada', True)
         self._escrever(P.comando_parar(), repetir)
 
     def avisar(self, tipo: int) -> None:
@@ -368,6 +376,8 @@ class ArduinoSerial:
     def _ao_sensores(self, dist: int, enc_e: int, enc_d: int, flags: int = 0x03) -> None:
         d = None if dist == P.DIST_SEM_LEITURA else dist
         with self._lock_sens:
+            if self._sens is not None:
+                observar('serial_intervalo_sensores_s', time.monotonic()-self._sens.timestamp)
             if self._enc_ult is not None:           # soma a diferença, tratando a volta dos 14 bits
                 self._ticks[0] += (enc_e - self._enc_ult[0]) % P.ENC_MODULO
                 self._ticks[1] += (enc_d - self._enc_ult[1]) % P.ENC_MODULO
@@ -396,10 +406,12 @@ class ArduinoSerial:
                 dados = ser.read(max(1, min(4096, ser.in_waiting or 1)))
             except (serial.SerialException, OSError) as e:
                 log.error("Erro de leitura serial: %s", e)
+                contar('serial_desconexoes_rx')
                 with self._lock_tx:
                     self._ser = None
                 continue
             if dados:
+                contar('serial_rx_bytes', len(dados))
                 dec.alimentar(dados)
 
     def _reconectar(self) -> None:

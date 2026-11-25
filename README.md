@@ -162,3 +162,11 @@ calibração do ruído de fundo).
 ## LEDs e buzzer ativo
 
 No modo atual sem câmera, LEDs verde/vermelho em A0/A3 indicam liberacao frontal ou bloqueio/falha; o antigo amarelo em A1 permanece desligado. O buzzer ativo fica em D10. Buzina manual pelo Bluetooth: `buzina` e `buzina off` (com Enter). Ligação, comportamento e teste em [docs/10_sinalizacao.md](docs/10_sinalizacao.md).
+
+## Benchmark opcional (Fase 1)
+
+O diagnóstico da arquitetura, as métricas, os comandos para Raspberry e o plano
+de processamento distribuído estão no [guia 18](docs/18_benchmark_e_arquitetura_distribuida.md).
+`python tools/benchmark.py --modo simulado --duracao 60` exercita a ferramenta
+sem hardware; `python main.py --benchmark` observa a operação existente sem
+iniciar movimento. Resultados locais em `dados_benchmark/`, sem push automático.

@@ -23,6 +23,7 @@ import numpy as np
 import config as cfg
 from voz.features import extrair_features
 from voz.vad import SegmentadorVAD
+from monitoramento import medir
 
 log = logging.getLogger("voz")
 
@@ -181,6 +182,7 @@ class ThreadVoz(threading.Thread):
                 if segmento is not None:
                     self._classificar(preditor, segmento)
 
+    @medir('voz_s')
     def _classificar(self, preditor, segmento: np.ndarray) -> None:
         try:
             rotulo, conf = preditor.prever(segmento, cfg.MIC_SR)

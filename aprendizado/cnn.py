@@ -21,6 +21,7 @@ import hashlib
 from pathlib import Path
 
 import numpy as np
+from monitoramento import medir
 
 ENTRADA = (1, 40, 80)
 
@@ -195,6 +196,7 @@ class RedeLinha:
         return perda, mae
 
     # ----------------------------------------------------------- inferência
+    @medir('cnn_s')
     def prever(self, x: np.ndarray, lote: int = 256):
         """x: (N,1,40,80). Devolve (direcao[N], prob_linha_visivel[N])."""
         saidas_d, saidas_v = [], []

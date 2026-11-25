@@ -1,0 +1,2 @@
+# Opcional: o robô continua funcionando sem esta dependência.
+psutil>=5.9,<8

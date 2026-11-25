@@ -10,6 +10,7 @@ from urllib.error import URLError
 
 import cv2
 import numpy as np
+from monitoramento import observar, contar
 
 MAX_JPEG = 2 * 1024 * 1024
 URL_PADRAO = "http://192.168.4.1/capture"
@@ -46,7 +47,11 @@ def receber_quadro(opener, url, timeout):
         raise ValueError("Idade do quadro invalida")
     if len(dados) > MAX_JPEG or not dados.startswith(b"\xff\xd8") or not dados.endswith(b"\xff\xd9"):
         raise ValueError("JPEG truncado ou invalido")
+    observar('camera_http_s', recepcao-inicio)
+    contar('camera_jpeg_rx_bytes', len(dados))
+    inicio_decode = time.perf_counter()
     imagem = cv2.imdecode(np.frombuffer(dados, dtype=np.uint8), cv2.IMREAD_COLOR)
+    observar('camera_decode_s', time.perf_counter()-inicio_decode)
     if imagem is None or imagem.shape[:2] != (240, 320):
         raise ValueError("JPEG invalido ou resolucao diferente de 320x240")
     return QuadroESP32(dados, imagem, recepcao, recepcao_utc, (recepcao - inicio) * 1000, idade_envio)
@@ -161,6 +166,7 @@ class CameraESP32:
                     if self._fim.is_set():
                         return
                     self._erros += 1
+                    contar('camera_erros_recepcao')
                     self._invalidar("erro")
                     self._cond.notify_all()
                 self._fim.wait(self.reconexao_s)

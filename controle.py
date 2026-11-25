@@ -18,6 +18,7 @@ import time
 import config as cfg
 from estado import EstadoRobo, Modo
 from motor.protocolo import GUARDA_SONAR_MOTIVOS
+from monitoramento import ciclo, observar
 
 log = logging.getLogger("controle")
 
@@ -539,6 +540,7 @@ class ThreadControle(threading.Thread):
 
         while not self._parar.is_set():
             inicio = time.monotonic()
+            ciclo('controle', periodo)
 
             with self._estado.lock:                          # decisão + envio atômicos
                 modo = self._estado.atualizar_manobra()
@@ -560,6 +562,8 @@ class ThreadControle(threading.Thread):
                     getattr(self._motor, 'iniciar_sonar_movimento', lambda: None)()
 
                 leitura_aviso = self._estado.ler_leitura()
+                if leitura_aviso.timestamp > 0 and leitura_aviso.camera_ok:
+                    observar('controle.idade_frame_s', leitura_aviso.idade(inicio))
                 partida = modo is Modo.SEGUINDO and inicio < self._estado._partida_ate
                 if fresca_aviso := (leitura_aviso.camera_ok and
                                     0 <= leitura_aviso.idade(inicio) <= cfg.LEITURA_VALIDADE_S and
@@ -577,6 +581,7 @@ class ThreadControle(threading.Thread):
                     modo_ant = None
                     self._estado.lock.release()
                     try:
+                        observar('controle.trabalho_s', time.monotonic()-inicio)
                         self._parar.wait(periodo)
                     finally:
                         self._estado.lock.acquire()
@@ -674,4 +679,5 @@ class ThreadControle(threading.Thread):
 
                 modo_ant = modo
 
+            observar('controle.trabalho_s', time.monotonic()-inicio)
             time.sleep(max(0.0, periodo - (time.monotonic() - inicio)))

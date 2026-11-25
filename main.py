@@ -53,6 +53,9 @@ def main() -> None:
                     default=cfg.FONTE_IMAGEM, help="seleciona a fonte sem alterar config.py")
     ap.add_argument("--politica", choices=("opencv", "cnn-rl-sombra", "cnn-rl"), default=cfg.POLITICA_LINHA)
     ap.add_argument("--pacote-cnn-rl", default=cfg.CNN_RL_PACOTE, help="manifesto do par CNN/RL treinado")
+    ap.add_argument('--benchmark', action='store_true', help='grava metricas locais; nao inicia movimento')
+    ap.add_argument('--benchmark-dir', default=str(cfg.BENCHMARK_DIR))
+    ap.add_argument('--benchmark-nota', default='', help='condicoes do ensaio, pista, alimentacao e repeticao')
     args = ap.parse_args()
     pacote = None
     if args.politica != "opencv":
@@ -74,6 +77,7 @@ def main() -> None:
     fonte = None
     painel = None
     inferencia = None
+    benchmark = None
     iniciadas = []
     try:
         try:
@@ -123,6 +127,24 @@ def main() -> None:
         if cfg.REMOTO_BT_ATIVO:
             from remoto.bluetooth_spp import ThreadBluetooth
             opcionais.append(ThreadBluetooth(estado, motor, parar))
+        if args.benchmark:
+            from monitoramento.benchmark import Benchmark
+            from monitoramento.telemetria import Telemetria
+            try:
+                benchmark = Benchmark(args.benchmark_dir,
+                    Telemetria(estado, motor, fonte, threads[0], inferencia,
+                               args.sem_arduino, args.politica,
+                               fonte_simulada=args.fonte_imagem == 'simulada'),
+                    intervalo=cfg.BENCHMARK_INTERVALO_S, capacidade=cfg.BENCHMARK_CAPACIDADE,
+                    max_bytes=cfg.BENCHMARK_MAX_BYTES,
+                    condicoes=dict(nota=args.benchmark_nota, fonte=args.fonte_imagem,
+                        politica=args.politica, sem_arduino=args.sem_arduino,
+                        controle_hz=cfg.FREQ_CONTROLE_HZ, kp=cfg.KP, kd=cfg.KD,
+                        esp32_url=cfg.ESP32_URL, pacote=args.pacote_cnn_rl,
+                        aprendizado_ativo=cfg.APRENDIZADO_ATIVO))
+                log.info('Benchmark local: %s', benchmark.iniciar())
+            except (OSError, ValueError) as exc:
+                log.error('Benchmark indisponivel; controle preservado: %s', exc)
         def solicitar_parada(*_):
             parar.set()
             estado.encerrar()
@@ -160,8 +182,12 @@ def main() -> None:
                             if painel is not None:
                                 painel.parar()
                         finally:
-                            if fonte is not None and hasattr(fonte, "parar"):
-                                fonte.parar()
+                            try:
+                                if fonte is not None and hasattr(fonte, "parar"):
+                                    fonte.parar()
+                            finally:
+                                if benchmark is not None:
+                                    benchmark.parar()
         log.info("Encerrado.")
 
 
