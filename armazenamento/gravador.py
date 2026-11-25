@@ -25,7 +25,7 @@ log = logging.getLogger('armazenamento')
 class Gravador:
     def __init__(self, distribuidor, opcoes, diagnostico=None, sistema_pc=None):
         self.bus, self.op = distribuidor, opcoes
-        self.tele = distribuidor.assinar({'telemetria'}, opcoes.fila_telemetria)
+        self.tele = distribuidor.assinar({'telemetria','odometria'}, opcoes.fila_telemetria)
         self.evt = distribuidor.assinar({'eventos'}, opcoes.fila_eventos)
         self.img = distribuidor.assinar({'imagens'}, opcoes.fila_imagens)
         self.pedidos = queue.Queue(32)
@@ -256,6 +256,17 @@ class Gravador:
             self.c.execute('BEGIN IMMEDIATE')
             sessoes = set()
             for canal,item in itens:
+                if canal=='odometria':
+                    p=item.get('pose',{})
+                    if p.get('validade')=='estimativa' and self.c.execute('SELECT 1 FROM sessoes WHERE id=?',(item.get('sessao'),)).fetchone():
+                        norm.inserir(self.c,'odometria',dict(sessao_id=item['sessao'],timestamp_utc=norm.utc(item['timestamp']),
+                            x_m=norm.numero(p.get('x_m')),y_m=norm.numero(p.get('y_m')),
+                            orientacao_rad=norm.numero(p.get('orientacao_rad')),distancia_m=norm.numero(p.get('distancia_m')),
+                            velocidade_linear_m_s=norm.numero(p.get('velocidade_linear_m_s')),
+                            velocidade_angular_rad_s=norm.numero(p.get('velocidade_angular_rad_s')),
+                            calibracao_json=norm.js(p.get('calibracao')),validade=p['validade'],natureza=p['natureza']))
+                        delta['odometria_persistida']+=1
+                    continue
                 if canal == 'eventos':
                     if item.get('recepcao_mono_s',self._limiar) >= self._limiar:
                         self._evento_rede(item)

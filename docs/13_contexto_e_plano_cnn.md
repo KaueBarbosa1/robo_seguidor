@@ -1,5 +1,16 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de 25/11/2026 — Etapa 4 implementada no PC: gêmeo digital Three.js
+com GLB original, seleção, animações, sonar/FOV ilustrativos, odometria diferencial,
+simulação pelo transporte existente e replay da mesma base. Inicialização:
+`.\iniciar_gemeo.ps1`. Guia: `docs/22_gemeo_digital_3d.md`. Sem atuação remota,
+mudanças na CNN/firmware/pinos/rede ou etapa 5. Telemetria real preparada, mas
+integração física e calibrações pendentes; parâmetros da simulação são sintéticos.
+O GLB local copiado é idêntico ao original e não foi versionado; ver README do
+gêmeo para colocação em outro checkout. Odometrias novas usam a tabela existente.
+Regressão selecionada:409 aprovados,1 ignorado,4 desmarcados e56 subtestes;
+testes JS e inspeção do navegador complementam, sem comprovar montagem física.
+
 Atualização de 25/11/2026 — Etapa 3 implementada no computador: cliente existente
 alimenta distribuidor local com filas limitadas e escritor SQLite/WAL em lotes.
 Sessões operacionais e gravações PC distintas, metadados/projeções/envelope fonte,

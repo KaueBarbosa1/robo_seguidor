@@ -68,15 +68,28 @@ class Reprodutor:
             self._fim = True
             self.cond.notify_all()
 
+    @property
+    def posicao_utc(self):
+        with self.cond:
+            return datetime.fromtimestamp(self._agora(),timezone.utc).isoformat()
+
+    def registros(self,inicio=None):
+        """Leitura paginada sem temporização, para restaurar estado visual ao buscar."""
+        return self._linhas(inicio)
+
     def _linhas(self,inicio=None):
         c = conectar(self.historico.raiz)
         sql = '''SELECT recebido_utc AS instante,'telemetria' AS categoria,id,mensagem_json,NULL AS caminho,NULL AS sha256 FROM telemetria WHERE sessao_id=?
           UNION ALL SELECT recebido_utc,'imagens',id,mensagem_json,caminho,sha256 FROM imagens WHERE sessao_id=?
           UNION ALL SELECT timestamp_utc,'eventos',id,detalhes_json,NULL,NULL FROM eventos WHERE sessao_id=?
-          UNION ALL SELECT inicio_utc,'intervalos',id,json_object('motivo',motivo,'fim_utc',fim_utc),NULL,NULL FROM intervalos WHERE sessao_id=?'''
+          UNION ALL SELECT inicio_utc,'intervalos',id,json_object('motivo',motivo,'fim_utc',fim_utc),NULL,NULL FROM intervalos WHERE sessao_id=?
+          UNION ALL SELECT timestamp_utc,'odometria',id,json_object('x_m',x_m,'y_m',y_m,
+            'orientacao_rad',orientacao_rad,'distancia_m',distancia_m,'velocidade_linear_m_s',velocidade_linear_m_s,
+            'velocidade_angular_rad_s',velocidade_angular_rad_s,'calibracao_json',calibracao_json,
+            'validade',validade,'natureza',natureza),NULL,NULL FROM odometria WHERE sessao_id=?'''
         try:
-            cursor = c.execute('SELECT * FROM ('+sql+') WHERE (? IS NULL OR instante>=?) ORDER BY instante,categoria,id',
-                               (self.sessao,)*4+(inicio,inicio))
+            cursor = c.execute('SELECT * FROM ('+sql+') WHERE (? IS NULL OR instante>=?) ORDER BY instante,CASE WHEN categoria=\'odometria\' THEN 1 ELSE 0 END,categoria,id',
+                               (self.sessao,)*5+(inicio,inicio))
             while True:
                 rows = cursor.fetchmany(128)
                 if not rows:
@@ -93,7 +106,8 @@ class Reprodutor:
                 if self._inicio is None:
                     self._inicio = row['instante']
                     with self.cond:
-                        self._posicao = datetime.fromisoformat(row['instante']).timestamp()
+                        if self._busca is None:
+                            self._posicao = datetime.fromisoformat(row['instante']).timestamp()
                         self._real = time.monotonic()
                 alvo = datetime.fromisoformat(row['instante']).timestamp()
                 with self.cond:

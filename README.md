@@ -1,5 +1,10 @@
 # Robô seguidor de linha com comando de voz
 
+Gêmeo digital 3D no computador: execute `.\iniciar_gemeo.ps1` para abrir o modelo
+original com simulação e histórico. Consulte [execução e modos](gemeo_digital/README.md)
+e o [guia técnico da etapa 4](docs/22_gemeo_digital_3d.md). A integração física
+e as calibrações no piso permanecem pendentes; o visualizador não atua no robô.
+
 Contexto atual e próximos passos: [plano comentado da CNN e da integração
 ESP32-CAM](docs/13_contexto_e_plano_cnn.md). Reúne o que existe, as limitações
 e as propostas de trajetória em três alturas, validade supervisionada, memória

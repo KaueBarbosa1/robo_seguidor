@@ -1,0 +1,8 @@
+{
+  "name": "robo-seguidor-gemeo-digital",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": { "test": "node --test ../testes/*.test.js" },
+  "dependencies": { "three": "0.187.0" }
+}

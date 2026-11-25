@@ -248,7 +248,10 @@ Referencias: `telemetria_id` → `telemetria.id`.
 
 ## odometria
 
-Estrutura futura vazia; nenhum calculo de pose implementado.
+Na Etapa 4, o gêmeo digital passa a gravar estimativas quando `-Gravar` está
+ativo e a calibração é válida. Usa a mesma tabela, sem novo banco ou mudança
+de esquema. Calibração simulada e estimativa física são identificadas em
+`calibracao_json` e `natureza`; registros antigos podem continuar ausentes.
 
 | Campo | Tipo SQLite | Nulo | Unidade / significado |
 |---|---|---|---|
@@ -259,8 +262,8 @@ Estrutura futura vazia; nenhum calculo de pose implementado.
 | `y_m` | REAL | sim | m estimados |
 | `orientacao_rad` | REAL | sim | rad estimados |
 | `distancia_m` | REAL | sim | m estimados |
-| `velocidade_linear_m_s` | REAL | sim | s; monotonic somente no host/origem indicado |
-| `velocidade_angular_rad_s` | REAL | sim | s; monotonic somente no host/origem indicado |
+| `velocidade_linear_m_s` | REAL | sim | m/s estimados |
+| `velocidade_angular_rad_s` | REAL | sim | rad/s estimados |
 | `calibracao_json` | TEXT | sim | JSON UTF-8; qualidade/origem/semantica conforme envelope |
 | `validade` | TEXT | sim | identificador, texto ou contagem; sem unidade fisica |
 | `natureza` | TEXT | sim | identificador, texto ou contagem; sem unidade fisica |

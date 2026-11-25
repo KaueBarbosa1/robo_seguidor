@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Robo seguidor · Gêmeo digital</title>
+    <link rel="stylesheet" href="/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "/vendor/three.module.js",
+          "three/addons/": "/vendor/addons/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <header>
+      <div class="brand">
+        <b>RS<span> / DIGITAL TWIN</span></b
+        ><small>Laboratório de robótica · Etapa 04</small>
+      </div>
+      <select id="modo" aria-label="Modo">
+        <option value="simulado">Simulação</option>
+        <option value="historico">Histórico</option>
+        <option value="real">Tempo real</option></select
+      ><span id="conexao">Inicializando</span><small id="sessao">—</small
+      ><strong id="fps">— FPS</strong>
+    </header>
+    <main>
+      <aside class="left">
+        <h2>Explorar o protótipo</h2>
+        <p class="muted">Modelo original · Blender / glTF</p>
+        <div class="views" id="vistas"></div>
+        <label
+          ><input id="acrilico" type="checkbox" checked /> Chassi
+          superior</label
+        ><label><input id="explodir" type="checkbox" /> Vista explodida</label
+        ><label
+          ><input id="fov" type="checkbox" /> Campo de visão estimado</label
+        ><label
+          ><input id="sonar" type="checkbox" checked /> Alcance do
+          ultrassônico</label
+        ><label
+          ><input id="trajeto" type="checkbox" checked /> Trajetória
+          estimada</label
+        ><label
+          >Qualidade
+          <select id="qualidade">
+            <option value="1">Econômica</option>
+            <option value="1.5" selected>Equilibrada</option>
+            <option value="2">Alta</option>
+          </select></label
+        >
+        <h2>Componentes</h2>
+        <div id="componentes"></div>
+      </aside>
+      <section class="stage">
+        <div class="stage-title">
+          <span>01 / PROTÓTIPO INTERATIVO</span
+          ><span id="natureza">SIMULAÇÃO · PARÂMETROS SINTÉTICOS</span>
+        </div>
+        <div id="cena" aria-label="Modelo tridimensional interativo"></div>
+        <div class="stage-foot">
+          <span
+            >X transversal · Y vertical · −Z frente<br /><small
+              >Arraste para orbitar · roda do mouse para ampliar</small
+            ></span
+          ><button id="centralizar">Centralizar carrinho</button>
+        </div>
+        <div id="erro" role="alert" hidden></div>
+      </section>
+      <aside class="right">
+        <span class="eyebrow">INSPEÇÃO DO COMPONENTE</span>
+        <h1 id="nome">Carrinho completo</h1>
+        <p id="funcao">Selecione uma peça no modelo ou na lista.</p>
+        <button id="focar">Focar componente</button>
+        <dl id="metricas"></dl>
+        <h2>Canal de imagem</h2>
+        <div class="quadro">
+          <img
+            id="imagem"
+            alt="Frame recebido pelo canal de imagem existente"
+            hidden
+          /><span id="sem-imagem">Aguardando frame válido</span>
+        </div>
+        <p id="camera-info" class="muted">
+          FOV estimado; não representa a ROI.
+        </p>
+        <h2>Posição estimada</h2>
+        <p id="pose">Aguardando dados</p>
+        <button id="referencia">Reiniciar referência / trajeto</button
+        ><select id="comparar" aria-label="Comparar trajetória">
+          <option value="">Comparar com sessão…</option>
+        </select>
+        <p id="comparacao" class="muted"></p>
+        <h2>Eventos</h2>
+        <div id="eventos" class="muted">Sem eventos</div>
+      </aside>
+    </main>
+    <footer>
+      <div id="sim">
+        <div>
+          <span class="eyebrow">BANCADA VIRTUAL</span
+          ><b>Controles da fonte simulada</b
+          ><small>Nenhum comando é enviado ao carrinho físico.</small>
+        </div>
+        <div id="controles"></div>
+      </div>
+      <div id="historico" hidden>
+        <label
+          >Sessão
+          <select id="sessoes"></select
+        ></label>
+        <div class="replay">
+          <button data-replay="reiniciar">↤ Início</button
+          ><button data-salto="-1">−1 s</button
+          ><button data-replay="reproduzir">Reproduzir</button
+          ><button data-replay="pausar">Pausar</button
+          ><button data-salto="1">+1 s</button
+          ><select id="velocidade" aria-label="Velocidade de reprodução">
+            <option>0.5</option>
+            <option selected>1</option>
+            <option>2</option>
+            <option>4</option>
+          </select>
+        </div>
+        <input
+          id="tempo"
+          aria-label="Instante da sessão"
+          type="range"
+          min="0"
+          max="1"
+          step="0.01"
+        /><small id="instante">Selecione uma sessão armazenada</small>
+      </div>
+      <div id="real" hidden>
+        Observação da conexão existente. Calibração física pendente; sem
+        comandos de atuação.
+      </div>
+    </footer>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

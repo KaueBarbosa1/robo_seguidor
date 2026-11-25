@@ -59,6 +59,9 @@ class Telemetria:
         s = getattr(self.motor, 'sensores', lambda: None)()
         d = getattr(self.motor, 'estado_motores', lambda: None)()
         servo = getattr(self.motor, 'status_servo', lambda: None)()
+        # Getters simulados podem produzir uma amostra agora; calcular a idade
+        # depois deles evita idades negativas e falsos estados desatualizados.
+        agora = time.monotonic()
         idade = agora-s.timestamp if s else None
         for k in ('distancia_cm', 'avanco_bloqueado', 'falha_sensor', 'obstaculo_confirmado'):
             saida['sensores'][k] = campo(getattr(s, k, None), n, idade, cfg.SENSOR_TIMEOUT_S)

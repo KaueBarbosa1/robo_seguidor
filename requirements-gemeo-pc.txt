@@ -1,0 +1,2 @@
+# Somente PC; Three.js fica em gemeo_digital/frontend/package-lock.json.
+-r requirements-armazenamento-pc.txt

@@ -1,0 +1,11 @@
+{
+  "eixo_transversal_original": "X",
+  "vertical_original": "Z",
+  "eixo_local_animacao": "Z",
+  "servo_pivo_estimado": [
+    0.0,
+    0.07500001043081284,
+    0.13499999046325684
+  ],
+  "observacao": "Verificar centro do servo e sentido de giro; fios permanecem fixos. Escala original preservada."
+}

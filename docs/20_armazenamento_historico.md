@@ -1,5 +1,10 @@
 # Etapa 3 — SQLite, histórico operacional e reprodução no computador
 
+Atualização posterior: a [Etapa 4](22_gemeo_digital_3d.md) adiciona o visualizador
+Three.js e passa a preencher/reproduzir a tabela de odometria existente quando
+há calibração válida. O texto e os resultados abaixo registram a entrega da
+Etapa 3; suas referências a odometria vazia descrevem aquela validação.
+
 Implementação de 25/11/2026 sobre `fd368c0` (Etapa 2). Desenvolvimento e testes
 no Windows; nenhum acesso à Raspberry, serial, firmware ou câmera física.
 Não há dashboard, Three.js, cálculo de odometria, treinamento ou processamento

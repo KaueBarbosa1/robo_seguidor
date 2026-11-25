@@ -1,0 +1,660 @@
+{
+  "sha256": "e2713914a205bfa6504aae3830a67766ad5f1592c5a825660b1677184571a52b",
+  "nos": 313,
+  "quantidade_materiais": 37,
+  "meshes": 312,
+  "componentes": {
+    "carrinho_raiz": true,
+    "chassi_inferior": false,
+    "chassi_superior": false,
+    "roda_esquerda": true,
+    "roda_direita": true,
+    "roda_apoio": true,
+    "motor_esquerdo": true,
+    "motor_direito": true,
+    "encoder_esquerdo": true,
+    "encoder_direito": true,
+    "disco_encoder_esquerdo": true,
+    "disco_encoder_direito": true,
+    "servo_base": true,
+    "servo_eixo": true,
+    "sensor_ultrassonico": true,
+    "esp32_cam": true,
+    "raspberry_pi": true,
+    "arduino_uno": true,
+    "ponte_h": true,
+    "regulador_tensao": true,
+    "placa_universal": true,
+    "case_baterias_1": true,
+    "case_baterias_2": true
+  },
+  "eixos": {
+    "roda_esquerda": {
+      "eixo_local_geometrico": [
+        -0.04162912706270521,
+        0.9975222604627652,
+        0.056712923229646266
+      ],
+      "autovalores": [
+        0.00013387206102233171,
+        0.000358032557368888,
+        0.00036068711554695785
+      ],
+      "metodo": "PCA eixo de menor espessura, coordenadas glTF",
+      "rotacao_inicial": [
+        0.5,
+        0.5,
+        -0.5,
+        0.5
+      ],
+      "translacao_inicial": [
+        -0.08883444964885712,
+        -0.00022884830832481384,
+        0.00016761943697929382
+      ],
+      "validacao_fisica": false
+    },
+    "roda_direita": {
+      "eixo_local_geometrico": [
+        0.0004036356922917649,
+        0.9999998633032153,
+        -0.0003323729505695927
+      ],
+      "autovalores": [
+        0.00013386196839422956,
+        0.00035900199061782205,
+        0.0003590980313608157
+      ],
+      "metodo": "PCA eixo de menor espessura, coordenadas glTF",
+      "rotacao_inicial": [
+        0.5,
+        0.5,
+        -0.5,
+        0.5
+      ],
+      "translacao_inicial": [
+        0.08883444964885712,
+        0.00022884830832481384,
+        -0.00016762316226959229
+      ],
+      "validacao_fisica": false
+    },
+    "disco_encoder_esquerdo": {
+      "eixo_local_geometrico": [
+        -2.0283380274624754e-06,
+        0.9999999999933363,
+        -3.035323813516122e-06
+      ],
+      "autovalores": [
+        1.4197589950198938e-06,
+        5.125130638255216e-05,
+        5.1333715596999454e-05
+      ],
+      "metodo": "PCA eixo de menor espessura, coordenadas glTF",
+      "rotacao_inicial": [
+        0.5,
+        0.5,
+        -0.5,
+        0.5
+      ],
+      "translacao_inicial": [
+        -0.03141555190086365,
+        0.00022884458303451538,
+        -0.00016762316226959229
+      ],
+      "validacao_fisica": false
+    },
+    "disco_encoder_direito": {
+      "eixo_local_geometrico": [
+        -2.028338027462594e-06,
+        0.9999999999933364,
+        -3.0353238137381666e-06
+      ],
+      "autovalores": [
+        1.4197589950198802e-06,
+        5.1251306382552156e-05,
+        5.1333715596999454e-05
+      ],
+      "metodo": "PCA eixo de menor espessura, coordenadas glTF",
+      "rotacao_inicial": [
+        0.5,
+        0.5,
+        -0.5,
+        0.5
+      ],
+      "translacao_inicial": [
+        0.03058444708585739,
+        0.00022884458303451538,
+        -0.00016762316226959229
+      ],
+      "validacao_fisica": false
+    },
+    "servo_eixo": {
+      "eixo_local_geometrico": [
+        -0.0,
+        0.9999999999999999,
+        -0.0
+      ],
+      "autovalores": [
+        6.275959047070234e-06,
+        2.4398358053739584e-05,
+        2.4398361111815993e-05
+      ],
+      "metodo": "PCA eixo de menor espessura, coordenadas glTF",
+      "rotacao_inicial": [
+        0,
+        0,
+        0,
+        1
+      ],
+      "translacao_inicial": [
+        -0.00041555240750312805,
+        0.10222883522510529,
+        -0.03716763108968735
+      ],
+      "validacao_fisica": false
+    }
+  },
+  "hierarquia": {
+    "acrilico_0.035_674": "carrinho_raiz",
+    "acrilico_0.105_673": "carrinho_raiz",
+    "arduino_uno": "carrinho_raiz",
+    "borne_camera_334": "carrinho_raiz",
+    "case_baterias_1": "carrinho_raiz",
+    "case_baterias_2": "carrinho_raiz",
+    "case_camera_terminal0_681": "carrinho_raiz",
+    "case_camera_terminal1_683": "carrinho_raiz",
+    "case_ponte_terminal0_690": "carrinho_raiz",
+    "case_ponte_terminal1_692": "carrinho_raiz",
+    "disco_encoder_direito": "carrinho_raiz",
+    "disco_encoder_esquerdo": "carrinho_raiz",
+    "encoder_direito": "carrinho_raiz",
+    "encoder_esquerdo": "carrinho_raiz",
+    "esp32_cam": "carrinho_raiz",
+    "fio0_0_326": "carrinho_raiz",
+    "fio0_1_325": "carrinho_raiz",
+    "fio0_2_324": "carrinho_raiz",
+    "fio0_3_323": "carrinho_raiz",
+    "fio0_4_322": "carrinho_raiz",
+    "fio0_5_321": "carrinho_raiz",
+    "fio0_6_320": "carrinho_raiz",
+    "fio0_7_319": "carrinho_raiz",
+    "fio0_8_318": "carrinho_raiz",
+    "fio0_9_317": "carrinho_raiz",
+    "fio0_10_316": "carrinho_raiz",
+    "fio0_11_315": "carrinho_raiz",
+    "fio0_12_314": "carrinho_raiz",
+    "fio1_0_313": "carrinho_raiz",
+    "fio1_1_312": "carrinho_raiz",
+    "fio1_2_311": "carrinho_raiz",
+    "fio1_3_310": "carrinho_raiz",
+    "fio1_4_309": "carrinho_raiz",
+    "fio1_5_308": "carrinho_raiz",
+    "fio1_6_307": "carrinho_raiz",
+    "fio1_7_306": "carrinho_raiz",
+    "fio1_8_305": "carrinho_raiz",
+    "fio1_9_304": "carrinho_raiz",
+    "fio1_10_303": "carrinho_raiz",
+    "fio1_11_302": "carrinho_raiz",
+    "fio1_12_301": "carrinho_raiz",
+    "fio2_0_300": "carrinho_raiz",
+    "fio2_1_299": "carrinho_raiz",
+    "fio2_2_298": "carrinho_raiz",
+    "fio2_3_297": "carrinho_raiz",
+    "fio2_4_296": "carrinho_raiz",
+    "fio2_5_295": "carrinho_raiz",
+    "fio2_6_294": "carrinho_raiz",
+    "fio2_7_293": "carrinho_raiz",
+    "fio2_8_292": "carrinho_raiz",
+    "fio2_9_291": "carrinho_raiz",
+    "fio2_10_290": "carrinho_raiz",
+    "fio2_11_289": "carrinho_raiz",
+    "fio2_12_288": "carrinho_raiz",
+    "fio3_0_287": "carrinho_raiz",
+    "fio3_1_286": "carrinho_raiz",
+    "fio3_2_285": "carrinho_raiz",
+    "fio3_3_284": "carrinho_raiz",
+    "fio3_4_283": "carrinho_raiz",
+    "fio3_5_282": "carrinho_raiz",
+    "fio3_6_281": "carrinho_raiz",
+    "fio3_7_280": "carrinho_raiz",
+    "fio3_8_279": "carrinho_raiz",
+    "fio3_9_278": "carrinho_raiz",
+    "fio3_10_277": "carrinho_raiz",
+    "fio3_11_276": "carrinho_raiz",
+    "fio3_12_275": "carrinho_raiz",
+    "fio4_0_274": "carrinho_raiz",
+    "fio4_1_273": "carrinho_raiz",
+    "fio4_2_272": "carrinho_raiz",
+    "fio4_3_271": "carrinho_raiz",
+    "fio4_4_270": "carrinho_raiz",
+    "fio4_5_269": "carrinho_raiz",
+    "fio4_6_268": "carrinho_raiz",
+    "fio4_7_267": "carrinho_raiz",
+    "fio4_8_266": "carrinho_raiz",
+    "fio4_9_265": "carrinho_raiz",
+    "fio4_10_264": "carrinho_raiz",
+    "fio4_11_263": "carrinho_raiz",
+    "fio4_12_262": "carrinho_raiz",
+    "fio5_0_261": "carrinho_raiz",
+    "fio5_1_260": "carrinho_raiz",
+    "fio5_2_259": "carrinho_raiz",
+    "fio5_3_258": "carrinho_raiz",
+    "fio5_4_257": "carrinho_raiz",
+    "fio5_5_256": "carrinho_raiz",
+    "fio5_6_255": "carrinho_raiz",
+    "fio5_7_254": "carrinho_raiz",
+    "fio5_8_253": "carrinho_raiz",
+    "fio5_9_252": "carrinho_raiz",
+    "fio5_10_251": "carrinho_raiz",
+    "fio5_11_250": "carrinho_raiz",
+    "fio5_12_249": "carrinho_raiz",
+    "fio6_0_248": "carrinho_raiz",
+    "fio6_1_247": "carrinho_raiz",
+    "fio6_2_246": "carrinho_raiz",
+    "fio6_3_245": "carrinho_raiz",
+    "fio6_4_244": "carrinho_raiz",
+    "fio6_5_243": "carrinho_raiz",
+    "fio6_6_242": "carrinho_raiz",
+    "fio6_7_241": "carrinho_raiz",
+    "fio6_8_240": "carrinho_raiz",
+    "fio6_9_239": "carrinho_raiz",
+    "fio6_10_238": "carrinho_raiz",
+    "fio6_11_237": "carrinho_raiz",
+    "fio6_12_236": "carrinho_raiz",
+    "fio7_0_235": "carrinho_raiz",
+    "fio7_1_234": "carrinho_raiz",
+    "fio7_2_233": "carrinho_raiz",
+    "fio7_3_232": "carrinho_raiz",
+    "fio7_4_231": "carrinho_raiz",
+    "fio7_5_230": "carrinho_raiz",
+    "fio7_6_229": "carrinho_raiz",
+    "fio7_7_228": "carrinho_raiz",
+    "fio7_8_227": "carrinho_raiz",
+    "fio7_9_226": "carrinho_raiz",
+    "fio7_10_225": "carrinho_raiz",
+    "fio7_11_224": "carrinho_raiz",
+    "fio7_12_223": "carrinho_raiz",
+    "fio8_0_222": "carrinho_raiz",
+    "fio8_1_221": "carrinho_raiz",
+    "fio8_2_220": "carrinho_raiz",
+    "fio8_3_219": "carrinho_raiz",
+    "fio8_4_218": "carrinho_raiz",
+    "fio8_5_217": "carrinho_raiz",
+    "fio8_6_216": "carrinho_raiz",
+    "fio8_7_215": "carrinho_raiz",
+    "fio8_8_214": "carrinho_raiz",
+    "fio8_9_213": "carrinho_raiz",
+    "fio8_10_212": "carrinho_raiz",
+    "fio8_11_211": "carrinho_raiz",
+    "fio8_12_210": "carrinho_raiz",
+    "fio9_0_209": "carrinho_raiz",
+    "fio9_1_208": "carrinho_raiz",
+    "fio9_2_207": "carrinho_raiz",
+    "fio9_3_206": "carrinho_raiz",
+    "fio9_4_205": "carrinho_raiz",
+    "fio9_5_204": "carrinho_raiz",
+    "fio9_6_203": "carrinho_raiz",
+    "fio9_7_202": "carrinho_raiz",
+    "fio9_8_201": "carrinho_raiz",
+    "fio9_9_200": "carrinho_raiz",
+    "fio9_10_199": "carrinho_raiz",
+    "fio9_11_198": "carrinho_raiz",
+    "fio9_12_197": "carrinho_raiz",
+    "fio10_0_196": "carrinho_raiz",
+    "fio10_1_195": "carrinho_raiz",
+    "fio10_2_194": "carrinho_raiz",
+    "fio10_3_193": "carrinho_raiz",
+    "fio10_4_192": "carrinho_raiz",
+    "fio10_5_191": "carrinho_raiz",
+    "fio10_6_190": "carrinho_raiz",
+    "fio10_7_189": "carrinho_raiz",
+    "fio10_8_188": "carrinho_raiz",
+    "fio10_9_187": "carrinho_raiz",
+    "fio10_10_186": "carrinho_raiz",
+    "fio10_11_185": "carrinho_raiz",
+    "fio10_12_184": "carrinho_raiz",
+    "fio11_0_183": "carrinho_raiz",
+    "fio11_1_182": "carrinho_raiz",
+    "fio11_2_181": "carrinho_raiz",
+    "fio11_3_180": "carrinho_raiz",
+    "fio11_4_179": "carrinho_raiz",
+    "fio11_5_178": "carrinho_raiz",
+    "fio11_6_177": "carrinho_raiz",
+    "fio11_7_176": "carrinho_raiz",
+    "fio11_8_175": "carrinho_raiz",
+    "fio11_9_174": "carrinho_raiz",
+    "fio11_10_173": "carrinho_raiz",
+    "fio11_11_172": "carrinho_raiz",
+    "fio11_12_171": "carrinho_raiz",
+    "fio12_0_170": "carrinho_raiz",
+    "fio12_1_169": "carrinho_raiz",
+    "fio12_2_168": "carrinho_raiz",
+    "fio12_3_167": "carrinho_raiz",
+    "fio12_4_166": "carrinho_raiz",
+    "fio12_5_165": "carrinho_raiz",
+    "fio12_6_164": "carrinho_raiz",
+    "fio12_7_163": "carrinho_raiz",
+    "fio12_8_162": "carrinho_raiz",
+    "fio12_9_161": "carrinho_raiz",
+    "fio12_10_160": "carrinho_raiz",
+    "fio12_11_159": "carrinho_raiz",
+    "fio12_12_158": "carrinho_raiz",
+    "fio13_0_157": "carrinho_raiz",
+    "fio13_1_156": "carrinho_raiz",
+    "fio13_2_155": "carrinho_raiz",
+    "fio13_3_154": "carrinho_raiz",
+    "fio13_4_153": "carrinho_raiz",
+    "fio13_5_152": "carrinho_raiz",
+    "fio13_6_151": "carrinho_raiz",
+    "fio13_7_150": "carrinho_raiz",
+    "fio13_8_149": "carrinho_raiz",
+    "fio13_9_148": "carrinho_raiz",
+    "fio13_10_147": "carrinho_raiz",
+    "fio13_11_146": "carrinho_raiz",
+    "fio13_12_145": "carrinho_raiz",
+    "fio14_0_144": "carrinho_raiz",
+    "fio14_1_143": "carrinho_raiz",
+    "fio14_2_142": "carrinho_raiz",
+    "fio14_3_141": "carrinho_raiz",
+    "fio14_4_140": "carrinho_raiz",
+    "fio14_5_139": "carrinho_raiz",
+    "fio14_6_138": "carrinho_raiz",
+    "fio14_7_137": "carrinho_raiz",
+    "fio14_8_136": "carrinho_raiz",
+    "fio14_9_135": "carrinho_raiz",
+    "fio14_10_134": "carrinho_raiz",
+    "fio14_11_133": "carrinho_raiz",
+    "fio14_12_132": "carrinho_raiz",
+    "jumper_inferior_superior_00_17": "carrinho_raiz",
+    "jumper_inferior_superior_01_16": "carrinho_raiz",
+    "jumper_inferior_superior_02_15": "carrinho_raiz",
+    "jumper_inferior_superior_03_14": "carrinho_raiz",
+    "jumper_inferior_superior_04_13": "carrinho_raiz",
+    "jumper_inferior_superior_05_12": "carrinho_raiz",
+    "jumper_inferior_superior_07_10": "carrinho_raiz",
+    "jumper_inferior_superior_08_9": "carrinho_raiz",
+    "jumper_inferior_superior_12_5": "carrinho_raiz",
+    "jumper_inferior_superior_13_4": "carrinho_raiz",
+    "jumper_inferior_superior_15_2": "carrinho_raiz",
+    "jumper_inferior_superior_16_1": "carrinho_raiz",
+    "jumper_inferior_superior_17_0": "carrinho_raiz",
+    "motor_direito": "carrinho_raiz",
+    "motor_esquerdo": "carrinho_raiz",
+    "parafuso0.061-0.083_667": "carrinho_raiz",
+    "parafuso0.0610.083_665": "carrinho_raiz",
+    "parafuso-0.061-0.083_671": "carrinho_raiz",
+    "parafuso-0.0610.083_669": "carrinho_raiz",
+    "placa_universal": "carrinho_raiz",
+    "placa_verde_339": "carrinho_raiz",
+    "ponte_h": "carrinho_raiz",
+    "poste0.061-0.083_668": "carrinho_raiz",
+    "poste0.0610.083_666": "carrinho_raiz",
+    "poste-0.061-0.083_672": "carrinho_raiz",
+    "poste-0.0610.083_670": "carrinho_raiz",
+    "raspberry_pi": "carrinho_raiz",
+    "regulador_tensao": "carrinho_raiz",
+    "roda_apoio": "carrinho_raiz",
+    "roda_direita": "carrinho_raiz",
+    "roda_esquerda": "carrinho_raiz",
+    "servo_base": "carrinho_raiz",
+    "sensor_ultrassonico": "servo_eixo",
+    "servo_eixo": "carrinho_raiz",
+    "sonar_fio0_0_131": "carrinho_raiz",
+    "sonar_fio0_1_130": "carrinho_raiz",
+    "sonar_fio0_2_129": "carrinho_raiz",
+    "sonar_fio0_3_128": "carrinho_raiz",
+    "sonar_fio0_4_127": "carrinho_raiz",
+    "sonar_fio0_5_126": "carrinho_raiz",
+    "sonar_fio0_6_125": "carrinho_raiz",
+    "sonar_fio0_7_124": "carrinho_raiz",
+    "sonar_fio0_8_123": "carrinho_raiz",
+    "sonar_fio0_9_122": "carrinho_raiz",
+    "sonar_fio0_10_121": "carrinho_raiz",
+    "sonar_fio0_11_120": "carrinho_raiz",
+    "sonar_fio0_12_119": "carrinho_raiz",
+    "sonar_fio0_13_118": "carrinho_raiz",
+    "sonar_fio0_14_117": "carrinho_raiz",
+    "sonar_fio0_15_116": "carrinho_raiz",
+    "sonar_fio0_16_115": "carrinho_raiz",
+    "sonar_fio1_0_114": "carrinho_raiz",
+    "sonar_fio1_1_113": "carrinho_raiz",
+    "sonar_fio1_2_112": "carrinho_raiz",
+    "sonar_fio1_3_111": "carrinho_raiz",
+    "sonar_fio1_4_110": "carrinho_raiz",
+    "sonar_fio1_5_109": "carrinho_raiz",
+    "sonar_fio1_6_108": "carrinho_raiz",
+    "sonar_fio1_7_107": "carrinho_raiz",
+    "sonar_fio1_8_106": "carrinho_raiz",
+    "sonar_fio1_9_105": "carrinho_raiz",
+    "sonar_fio1_10_104": "carrinho_raiz",
+    "sonar_fio1_11_103": "carrinho_raiz",
+    "sonar_fio1_12_102": "carrinho_raiz",
+    "sonar_fio1_13_101": "carrinho_raiz",
+    "sonar_fio1_14_100": "carrinho_raiz",
+    "sonar_fio1_15_99": "carrinho_raiz",
+    "sonar_fio1_16_98": "carrinho_raiz",
+    "sonar_fio2_0_97": "carrinho_raiz",
+    "sonar_fio2_1_96": "carrinho_raiz",
+    "sonar_fio2_2_95": "carrinho_raiz",
+    "sonar_fio2_3_94": "carrinho_raiz",
+    "sonar_fio2_4_93": "carrinho_raiz",
+    "sonar_fio2_5_92": "carrinho_raiz",
+    "sonar_fio2_6_91": "carrinho_raiz",
+    "sonar_fio2_7_90": "carrinho_raiz",
+    "sonar_fio2_8_89": "carrinho_raiz",
+    "sonar_fio2_9_88": "carrinho_raiz",
+    "sonar_fio2_10_87": "carrinho_raiz",
+    "sonar_fio2_11_86": "carrinho_raiz",
+    "sonar_fio2_12_85": "carrinho_raiz",
+    "sonar_fio2_13_84": "carrinho_raiz",
+    "sonar_fio2_14_83": "carrinho_raiz",
+    "sonar_fio2_15_82": "carrinho_raiz",
+    "sonar_fio2_16_81": "carrinho_raiz",
+    "sonar_fio3_0_80": "carrinho_raiz",
+    "sonar_fio3_1_79": "carrinho_raiz",
+    "sonar_fio3_2_78": "carrinho_raiz",
+    "sonar_fio3_3_77": "carrinho_raiz",
+    "sonar_fio3_4_76": "carrinho_raiz",
+    "sonar_fio3_5_75": "carrinho_raiz",
+    "sonar_fio3_6_74": "carrinho_raiz",
+    "sonar_fio3_7_73": "carrinho_raiz",
+    "sonar_fio3_8_72": "carrinho_raiz",
+    "sonar_fio3_9_71": "carrinho_raiz",
+    "sonar_fio3_10_70": "carrinho_raiz",
+    "sonar_fio3_11_69": "carrinho_raiz",
+    "sonar_fio3_12_68": "carrinho_raiz",
+    "sonar_fio3_13_67": "carrinho_raiz",
+    "sonar_fio3_14_66": "carrinho_raiz",
+    "sonar_fio3_15_65": "carrinho_raiz",
+    "sonar_fio3_16_64": "carrinho_raiz",
+    "carrinho_raiz": null
+  },
+  "materiais": [
+    {
+      "nome": "material_032",
+      "alphaMode": "BLEND",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_024",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_021",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_020",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_012",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_033",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_034",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_010",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_011",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_009",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_008",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_023",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_015",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_014",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_013",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_018",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_017",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_016",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_001",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_000",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_007",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_006",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_005",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_004",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_002",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_030",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_028",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_027",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_025",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_026",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_037",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_035",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_036",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_029",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_031",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_022",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    },
+    {
+      "nome": "material_019",
+      "alphaMode": "OPAQUE",
+      "doubleSided": true
+    }
+  ]
+}

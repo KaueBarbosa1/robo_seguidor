@@ -43,3 +43,8 @@ dados_rede/
 dados_historico/
 *.db-wal
 *.db-shm
+
+# Gêmeo digital: dependências, modelo original e evidências locais
+node_modules/
+gemeo_digital/modelos/*.glb
+dados_gemeo/
