@@ -30,13 +30,13 @@ export class Sensores {
       return g;
     });
   }
-  feixe(pai, comprimento, angulo, aspecto, cor) {
+  feixe(pai, comprimento, angulo, aspecto, cor, origemFixa = null) {
     if (!pai) return new THREE.Group();
     pai.updateWorldMatrix(true, true);
     const b = new THREE.Box3().setFromObject(pai),
       p = b.getCenter(new THREE.Vector3());
     p.z = b.min.z;
-    const origem = pai.worldToLocal(p),
+    const origem = origemFixa ?? pai.worldToLocal(p),
       a = Math.tan((angulo * Math.PI) / 360) * comprimento,
       l = a * aspecto;
     // A câmera e o ultrassônico olham para −Y local neste GLB, após conversão do Blender.
@@ -115,5 +115,21 @@ export class Sensores {
           : 0x647581,
       ),
     );
+  }
+  configurarFov(angulo) {
+    if (this.anguloFov === angulo) return;
+    this.anguloFov = angulo;
+    const antigo = this.fov,
+      pai = antigo.parent;
+    if (!pai) return;
+    const pos = antigo.position.clone(),
+      visivel = antigo.visible;
+    pai.remove(antigo);
+    antigo.traverse((o) => {
+      o.geometry?.dispose();
+      o.material?.dispose();
+    });
+    this.fov = this.feixe(pai, 0.6, angulo, 4 / 3, 0x79bbed, pos);
+    this.fov.visible = visivel;
   }
 }

@@ -11,17 +11,21 @@ class Cenario:
         self.lock=threading.Lock()
         self.dados=dict(esq=0.,dir=0.,servo=90.,distancia=100.,linha=True,camera=True,
                         falha=False,cpu=32.,temperatura=48.,latencia=0.,obstaculo_x=0.,obstaculo_z=-.7,
-                        motores=True,geometria=False)
+                        motores=True,geometria=False,arduino=True,emergencia=False,descartar_cada=0,processamento='simulacao')
         self.pose=(0.,0.,0.)
     def atualizar(self,dados):
         import math
         limites=dict(esq=(-60,60),dir=(-60,60),servo=(45,135),distancia=(2,400),cpu=(0,100),
                      temperatura=(0,100),latencia=(0,1),obstaculo_x=(-3,3),obstaculo_z=(-3,3))
         with self.lock:
+            novo=dict(self.dados)
             for k,v in dados.items():
-                if k in ('linha','camera','falha','motores','geometria') and type(v)is bool:self.dados[k]=v
-                elif k in limites and type(v) in (float,int) and math.isfinite(v) and limites[k][0]<=v<=limites[k][1]:self.dados[k]=v
+                if k in ('linha','camera','falha','motores','geometria','arduino','emergencia') and type(v)is bool:novo[k]=v
+                elif k=='descartar_cada' and type(v)is int and 0<=v<=1000:novo[k]=v
+                elif k=='processamento' and v in ('embarcado','distribuido','simulacao'):novo[k]=v
+                elif k in limites and type(v) in (float,int) and math.isfinite(v) and limites[k][0]<=v<=limites[k][1]:novo[k]=v
                 else:raise ValueError('Parâmetro simulado inválido: '+k)
+            self.dados=novo
     def ler(self):
         with self.lock:return dict(self.dados)
 
@@ -43,14 +47,16 @@ class MotorCenario(MotorSimulado):
         super().__init__();self.cenario=cenario;self.t=time.monotonic();self.ticks=[0.,0.]
     def sensores(self):
         d=self.cenario.ler();agora=time.monotonic();dt=agora-self.t;self.t=agora
-        self.ticks=[t+(abs(d[k]) if d['motores'] else 0)*dt for t,k in zip(self.ticks,('esq','dir'))]
+        if not d['arduino']:return None
+        self.ticks=[t+(abs(d[k]) if d['motores'] and not d['emergencia'] else 0)*dt for t,k in zip(self.ticks,('esq','dir'))]
         from comunicacao.simulacao import SensoresSimulados
         import config as cfg
         distancia=self.cenario.distancia();bloqueio=distancia<cfg.OBSTACULO_DIST_CM
         return SensoresSimulados(round(distancia),int(self.ticks[0]),int(self.ticks[1]),agora,bloqueio,False,bloqueio)
     def estado_motores(self):
         d=self.cenario.ler()
-        return SimpleNamespace(pwm_esq=round(d['esq']/60*255) if d['motores'] else 0,pwm_dir=round(d['dir']/60*255) if d['motores'] else 0,
+        if not d['arduino']:return None
+        return SimpleNamespace(pwm_esq=round(d['esq']/60*255) if d['motores'] and not d['emergencia'] else 0,pwm_dir=round(d['dir']/60*255) if d['motores'] and not d['emergencia'] else 0,
             falha_encoder=False,pi_ativo=True,timestamp=time.monotonic())
     def status_servo(self):
         return SimpleNamespace(angulo_nominal=self.cenario.ler()['servo'],timestamp=time.monotonic())
@@ -75,6 +81,8 @@ class AmostrasCenario(Amostras):
         dados,t=q;dados=copy.deepcopy(dados)
         dados['telemetria']['visao']['linha_visivel'].update(valor=d['linha'],estado='atual')
         dados['telemetria']['visao']['camera_ok']=d['camera']
+        dados['telemetria']['operacao']['modo']='SIMULAÇÃO — MOVIMENTO' if d['motores'] and not d['emergencia'] and (d['esq'] or d['dir']) else 'SIMULAÇÃO — PARADO'
+        dados['telemetria']['ia'].update(local='simulado_no_PC',modo_declarado=d['processamento'])
         dados['sistema']={'valores':dict(cpu_total_pct=d['cpu'],ram_pct=None,temperatura_c=d['temperatura'],frequencia_mhz=None)}
         dados['sistema_natureza']='simulado'
         return dados,t

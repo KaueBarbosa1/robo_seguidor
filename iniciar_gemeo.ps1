@@ -4,7 +4,8 @@ param(
     [string]$Servidor = '',
     [string]$Calibracao = '',
     [switch]$Gravar,
-    [switch]$SemAbrir
+    [switch]$SemAbrir,
+    [switch]$Central
 )
 $ErrorActionPreference = 'Stop'
 Push-Location $PSScriptRoot
@@ -22,6 +23,7 @@ try {
     if ($Calibracao) { $argumentosGemeo += @('--calibracao', $Calibracao) }
     if ($Gravar) { $argumentosGemeo += '--gravar' }
     if ($SemAbrir) { $argumentosGemeo += '--sem-abrir' }
+    if ($Central) { $argumentosGemeo += '--central' }
     & $pythonGemeo @argumentosGemeo
     if ($LASTEXITCODE -ne 0) { throw 'O visualizador foi encerrado com erro.' }
 } finally { Pop-Location }

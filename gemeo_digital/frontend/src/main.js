@@ -17,6 +17,8 @@ window.addEventListener("error", (e) => erro(e.error ?? e.message));
 window.addEventListener("unhandledrejection", (e) => erro(e.reason));
 const inicioCarga = performance.now();
 const dados = new Dados(erro);
+const fonteId = (s) =>
+  `${s.instancia ?? ""}:${s.epoch}:${s.dados.envelope?.sessao ?? ""}`;
 let cena,
   modelo,
   sensores,
@@ -85,6 +87,7 @@ function buscar(seg) {
   });
 }
 function atualizar(s) {
+  window.dispatchEvent(new CustomEvent("robo:estado", { detail: s }));
   if (s.dados.disponivel && $("erro").textContent === "Failed to fetch")
     $("erro").hidden = true;
   estado = s;
@@ -108,10 +111,11 @@ function atualizar(s) {
         .map((e) => `${e.timestamp}: ${JSON.stringify(e.detalhes)}`)
         .join("\n")
     : "Sem eventos registrados";
-  if (s.epoch !== epoch) {
+  if (fonteId(s) !== epoch) {
+    if (s.modo === "historico" && !s.replay.posicao_utc) $("tempo").value = 0;
     faseVisual = [...(s.dados.angulos_rad ?? [0, 0])];
     poseVisual = s.dados.pose ? { ...s.dados.pose } : null;
-    epoch = s.epoch;
+    epoch = fonteId(s);
     ultimoFrame = null;
     if (imagemURL) URL.revokeObjectURL(imagemURL);
     imagemURL = null;
@@ -148,8 +152,11 @@ async function quadro() {
   if (fotoOcupada || !estado?.imagem || !estado.dados.disponivel) return;
   fotoOcupada = true;
   const e = estado.epoch;
+  const origem = fonteId(estado);
   try {
-    const r = await fetch(`/api/quadro?epoch=${e}`);
+    const r = await fetch(
+      `/api/quadro?epoch=${e}&instancia=${estado.instancia ?? ""}`,
+    );
     if (!r.ok) {
       $("imagem").hidden = true;
       $("sem-imagem").hidden = false;
@@ -158,7 +165,7 @@ async function quadro() {
     const id = r.headers.get("X-Frame-Id");
     if (id === ultimoFrame) return;
     const blob = await r.blob();
-    if (estado.epoch !== e) return;
+    if (fonteId(estado) !== origem) return;
     const nova = URL.createObjectURL(blob);
     if (imagemURL) URL.revokeObjectURL(imagemURL);
     imagemURL = nova;
@@ -439,6 +446,10 @@ try {
   function render(agora) {
     const dt = Math.min(0.1, (agora - last) / 1000);
     last = agora;
+    if (!cena.el.clientWidth || !cena.el.clientHeight || document.hidden) {
+      requestAnimationFrame(render);
+      return;
+    }
     if (estado) {
       const valido = fresco(estado, agora);
       const ang = angulosVisuais(estado, agora),
@@ -535,3 +546,4 @@ try {
 } catch (e) {
   erro(e);
 }
+export { dados, cena, modelo, sensores, config };

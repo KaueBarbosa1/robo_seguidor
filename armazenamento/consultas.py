@@ -19,6 +19,8 @@ CONSOLIDADO = '''SELECT t.id,t.sessao_id,t.sequencia,t.recebido_utc,t.origem_utc
  ia.politica,ia.inferencia_s,ia.previsao,t.qualidade_json AS dominios_json,
  m.qualidade_json AS motores_qualidade_json,s.qualidade_json AS sensores_qualidade_json,
  v.qualidade_json AS visao_qualidade_json,ia.qualidade_json AS ia_qualidade_json,
+ CASE WHEN json_extract(t.mensagem_json,'$.dados.telemetria.camera.estado_idade')='atual'
+ THEN json_extract(t.mensagem_json,'$.dados.telemetria.camera.fps') END AS fps_captura,
  (SELECT p.cpu_pct FROM desempenho p WHERE p.sessao_id=t.sessao_id AND p.dispositivo='servidor'
   AND (p.amostra_mono_s<=t.origem_mono_s OR p.telemetria_id=t.id) ORDER BY p.id DESC LIMIT 1) AS cpu_servidor_pct,
  (SELECT p.temperatura_c FROM desempenho p WHERE p.sessao_id=t.sessao_id AND p.dispositivo='servidor'
@@ -83,7 +85,8 @@ class Historico:
                 if categoria == 'gravacoes':
                     cond.append('EXISTS(SELECT 1 FROM gravacao_sessoes gs WHERE gs.gravacao_id=x.id AND gs.sessao_id=?)')
                 elif categoria == 'experimentos':
-                    cond.append('EXISTS(SELECT 1 FROM gravacoes g JOIN gravacao_sessoes gs ON gs.gravacao_id=g.id WHERE g.experimento_id=x.id AND gs.sessao_id=?)')
+                    cond.append('(EXISTS(SELECT 1 FROM gravacoes g JOIN gravacao_sessoes gs ON gs.gravacao_id=g.id WHERE g.experimento_id=x.id AND gs.sessao_id=?) OR EXISTS(SELECT 1 FROM experimento_sessoes es WHERE es.experimento_id=x.id AND es.sessao_id=?))')
+                    params.append(filtros['sessao'])
                 else:
                     raise ValueError('Filtro sessao nao se aplica a categoria')
             else:
@@ -110,8 +113,9 @@ class Historico:
             elif categoria == 'gravacoes':
                 cond.append('x.experimento_id=?')
             elif sid:
-                cond.append(f'EXISTS(SELECT 1 FROM gravacao_sessoes gs JOIN gravacoes g ON g.id=gs.gravacao_id '
-                            f'WHERE gs.sessao_id={sid} AND g.experimento_id=?)')
+                    cond.append(f'(EXISTS(SELECT 1 FROM gravacao_sessoes gs JOIN gravacoes g ON g.id=gs.gravacao_id '
+                                f'WHERE gs.sessao_id={sid} AND g.experimento_id=?) OR EXISTS(SELECT 1 FROM experimento_sessoes es WHERE es.sessao_id={sid} AND es.experimento_id=?))')
+                    params.append(filtros['experimento'])
             else:
                 raise ValueError('Filtro experimento nao se aplica')
             params.append(filtros['experimento'])
@@ -206,7 +210,7 @@ class Historico:
             for row in c.execute(f'SELECT {coluna}'+where,p):
                 total += 1; delta = row[0]-media; media += delta/total; m2 += delta*(row[0]-media)
             return dict(n=n,media=valores[1],minimo=valores[2],maximo=valores[3],mediana=percentil(.5),
-                        p95=percentil(.95),desvio_padrao=math.sqrt(max(0,m2/total)) if total else None,
+                        q1=percentil(.25),q3=percentil(.75),p95=percentil(.95),desvio_padrao=math.sqrt(max(0,m2/total)) if total else None,
                         filtros=filtros,escopo='desvio populacional; exclui NULL e campos marcados vencidos')
         finally:
             c.close()

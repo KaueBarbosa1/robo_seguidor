@@ -45,6 +45,8 @@ class Handler(BaseHTTPRequestHandler):
             elif p=='/api/trajeto':self.resposta(200,self.server.ponte.trajeto_sessao(parse_qs(rota.query).get('sessao',[''])[0]))
             elif p=='/api/quadro':
                 epoch=parse_qs(rota.query).get('epoch',[''])[0]
+                instancia=parse_qs(rota.query).get('instancia',[''])[0]
+                if instancia and instancia!=self.server.ponte.instancia:self.resposta(409,{'erro':'Servidor reiniciado'});return
                 if epoch!=str(self.server.ponte.epoch):self.resposta(409,{'erro':'Fonte trocada'});return
                 q=self.server.ponte.imagem()
                 if q:self.resposta(200,q[0],'image/jpeg',{'X-Frame-Id':q[1]})

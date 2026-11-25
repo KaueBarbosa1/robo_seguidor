@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>RS · Central de operações</title>
+    <link rel="stylesheet" href="/style.css" />
+    <link rel="stylesheet" href="/central/style.css" />
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "/vendor/three.module.js",
+          "three/addons/": "/vendor/addons/"
+        }
+      }
+    </script>
+  </head>
+  <body>
+    <div class="shell">
+      <nav id="navegacao" aria-label="Navegação principal">
+        <a class="logo" href="#geral">RS<span> / OPERAÇÕES</span></a>
+        <button id="fechar-menu" aria-label="Fechar navegação">
+          Fechar menu ×
+        </button>
+        <p class="nav-sub">ROBÓTICA · TELEMETRIA · ANÁLISE</p>
+        <div id="menu"></div>
+        <div class="nav-foot">
+          Plataforma local · Etapa 05<br /><small
+            >Controle físico não habilitado</small
+          >
+        </div>
+      </nav>
+      <div class="workspace">
+        <div class="topbar">
+          <button id="recolher" aria-label="Recolher menu">☰</button>
+          <div>
+            <b id="titulo-pagina">Visão geral</b
+            ><small id="status-operacao">Inicializando a central…</small>
+          </div>
+          <span class="spacer"></span
+          ><select id="fonte" aria-label="Origem dos dados">
+            <option value="simulado">Simulação</option>
+            <option value="historico">Reprodução histórica</option>
+            <option value="real">Dados reais</option></select
+          ><button id="gravar-global">Gravar sessão</button
+          ><span id="gravando" class="badge">○ Sem gravação</span>
+        </div>
+        <div class="statusbar">
+          <span id="estado-rede">● Aguardando dados</span
+          ><span id="modo-processamento">Processamento: —</span
+          ><span id="latencia-global">RTT: —</span
+          ><span id="sessao-global">Sessão: —</span
+          ><span id="hora-global">Atualização: —</span
+          ><span id="seguranca-global">Segurança: aguardando telemetria</span>
+        </div>
+        <div id="mensagem" role="status" hidden></div>
+        <div id="alerta-global" role="alert" hidden></div>
+        <section id="pagina">
+          <div class="page-heading">
+            <div>
+              <span class="eyebrow" id="sobretitulo"
+                >CENTRAL DE MONITORAMENTO</span
+              >
+              <h1 id="heading-pagina">Visão geral</h1>
+              <p id="descricao-pagina">
+                Uma fonte de dados. Uma visão do protótipo.
+              </p>
+            </div>
+            <div id="acoes-pagina"></div>
+          </div>
+          <div id="conteudo"></div>
+        </section>
+        <div id="twin-storage">
+          <div id="twin-app"><!-- GEMEO --></div>
+        </div>
+        <div id="timeline-global" hidden></div>
+        <div class="rodape-central">
+          <span id="estado-central">Inicializando serviços…</span
+          ><span>Posição estimada · sem referência externa de localização</span>
+        </div>
+      </div>
+    </div>
+    <script type="module" src="/central/src/app.js"></script>
+  </body>
+</html>

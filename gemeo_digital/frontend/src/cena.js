@@ -71,6 +71,7 @@ export class Cena {
   }
   redimensionar() {
     const { clientWidth: w, clientHeight: h } = this.el;
+    if (!w || !h) return;
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / Math.max(h, 1);
     this.camera.fov =

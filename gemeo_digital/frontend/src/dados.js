@@ -28,10 +28,16 @@ export class Dados {
     this.config = await this.get("/api/config");
     this.token = this.config.token;
     this.timer = setInterval(async () => {
-      if (this.ocupado) return;
+      if (this.ocupado || performance.now() < (this.proxima ?? 0)) return;
+      this.proxima = performance.now() + (this.periodo ?? 100);
       this.ocupado = true;
       try {
         const s = await this.get("/api/estado");
+        if (s.instancia && this.instancia && s.instancia !== this.instancia) {
+          this.config = await this.get("/api/config");
+          this.token = this.config.token;
+        }
+        this.instancia = s.instancia;
         s.recebido = performance.now();
         this.estado = s;
         onEstado(s);
@@ -44,7 +50,7 @@ export class Dados {
       } finally {
         this.ocupado = false;
       }
-    }, 100);
+    }, 50);
     return this.config;
   }
 }

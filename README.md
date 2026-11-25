@@ -1,5 +1,11 @@
 # Robô seguidor de linha com comando de voz
 
+Central de monitoramento integrada no Windows: execute `.\iniciar_central.ps1`
+e abra `http://127.0.0.1:8780`. Reúne 14 páginas, gêmeo original, câmera,
+gráficos, simulação, histórico, experimentos e exportação. Consulte o
+[manual](central_monitoramento/README.md) e o [guia da etapa 5](docs/23_central_monitoramento.md).
+Controle remoto físico e processamento distribuído real continuam desabilitados.
+
 Gêmeo digital 3D no computador: execute `.\iniciar_gemeo.ps1` para abrir o modelo
 original com simulação e histórico. Consulte [execução e modos](gemeo_digital/README.md)
 e o [guia técnico da etapa 4](docs/22_gemeo_digital_3d.md). A integração física

@@ -26,7 +26,7 @@ class Gravador:
     def __init__(self, distribuidor, opcoes, diagnostico=None, sistema_pc=None):
         self.bus, self.op = distribuidor, opcoes
         self.tele = distribuidor.assinar({'telemetria','odometria'}, opcoes.fila_telemetria)
-        self.evt = distribuidor.assinar({'eventos'}, opcoes.fila_eventos)
+        self.evt = distribuidor.assinar({'eventos','alertas'}, opcoes.fila_eventos)
         self.img = distribuidor.assinar({'imagens'}, opcoes.fila_imagens)
         self.pedidos = queue.Queue(32)
         self.fim, self.pronto = threading.Event(), threading.Event()
@@ -147,6 +147,28 @@ class Gravador:
             bloqueio.fechar()
 
     def _comando(self,tipo,dados):
+        if tipo == 'metadados_sessao':
+            uuid.UUID(dados['sessao'])
+            if not self.c.execute('SELECT 1 FROM sessoes WHERE id=?',(dados['sessao'],)).fetchone():raise ValueError('Sessão não encontrada')
+            for k,limite in [('nome',256),('observacoes',10000)]:
+                v=dados.get(k)
+                if v is not None:
+                    if not isinstance(v,str) or len(v)>limite:raise ValueError('Texto inválido: '+k)
+                    self.c.execute(f'UPDATE sessoes SET {k}=? WHERE id=?',(v,dados['sessao']))
+            self.c.commit();return dados['sessao']
+        if tipo == 'associar_sessoes':
+            uuid.UUID(dados['experimento'])
+            if not self.c.execute('SELECT 1 FROM experimentos WHERE id=?',(dados['experimento'],)).fetchone():raise ValueError('Experimento não encontrado')
+            if not isinstance(dados['sessoes'],list) or not 1<=len(dados['sessoes'])<=100:raise ValueError('Seleção inválida')
+            for sid in dados['sessoes']:
+                uuid.UUID(sid)
+                self.c.execute('INSERT OR IGNORE INTO experimento_sessoes VALUES(?,?)',(dados['experimento'],sid))
+            self.c.commit();return True
+        if tipo == 'opcoes_locais':
+            from dataclasses import replace
+            if self.gravacao:raise ValueError('Encerre a gravação antes de mudar os limites')
+            if set(dados)-{'imagens','imagens_eventos','imagens_fps','max_bytes','max_imagens_bytes'}:raise ValueError('Opção não permitida')
+            self.op=replace(self.op,**dados);self.arquivos=Arquivos(self.op);return True
         if tipo == 'experimento':
             from armazenamento.gestao import experimento
             ident = experimento(self.c,**dados)
@@ -256,6 +278,12 @@ class Gravador:
             self.c.execute('BEGIN IMMEDIATE')
             sessoes = set()
             for canal,item in itens:
+                if canal=='alertas':
+                    sid=item.get('sessao')
+                    if sid and not self.c.execute('SELECT 1 FROM sessoes WHERE id=?',(sid,)).fetchone():sid=None
+                    eventos.registrar(self.c,self.gravacao,'central_'+item['chave'],item['mensagem'],sid,
+                        gravidade=item['gravidade'],origem='central_pc',instante=item['timestamp'],detalhes=item)
+                    delta['alertas_persistidos']+=1;continue
                 if canal=='odometria':
                     p=item.get('pose',{})
                     if p.get('validade')=='estimativa' and self.c.execute('SELECT 1 FROM sessoes WHERE id=?',(item.get('sessao'),)).fetchone():

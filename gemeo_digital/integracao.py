@@ -27,7 +27,7 @@ CAL_SIM=Calibracao(20,20,.065,.065,.18,simulada=True,relacao_disco_roda=1.)
 class Fluxo:
     def __init__(self,ponte,epoch,simulado):
         self.ponte,self.epoch,self.simulado=ponte,epoch,simulado
-        self.bus=Distribuidor();self.ass=self.bus.assinar({'telemetria','imagens','eventos'},64)
+        self.bus=ponte.bus;self.ass=self.bus.assinar({'telemetria','imagens','eventos'},64)
         self.fim=threading.Event();self.pronto=threading.Event();self.loop=None;self.cliente=None
         self.camera=self.servidor=self.gravador=None
         if simulado:
@@ -39,7 +39,8 @@ class Fluxo:
         else:
             if not ponte.url_real:raise ValueError('Defina --servidor e ROBO_REDE_TOKEN no terminal')
             self.url=ponte.url_real;self.op=Opcoes.central(ponte.token_real)
-        if ponte.gravar:
+        if ponte.escritor_externo:self.gravador=ponte.escritor_externo
+        elif ponte.gravar:
             from armazenamento.gravador import Gravador
             from armazenamento.configuracao import OpcoesArmazenamento
             self.gravador=Gravador(self.bus,OpcoesArmazenamento.central(raiz=ponte.historico.raiz))
@@ -65,7 +66,9 @@ class Fluxo:
                     if pose['validade']=='estimativa':
                         self.bus.publicar('odometria',dict(sessao=item[0]['sessao'],timestamp=item[0]['recepcao_utc'],pose=pose))
             elif canal=='imagens':self.ponte.receber_imagem(item,self.epoch)
-            elif item['tipo']=='desconexao':self.ponte.invalidar(self.epoch)
+            else:
+                self.ponte.evento_rede(item,self.epoch)
+                if item['tipo']=='desconexao':self.ponte.invalidar(self.epoch)
 
     def fechar(self):
         self.fim.set()
@@ -73,7 +76,8 @@ class Fluxo:
         self.thread.join(timeout=7);self.pump.join(timeout=1)
         if self.servidor:self.servidor.parar()
         if self.camera:self.camera.parar()
-        if self.gravador:self.gravador.fechar()
+        if self.gravador and self.gravador is not self.ponte.escritor_externo:self.gravador.fechar()
+        self.bus.remover(self.ass)
 
 
 class Ponte:
@@ -84,6 +88,12 @@ class Ponte:
         self.replay=None;self.replay_thread=None;self.replay_pausado=True;self.velocidade=1.
         self.estado=EstadoVisual(CAL_SIM);self.foto=None;self.status='iniciando';self.selecionada=None
         self.eventos=[];self.cal_real=Calibracao()
+        self.instancia=str(uuid.uuid4())
+        self.bus=Distribuidor();self.escritor_externo=None
+
+    def evento_rede(self,item,epoch):
+        with self.lock:
+            if epoch==self.epoch:self.eventos=(self.eventos+[dict(timestamp=item['timestamp'],detalhes=item)])[-40:]
 
     def modo_alterar(self,modo):
         if modo not in ('simulado','real','historico'):raise ValueError('Modo inválido')
@@ -130,7 +140,7 @@ class Ponte:
                 idade_imagem+=meta.get('idade_limite_recepcao_s',0)
                 camera_ok=self.estado.msg['dados']['telemetria'].get('visao',{}).get('camera_ok')
                 if idade_imagem<=.5 and camera_ok is not False:imagem=dict(meta,idade_visualizacao_s=idade_imagem)
-            return dict(modo=self.modo,epoch=self.epoch,status=self.status if d.get('disponivel') else 'sem dados válidos',
+            return dict(instancia=self.instancia,modo=self.modo,epoch=self.epoch,status=self.status if d.get('disponivel') else 'sem dados válidos',
                 dados=d,simulacao=self.cenario.ler(),replay=dict(pausado=self.replay_pausado,
                 velocidade=self.velocidade,posicao_utc=posicao,sessao=self.selecionada),eventos=self.eventos[-40:],
                 imagem=imagem)

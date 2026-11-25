@@ -1,6 +1,21 @@
 # Dicionario de dados — Etapa 3
 
-Gerado do esquema SQLite v2. Valores indisponiveis sao NULL; nenhuma medicao recebe zero por ausencia. BOOLEAN e representado por INTEGER 0/1. Qualidade e natureza originais ficam nos campos JSON e no envelope fonte.
+Base gerada do esquema SQLite v2, acrescida das migrações v3/v4 da central.
+Valores indisponiveis sao NULL; nenhuma medicao recebe zero por ausencia. BOOLEAN e representado por INTEGER 0/1. Qualidade e natureza originais ficam nos campos JSON e no envelope fonte.
+
+## Adições da Etapa 5 — esquema v4
+
+| Tabela / campo | Tipo | Nulo | Significado |
+|---|---|---|---|
+| `sessoes.nome` | TEXT | sim | Nome livre; não substitui o UUID operacional |
+| `sessoes.observacoes` | TEXT | sim | Notas do operador; não são medidas |
+| `experimento_sessoes.experimento_id` | TEXT | não | FK `experimentos.id`; parte da PK composta |
+| `experimento_sessoes.sessao_id` | TEXT | não | FK `sessoes.id`; parte da PK composta |
+
+v3 adiciona esses campos/junção e índice temporal da odometria. v4 adiciona
+índices de comunicação por telemetria/lado e desempenho por sessão/dispositivo/id.
+Não muda unidades, registros ou formato dos envelopes. Guia23 detalha consultas,
+metadados, comparação e exportação pela central.
 
 Colunas normalizadas preservam o valor recebido mesmo desatualizado; consultar qualidade_json. Estatisticas descartam campos explicitamente vencidos nas projecoes que possuem esse indicador. Datas de origem e recepcao nao podem ser subtraidas como latencia entre hosts.
 

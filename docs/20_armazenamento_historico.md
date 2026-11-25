@@ -95,7 +95,8 @@ erDiagram
   sessoes ||--o{ estado_transicoes : deduplica_eventos
 ```
 
-Há 19 tabelas, incluindo `schema_migracoes` e associações. Cada projeção
+Há 19 tabelas na base da etapa3, incluindo `schema_migracoes` e associações;
+a central acrescenta `experimento_sessoes`, totalizando20. Cada projeção
 motores/sensores/visão/IA usa a chave da telemetria como PK/FK, permitindo no
 máximo uma linha por amostra. Uma categoria ausente não recebe uma linha
 artificial cheia de zeros. O envelope completo de origem é preservado uma vez
@@ -112,10 +113,15 @@ todas as colunas, tipos SQLite, unidades, nulabilidade e referências.
 
 ## 3. Integridade, migrações e concorrência
 
-Esquema atual v2, em `PRAGMA user_version` e `schema_migracoes`:
+Esquema atual v4, em `PRAGMA user_version` e `schema_migracoes`:
 
 1. Tabelas, chaves estrangeiras, CHECKs e unicidade.
 2. Índices de tempo/sessão/frame/experimento e marca de recuperação da gravação.
+3. Etapa 5: nome/observações da sessão, associação experimento–sessão e índice de odometria.
+4. Etapa 5: índices de comunicação por telemetria/lado e última amostra de desempenho por sessão/dispositivo.
+
+As adições da central estão descritas no [guia23](23_central_monitoramento.md).
+Os resultados históricos da etapa3 abaixo continuam referentes àquela entrega.
 
 Migrações cumulativas são transacionais e preservam registros. Uma versão mais
 nova que o programa é recusada. Foreign keys são ativadas em cada conexão.

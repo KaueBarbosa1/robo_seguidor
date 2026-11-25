@@ -1,5 +1,21 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de 25/11/2026 — Etapa 5 implementada no Windows: central integrada
+em `.\iniciar_central.ps1`, 14 páginas, mesma Ponte/Cliente/bus/Gravador/SQLite
+e um único Three.js/GLB original. Gráficos limitados, cenários, alertas por
+transição, metadados de sessões, experimentos/comparação, CSV/SVG/PNG e replay
+global. Esquema cumulativo v4: nomes/observações/vínculos e índices de consulta.
+CNN própria preservada; a central lê os dois treinos offline existentes,
+sem treinar ou declarar inferência física validada. Controle físico e modo
+distribuído real bloqueados; nenhuma mudança de firmware/pinos/ganhos/rede.
+Guia23 e README da central documentam manual, resultados e pendências.
+Regressão compatível:422 aprovados,1 ignorado,4 desmarcados,56 subtestes;
+após índices finais,53 testes dirigidos aprovados. JS:7 novos e5 anteriores.
+Navegação das14 páginas, câmera/replay/seek e formulários verificados no PC.
+Consulta de5992 linhas:0,878 s no Windows; não é desempenho da Raspberry.
+Integração/calibração físicas seguem pendentes. Registros anteriores abaixo
+descrevem o estado em cada entrega, não cancelam esta atualização. Nenhum push.
+
 Atualização de 25/11/2026 — Etapa 4 implementada no PC: gêmeo digital Three.js
 com GLB original, seleção, animações, sonar/FOV ilustrativos, odometria diferencial,
 simulação pelo transporte existente e replay da mesma base. Inicialização:

@@ -20,6 +20,7 @@ def main():
     p.add_argument('--gravar',action='store_true',help='anexa gravador existente e odometria estimada na mesma base')
     p.add_argument('--calibracao',type=Path,help='JSON de calibração física confirmada; parâmetros em metros')
     p.add_argument('--sem-abrir',action='store_true')
+    p.add_argument('--central',action='store_true',help='abre a central integrada da etapa 5')
     a=p.parse_args();validar_pc()
     if not (a.historico/'banco/robo_seguidor.db').exists():
         candidatos=sorted(a.historico.glob('validacao_*/cenario_10hz/banco/robo_seguidor.db'))
@@ -27,7 +28,12 @@ def main():
     raiz=Path(__file__).resolve().parents[1]/'gemeo_digital'
     if not (raiz/'frontend/node_modules/three/build/three.module.js').exists():p.error('Execute npm install em gemeo_digital/frontend')
     if not (raiz/'modelos/carrinho_configurado.glb').exists():p.error('Coloque o GLB original em gemeo_digital/modelos/carrinho_configurado.glb')
-    ponte=Ponte(a.historico,a.servidor,os.environ.get(cfg.REDE_TOKEN_ENV,''),a.gravar)
+    classe_ponte=Ponte;classe_app=Aplicacao
+    if a.central:
+        from central_monitoramento.central import Central
+        from central_monitoramento.servidor import AplicacaoCentral
+        classe_ponte=Central;classe_app=AplicacaoCentral
+    ponte=classe_ponte(a.historico,a.servidor,os.environ.get(cfg.REDE_TOKEN_ENV,''),a.gravar)
     if a.calibracao:
         from gemeo_digital.cinematica import Calibracao
         try:
@@ -35,15 +41,20 @@ def main():
             if not cal.valida() or not cal.confirmada or cal.simulada:raise ValueError('Exige calibração física confirmada, não simulada')
             ponte.cal_real=cal
         except (ValueError,TypeError,OSError) as exc:p.error(str(exc))
-    app=Aplicacao(ponte,a.porta)
+    app=None
     try:
+        app=classe_app(ponte,a.porta)
         ponte.modo_alterar('simulado')
+        if a.central and a.gravar:ponte.gravacao_comando({'acao':'iniciar'})
         url=f'http://127.0.0.1:{app.server_port}'
-        print(f'Gêmeo digital: {url} | somente visualização | histórico: {a.historico}',flush=True)
+        titulo='Central de monitoramento' if a.central else 'Gêmeo digital'
+        print(f'{titulo}: {url} | sem atuação física | histórico: {a.historico}',flush=True)
         if not a.sem_abrir:webbrowser.open(url)
         app.serve_forever(poll_interval=.2)
     except KeyboardInterrupt:pass
-    finally:app.server_close();ponte.fechar()
+    finally:
+        if app:app.server_close()
+        ponte.fechar()
 
 
 if __name__=='__main__':main()
