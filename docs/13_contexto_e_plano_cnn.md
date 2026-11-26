@@ -1,5 +1,36 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de26/11/2026 — Etapa7 acrescenta plataforma experimental no PC,
+sem mudar firmware/pinagem/ganhos/pesos/GLB/Bluetooth. Inicializador unificado
+`.\iniciar_projeto.ps1` reutiliza a central existente e inicia simulação parada.
+Página Experimentos: plano JSON A–D, repetições por blocos/seed, warmup separado,
+UUID/sessão por execução, filtros de origem/nível/categoria, comparação de médias
+por execução, relatórios MD/HTML/JSON/CSV/ZIP e gráficos PNG/SVG. Escrita pelo
+mesmo Gravador/SQLite, migração cumulativa6 com execucoes_experimentais; sem
+segundo banco/câmera/controle/rede. Metadados de fonte/modelo/host e limites
+preservam a distinção entre PC, virtual, bancada e pista.
+
+Ensaios:20 repetições virtuais A–D,mais carga300,212s com JPEGs/consultas e
+gêmeo aberto; SQLite integrity_check ok e FK sem falhas. Houve descartes
+intencionais de imagens/filas sob carga, não alegar perda zero. Uma tentativa
+anterior falhou na confirmação do fechamento e foi preservada como falha.
+Drenagem recebe prazo explícito; timeout não equivale a cancelamento. Evidência
+parcial é gravada antes da confirmação final. No boot, execução órfã fica falha,
+com fim desconhecido. Benchmark reutilizado corrigiu acesso ao RTT por canal.
+CNN02 reavaliada nos mesmos rótulos/hash:77 imagens,teste9frames,MAE0,072481,
+RMSE0,098097,R²0,898966;55.090 parâmetros,sem treino/novos pesos/navegação.
+ROI y075/visibilidade e checkpointsRL continuam impedindo uso físico validado.
+
+Suíte ampla:478aprovados,1falha legada de promoção sintética,13skips de
+plataforma/dependência,56subtestes;não declarar toda a suíte verde. Novos casos
+posteriores dirigidos de timeout/recovery/CSV/API e regressão de interface foram
+verificados separadamente.19testesJS,firmwarehost C++ TUDO_OK,sem buildAVR/upload.
+Guias25–29:auditoria,metodologiaH1–H8,checklistsA–M,diagramas/rastreabilidade e
+resultados exatos. Instalação Pi preparada,nenhum acesso físico/serviço/rede
+modificado,sem treinoonline/push. CI preparado,não executado noGitHub. Pendentes:
+bancada,pista,calibração/groundtruth,respostaPI/PD,frenagem,energia/GPU e carga
+de15/30/60min. Atualizações anteriores abaixo são registros históricos.
+
 Atualização de26/11/2026 — Etapa6 implementada em software no PC. Módulo
 distribuido integra percepção OpenCV compartilhada, retorno autenticado pelo
 mesmo WebSocket, validação local Pi de frame/sessão/geração/idade, autoridade

@@ -44,7 +44,7 @@ def test_inicializacao_reutiliza_html_modelo_e_migracao(ambiente):
     html=urlopen(url).read().decode()
     assert 'RS · Central de operações' in html and html.count('id="cena"')==1
     assert html.count('importmap')==1
-    assert b.historico.estado()['versao']==5
+    assert b.historico.estado()['versao']==6
     with closing(conectar(b.historico.raiz)) as c:
         plano=' '.join(str(tuple(r)) for r in c.execute("EXPLAIN QUERY PLAN SELECT rtt_s FROM comunicacao WHERE telemetria_id=1 AND lado='servidor' LIMIT 1"))
         assert 'idx_comunicacao_telemetria' in plano
@@ -52,6 +52,18 @@ def test_inicializacao_reutiliza_html_modelo_e_migracao(ambiente):
         assert 'idx_desempenho_ultimo' in plano and 'TEMP B-TREE' not in plano
     assert urlopen(url+'/gemeo').status==200
     assert urlopen(url+'/central/src/nucleo.js').status==200
+
+
+def test_rotas_cientificas_preservam_autenticacao_e_bloqueiam_execucao_real(ambiente):
+    from urllib.error import HTTPError
+    b,app,url,get,post=ambiente
+    assert get('/api/central/execucoes')['itens']==[]
+    with pytest.raises(HTTPError) as sem_token:post('/api/central/executar-experimento',{},token=False)
+    assert sem_token.value.code==403
+    with pytest.raises(HTTPError) as real:post('/api/central/executar-experimento',{'origem':'real'})
+    assert real.value.code==400 and not b.experimentos.snapshot()['ativo']
+    with pytest.raises(HTTPError):get('/api/central/artefato-experimental?id=invalido&arquivo=../../config.py')
+    with pytest.raises(HTTPError):get('/api/central/comparacao-cientifica?metrica=inferencia_s')
 
 def test_quadro_rejeita_instancia_de_servidor_anterior(ambiente):
     b,app,url,get,post=ambiente

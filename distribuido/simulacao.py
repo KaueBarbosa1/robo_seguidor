@@ -90,7 +90,8 @@ class RuntimeSimulado:
         self.camera=CameraIntegrada(cenario,self.estado,camera_fps);self.fim=threading.Event()
         self.autoridade=Autoridade(self.estado,self.motor,self.camera,opcoes,simulado=True)
         self.controle=ThreadControle(self.estado,self.motor,self.fim,self.camera)
-        self.pipeline=Pipeline();self.thread=threading.Thread(target=self._local,name='percepcao-local-simulada',daemon=True)
+        self.pipeline=Pipeline();self.ultimo_diagnostico=None
+        self.thread=threading.Thread(target=self._local,name='percepcao-local-simulada',daemon=True)
 
     def iniciar(self):
         self.controle.start();self.thread.start()
@@ -100,13 +101,15 @@ class RuntimeSimulado:
         while not self.fim.is_set():
             d=self.cenario.ler()
             if d['emergencia'] and not self.autoridade.emergencia:self.autoridade.parar('cenario_emergencia',True)
-            if self.autoridade.processamento!='embarcado' or self.autoridade.algoritmo!='opencv':self.fim.wait(.02);continue
+            if self.autoridade.processamento!='embarcado' or self.autoridade.algoritmo!=self.pipeline.algoritmo:self.fim.wait(.02);continue
             q=self.camera.proximo_jpeg_detalhado(ultimo)
             if q:
                 ident,quadro=q;ultimo=ident
                 if geracao!=self.autoridade.geracao:self.pipeline.resetar();geracao=self.autoridade.geracao
                 try:
-                    r=self.pipeline.processar(quadro.imagem);self.autoridade.local_publicar(ident,quadro,r)
+                    r=self.pipeline.processar(quadro.imagem)
+                    with self.estado.lock:self.ultimo_diagnostico=dict(r,frame_id=ident)
+                    if self.pipeline.navegavel:self.autoridade.local_publicar(ident,quadro,r)
                 except Exception as exc:self.autoridade.parar('falha_percepcao_local');self.autoridade.evento('falha_percepcao_local',motivo=str(exc))
             self.fim.wait(1/self.autoridade.op.inferencia_hz)
 

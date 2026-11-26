@@ -1,5 +1,5 @@
 """Migrações cumulativas, sem apagar/recriar dados existentes."""
-VERSAO = 5
+VERSAO = 6
 BASE = '''
 CREATE TABLE schema_migracoes(versao INTEGER PRIMARY KEY, aplicada_utc TEXT NOT NULL);
 CREATE TABLE experimentos(
@@ -138,12 +138,25 @@ CREATE TABLE operacao_rede_eventos(
 CREATE INDEX idx_operacao_rede_tempo ON operacao_rede_eventos(sessao_id,timestamp_utc,id);
 '''
 
+EXPERIMENTAL = '''
+CREATE TABLE execucoes_experimentais(
+ id TEXT PRIMARY KEY, experimento_id TEXT NOT NULL REFERENCES experimentos(id),
+ sessao_id TEXT REFERENCES sessoes(id), configuracao TEXT NOT NULL,
+ repeticao INTEGER NOT NULL, origem TEXT NOT NULL, nivel INTEGER NOT NULL,
+ categoria TEXT NOT NULL, inicio_utc TEXT NOT NULL, fim_utc TEXT,
+ estado TEXT NOT NULL, configuracoes_json TEXT NOT NULL,
+ ambiente_json TEXT NOT NULL, resultado_json TEXT NOT NULL,
+ artefato_relativo TEXT NOT NULL);
+CREATE INDEX idx_execucoes_experimento ON execucoes_experimentais(experimento_id,origem,nivel,categoria);
+'''
+
+
 def migrar(conexao, ate=VERSAO):
     from datetime import datetime, timezone
     atual = conexao.execute('PRAGMA user_version').fetchone()[0]
     if atual > VERSAO or ate > VERSAO:
         raise ValueError('Banco mais novo que este software')
-    for versao, sql in ((1, BASE), (2, INDICES), (3,CENTRAL), (4,CONSULTAS_CENTRAL), (5,DISTRIBUIDO)):
+    for versao, sql in ((1, BASE), (2, INDICES), (3,CENTRAL), (4,CONSULTAS_CENTRAL), (5,DISTRIBUIDO), (6,EXPERIMENTAL)):
         if atual < versao <= ate:
             instante = datetime.now(timezone.utc).isoformat()
             try:

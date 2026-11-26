@@ -1,0 +1,29 @@
+name: Testes de software sem hardware
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  testes:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: python -m pip install -r requirements-experimentos-pc.txt pyserial scipy joblib scikit-learn dbus-fast
+      - run: npm ci --prefix gemeo_digital/frontend
+      - run: python -m compileall -q aprendizado armazenamento central_monitoramento comunicacao distribuido experimentos gemeo_digital monitoramento motor remoto visao tools
+      - run: python tools/testes.py todos
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: resultados-${{ matrix.os }}
+          path: dados_experimentos/testes

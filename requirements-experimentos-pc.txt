@@ -1,0 +1,4 @@
+-r requirements-gemeo-pc.txt
+matplotlib>=3.8,<4
+pytest>=8,<10
+# SciPy já existe no requirements do robô. A análise descritiva/bootstrap usa NumPy.

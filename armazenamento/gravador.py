@@ -57,12 +57,17 @@ class Gravador:
         if not self.pronto.wait(5) or self.erro:
             raise RuntimeError(self.erro or 'Banco nao iniciou')
 
-    def comandar(self, tipo, **dados):
+    def comandar(self, tipo, *, prazo_s=None, **dados):
         if not self.thread or not self.thread.is_alive():
             raise RuntimeError('Gravador indisponivel')
         futuro = Future()
         self.pedidos.put_nowait((tipo,dados,futuro))
-        return futuro.result(timeout=10)
+        # Drenagem final inclui fsync de JPEG e lotes já recebidos. Um timeout
+        # não confirma cancelamento da transação no escritor.
+        prazo_s=prazo_s if prazo_s is not None else (60 if tipo in ('encerrar','sincronizar') else 10)
+        try:return futuro.result(timeout=prazo_s)
+        except TimeoutError as exc:
+            raise TimeoutError(f'Escritor sem confirmação de {tipo} em {prazo_s:g}s; pedido pode continuar em execução') from exc
 
     def nova_gravacao(self, nome='Sessao', **dados):
         return self.comandar('iniciar',nome=nome,**dados)
@@ -107,6 +112,8 @@ class Gravador:
             raise RuntimeError('Gravacao sem encerramento confirmado: '+self.erro)
 
     def _recuperar(self):
+        self.c.execute("UPDATE execucoes_experimentais SET estado='falha',resultado_json=? WHERE estado='executando' AND fim_utc IS NULL",
+            (json.dumps({'erro':'Processo anterior interrompido; fim e resultado desconhecidos','recuperacao_observada_utc':norm.utc()},ensure_ascii=False),))
         for row in self.c.execute("SELECT id FROM gravacoes WHERE estado IN ('gravando','pausada','falha') AND fim_utc IS NULL").fetchall():
             self.c.execute("UPDATE gravacoes SET estado='interrompida',recuperada_utc=?,"
                            "motivo_encerramento='fim do processo anterior desconhecido' WHERE id=?", (norm.utc(),row[0]))
@@ -147,6 +154,21 @@ class Gravador:
             bloqueio.fechar()
 
     def _comando(self,tipo,dados):
+        if tipo == 'execucao_experimental':
+            # Passa pelo único escritor existente; sem conexão de escrita paralela.
+            permitidos={'id','experimento_id','sessao_id','configuracao','repeticao','origem','nivel','categoria',
+                        'inicio_utc','fim_utc','estado','configuracoes_json','ambiente_json','resultado_json','artefato_relativo'}
+            if set(dados)!=permitidos:raise ValueError('Registro experimental incompleto')
+            uuid.UUID(dados['id']);uuid.UUID(dados['experimento_id'])
+            if dados['sessao_id']:uuid.UUID(dados['sessao_id'])
+            if dados['estado'] not in ('executando','concluida','falha','cancelada','bloqueada'):raise ValueError('Estado experimental inválido')
+            anterior=self.c.execute('SELECT experimento_id,estado FROM execucoes_experimentais WHERE id=?',(dados['id'],)).fetchone()
+            if anterior and (anterior['experimento_id']!=dados['experimento_id'] or anterior['estado']!='executando'):raise ValueError('Execução final não pode ser sobrescrita')
+            if anterior:
+                self.c.execute('UPDATE execucoes_experimentais SET sessao_id=?,fim_utc=?,estado=?,resultado_json=? WHERE id=?',
+                    (dados['sessao_id'],dados['fim_utc'],dados['estado'],dados['resultado_json'],dados['id']))
+            else:norm.inserir(self.c,'execucoes_experimentais',dados)
+            self.c.commit();return dados['id']
         if tipo == 'metadados_sessao':
             uuid.UUID(dados['sessao'])
             if not self.c.execute('SELECT 1 FROM sessoes WHERE id=?',(dados['sessao'],)).fetchone():raise ValueError('Sessão não encontrada')

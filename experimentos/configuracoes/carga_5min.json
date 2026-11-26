@@ -1,0 +1,37 @@
+{
+  "schema": "experimento_v1",
+  "nome": "Carga integrada 5 minutos",
+  "objetivo": "Medir custos de software, sem inferir comportamento físico",
+  "hipotese": "H3",
+  "configuracoes": [
+    "C"
+  ],
+  "duracao_s": 300,
+  "aquecimento_s": 5,
+  "repeticoes": 1,
+  "semente": 7,
+  "cenario": "imagem_fixa_sintetica",
+  "resolucao": [
+    480,
+    640
+  ],
+  "camera_fps": 15.0,
+  "imagens_fps": 15,
+  "telemetria_hz": 30,
+  "inferencia_hz": 10,
+  "atraso_s": 0.0,
+  "gravar_imagens": true,
+  "origem": "simulada",
+  "nivel": 3,
+  "categoria": "benchmark_integrado",
+  "manifesto": "dataset_pista/resultados/treino_posicao_02/experimento.json",
+  "condicoes": {
+    "pista": "JPEG sintético fixo compartilhado",
+    "iluminacao": "pixels fixos",
+    "bateria": null,
+    "rede": "loopback",
+    "velocidade_referencia_pps": 0.0,
+    "calibracao": "simulada, sem medidas físicas"
+  },
+  "criterios": {}
+}

@@ -1,5 +1,27 @@
 # Dicionario de dados — Etapa 3
 
+## Adição da Etapa7 — esquema v6
+
+`execucoes_experimentais` usa o mesmo banco e escritor. Campos:
+
+| Campo | Tipo / significado |
+|---|---|
+| id | TEXT UUID, chave primária da repetição |
+| experimento_id | TEXT FK experimentos.id |
+| sessao_id | TEXT FK sessoes.id, NULL antes de sessão gravada |
+| configuracao / repeticao | TEXT A–D / INTEGER número da repetição |
+| origem / nivel / categoria | TEXT real/simulada; INTEGER1–5; tipo de ensaio |
+| inicio_utc / fim_utc | TEXT ISO8601 com fuso; fim NULL se processo interrompido |
+| estado | TEXT executando/concluida/falha/cancelada/bloqueada |
+| configuracoes_json | TEXT plano e configuração efetiva, sem credenciais |
+| ambiente_json | TEXT hardware/OS/dependências/Git/hash; firmware gravado desconhecido fica NULL |
+| resultado_json | TEXT métricas/unidades/eventos/limitações; não são conclusões científicas |
+| artefato_relativo | TEXT caminho relativo à raiz histórica, validado ao acessar |
+
+Índice por experimento/origem/nível/categoria. Execução final não é sobrescrita;
+no boot, execução órfã passa a falha com motivo explícito e fim desconhecido.
+CSV de amostras e relatórios em `experimentos/<UUID>/` nessa mesma raiz.
+
 ## Adições da Etapa6 — esquema v5
 
 `percepcao_remota` tem PK/FK `telemetria_id`. Colunas TEXT: processamento,

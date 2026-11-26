@@ -1,5 +1,23 @@
 # Robô seguidor de linha com comando de voz
 
+Plataforma experimental — Etapa 7 (26/11/2026): inicie com
+`.\iniciar_projeto.ps1`. A central completa tem 15 páginas, mesmo GLB/câmera/banco,
+controle distribuído supervisionado e **Experimentos** com planos A–D,
+repetições, gráficos PNG/SVG e relatórios CSV/JSON/MD/HTML.
+O padrão é simulação parada. Raspberry, pista, calibração e frenagem físicas
+aguardam validação; CNN própria é diagnóstico, sem autorização de navegação.
+
+- [Instalação, execução, testes e experimentos](experimentos/README.md).
+- [Auditoria completa e pendências](docs/25_auditoria_e_entrega_final.md).
+- [Metodologia e hipóteses H1–H8](docs/26_metodologia_experimental.md).
+- [Instalação e validação posterior na Raspberry, fases A–M](docs/27_validacao_fisica_e_manutencao.md).
+- [Arquitetura, diagramas e rastreabilidade dos 40 requisitos](docs/28_rastreabilidade_e_arquitetura.md).
+- [Resultados realmente medidos nesta etapa](docs/29_resultados_etapa7.md).
+
+`python tools/testes.py todos` executa a suíte de software e reporta bloqueios
+de plataforma e a falha legada de promoção sintética ainda não resolvida.
+Não anuncia cobertura artificial nem certifica comportamento físico.
+
 Etapa6 no Windows: `.\iniciar_distribuido.ps1` abre o ambiente virtual parado;
 `-Perfil simulacao-distribuida` executa o circuito de percepção pelo PC.
 Controle por autorização/presença, OpenCV compartilhado, diagnóstico da CNN
@@ -8,7 +26,7 @@ própria e instrumentação usam a mesma central/base/gêmeo. Consulte o
 Atuação real permanece bloqueada por padrão e depende de ensaios físicos posteriores.
 
 Central de monitoramento integrada no Windows: execute `.\iniciar_central.ps1`
-e abra `http://127.0.0.1:8780`. Reúne 14 páginas, gêmeo original, câmera,
+e abra `http://127.0.0.1:8780`. Reúne as páginas da etapa5, gêmeo original, câmera,
 gráficos, simulação, histórico, experimentos e exportação. Consulte o
 [manual](central_monitoramento/README.md) e o [guia da etapa 5](docs/23_central_monitoramento.md).
 Controle remoto físico e processamento distribuído real continuam desabilitados.
@@ -23,7 +41,7 @@ ESP32-CAM](docs/13_contexto_e_plano_cnn.md). Reúne o que existe, as limitaçõe
 e as propostas de trajetória em três alturas, validade supervisionada, memória
 para os vãos e colaboração com o futuro planejador de obstáculos.
 
-O diagrama abaixo descreve a arquitetura legada. A configuração atual usa Uno
+A configuração atual usa Uno
 sem câmera e ESP32-CAM por HTTP para visão OpenCV/PD. A main também abre um
 painel local em `http://IP_DA_PI:8080`: prévia ao vivo e botões para iniciar e
 parar gravações JPEG, sem iniciar movimento. Câmera e gravação compartilham
@@ -41,19 +59,22 @@ As melhorias do [sonar em movimento](docs/14_sonar_em_movimento.md) permanecem a
 ## Arquitetura
 
 ```
-  OV7670 (câmera) ──► Arduino UNO ◄──USB serial 1 Mbaud──► Raspberry Pi 5 (Debian 13.7)
-  L298N + motores ◄──────┘                                   ├─ visão (OpenCV) / aprendizado (CNN)
-                                                             ├─ controle (único escritor dos motores)
-  Headset Bluetooth ───────────────────────────────────────► ├─ voz (sua IA treinada)
-  Celular Android (Bluetooth serial) ──────────────────────► └─ controle remoto manual (docs/07)
+  ESP32-CAM OV2640 ──HTTP JPEG / Wi-Fi──► Raspberry Pi5
+                                         ├─ captura única / visão OpenCV / PD
+  Celular Android ──Bluetooth───────────► ├─ arbitragem e controle existente
+  Headset ──comandos de voz────────────► ├─ voz / parada
+                                         ├─ USB serial única ⇄ Uno / PI / sensores
+                                         │                       └─ L298N / motores
+                                         └─ WebSocket ⇄ computador
+                                                       ├─ percepção distribuída
+                                                       ├─ SQLite / imagens / análise
+                                                       └─ dashboard / GLB / replay
 ```
-O UNO **envia** a imagem da OV7670 (160x120, 16 tons, ~2,5 quadros/s) ou, no modo sem câmera, envia distância do HC-SR04 e
-encoders; também **recebe** comandos de motor (pacotes de 5 bytes com checksum). A proteção ultrassônica no firmware só está
-ativa em `USAR_CAMERA=0` (`FIRMWARE_COM_CAMERA = False`, 115200 baud); com a OV7670, ultrassom e encoders ficam desligados
-por conflito de pinos. Protocolo em
-`arduino/robo_firmware/protocolo.h` (espelho: `motor/protocolo.py`). A ligação Pi⇄Arduino (hoje USB) e a divisão final de
-responsabilidades ainda serão definidas. A câmera CSI (Pi Camera Rev 1.3) chegou a ser adotada e foi abandonada; o código fica
-como opção (`FONTE_IMAGEM = "csi"`), sem uso.
+O Uno atual usa `USAR_CAMERA=0`, sensores/encoders e serial115200baud;
+recebe pacotes de motor com checksum e aplica PI/watchdogs locais. Protocolo:
+`arduino/robo_firmware/protocolo.h` e `motor/protocolo.py`. A OV7670 serial e
+CSI permanecem opções legadas; não descrevem a montagem atual. Documentos
+históricos abaixo devem ser lidos junto ao contexto atualizado e à auditoria.
 
 ## Estrutura
 

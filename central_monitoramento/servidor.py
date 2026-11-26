@@ -2,7 +2,7 @@
 from pathlib import Path
 from urllib.parse import urlsplit,parse_qs
 from contextlib import closing
-import json,mimetypes,secrets,sqlite3,time,uuid,zipfile
+import json,mimetypes,secrets,sqlite3,time,uuid,zipfile,threading
 from gemeo_digital.servidor import Aplicacao,Handler
 from armazenamento.exportacao import exportar
 from armazenamento.banco import conectar
@@ -14,6 +14,7 @@ RAIZ=Path(__file__).resolve().parent
 class AplicacaoCentral(Aplicacao):
     def __init__(self,ponte,porta=8780):
         super().__init__(ponte,porta);self.RequestHandlerClass=HandlerCentral;self.cinza=None;self.consultas_ms=[]
+        self.relatorio_lock=threading.Lock()
 
 class HandlerCentral(Handler):
     def pagina(self):
@@ -40,6 +41,20 @@ class HandlerCentral(Handler):
             elif rota=='resumo':d=b.consultas.resumo(q['sessao'])
             elif rota=='janela':d=b.consultas.janela(q['sessao'],q['fim'],q.get('segundos',60),q.get('pontos',240))
             elif rota=='experimentos':d=b.consultas.experimentos()
+            elif rota=='execucoes':
+                from experimentos.repositorio import listar
+                d=dict(executor=b.experimentos.snapshot(),itens=listar(b.historico.raiz,**{k:q[k] for k in ('experimento','origem','nivel','categoria') if q.get(k)}))
+            elif rota=='comparacao-cientifica':
+                from experimentos.repositorio import listar,comparar
+                if not q.get('experimento'):raise ValueError('Selecione um experimento')
+                d=comparar(listar(b.historico.raiz,**{k:q[k] for k in ('experimento','origem','nivel','categoria') if q.get(k)}),q.get('metrica','inferencia_s'))
+            elif rota=='artefato-experimental':
+                from experimentos.repositorio import obter
+                e=obter(b.historico.raiz,q['id']);nome=q['arquivo']
+                if Path(nome).name!=nome or Path(nome).suffix not in ('.png','.svg','.json','.csv','.html','.md','.zip'):raise ValueError('Artefato inválido')
+                arquivo=seguro(b.historico.raiz,e['artefato_relativo']+'/'+nome)
+                if not arquivo.is_file() or arquivo.stat().st_size>50_000_000:raise ValueError('Artefato ausente ou extenso demais')
+                self.resposta(200,arquivo.read_bytes(),mimetypes.guess_type(nome)[0] or 'application/octet-stream');return
             elif rota=='treinos':
                 from central_monitoramento.treinamentos import listar
                 d=listar()
@@ -108,11 +123,18 @@ class HandlerCentral(Handler):
             if not isinstance(d,dict):raise ValueError('Objeto JSON esperado')
             b=self.server.ponte;r=rota.removeprefix('/api/central/')
             if r=='operacao':resultado=b.operacao_comando(d)
+            elif r=='executar-experimento':resultado=b.experimentos.iniciar(d)
+            elif r=='cancelar-experimento':resultado=b.experimentos.parar()
+            elif r=='relatorio-experimental':
+                if b.experimentos.snapshot()['ativo']:raise ValueError('Aguarde o fim da coleta para gerar gráficos')
+                from experimentos.relatorios import gerar
+                with self.server.relatorio_lock:resultado=gerar(b.historico.raiz,d['id'],d.get('interpretacao',''))
             elif r=='gravacao':resultado=b.gravacao_comando(d)
             elif r=='cenario':resultado=b.cenario_comando(d)
             elif r=='preferencias':resultado=b.configurar(d)
             elif r=='conexao':resultado=b.conexao_configurar(d['url'])
             elif r=='armazenamento':
+                b.proteger_experimento()
                 permitidos={'imagens','imagens_eventos','imagens_fps','max_bytes','max_imagens_bytes'}
                 if set(d)-permitidos:raise ValueError('Opção inválida')
                 for k,v in d.items():

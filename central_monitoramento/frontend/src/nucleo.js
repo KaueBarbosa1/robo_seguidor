@@ -1,6 +1,6 @@
 export const MAX_PONTOS = 7200;
 export const identidade = (s) =>
-  `${s.instancia ?? ""}:${s.epoch}:${s.dados.envelope?.sessao ?? ""}`;
+  `${s?.instancia ?? ""}:${s?.epoch ?? ""}:${s?.dados?.envelope?.sessao ?? ""}`;
 export const esc = (v) =>
   String(v ?? "").replace(
     /[&<>"']/g,
@@ -24,7 +24,8 @@ export const texto = (v) =>
 export const campo = (c) =>
   c && typeof c === "object" && c.estado === "atual" ? c.valor : null;
 export function extrair(s) {
-  const d = s.dados,
+  s = s ?? {};
+  const d = s.dados ?? {},
     e = d.envelope ?? {},
     p = e.dados ?? {},
     t = p.telemetria ?? {},

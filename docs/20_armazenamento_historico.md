@@ -1,5 +1,12 @@
 # Etapa 3 — SQLite, histórico operacional e reprodução no computador
 
+Atualização Etapa7: migração cumulativa **v6** acrescenta somente
+`execucoes_experimentais`, na mesma base e pelo mesmo Gravador. Sessões,
+gravações e resultados antigos são preservados. A tabela guarda UUID, vínculo
+de experimento/sessão, origem/nível/categoria, configuração/ambiente/resultado
+e caminho relativo dos artefatos. Não existe outro banco experimental.
+Ver guias25–29. O texto abaixo registra historicamente a Etapa3.
+
 Atualização posterior: a [Etapa 4](22_gemeo_digital_3d.md) adiciona o visualizador
 Three.js e passa a preencher/reproduzir a tabela de odometria existente quando
 há calibração válida. O texto e os resultados abaixo registram a entrega da

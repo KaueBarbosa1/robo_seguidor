@@ -31,7 +31,7 @@ class Sistema:
                      temperatura_c=None, frequencia_mhz=None, throttling_atual=None,
                      subtensao_atual=None, throttling_desde_boot=None, subtensao_desde_boot=None,
                      rede_rx_bytes=None, rede_tx_bytes=None, rede_rx_bytes_s=None,
-                     rede_tx_bytes_s=None, rede_erros=None, rede_descartes=None)
+                     rede_tx_bytes_s=None, rede_erros=None, rede_descartes=None, processo_threads=None)
         indisponiveis = {}
         if self.ps:
             try:
@@ -45,6 +45,7 @@ class Sistema:
                 ram = self.ps.virtual_memory()
                 dados.update(ram_pct=ram.percent, ram_usada_bytes=ram.used,
                              processo_rss_bytes=self.processo.memory_info().rss)
+                if hasattr(self.processo,'num_threads'):dados['processo_threads']=self.processo.num_threads()
                 try:
                     freq = self.ps.cpu_freq()
                     dados['frequencia_mhz'] = freq.current if freq else None

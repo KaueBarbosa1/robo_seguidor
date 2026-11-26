@@ -1,5 +1,6 @@
 import { PAGINAS, criarPagina } from "./paginas.js";
 import { OperacaoUI } from "./operacao.js";
+import { montarCiencia } from "./experimentos.js";
 import {
   BufferTemporal,
   esc,
@@ -142,7 +143,7 @@ function atualizarCabecalho(s) {
   const etapa = document.querySelector(".nav-foot");
   if (etapa && c.etapa6)
     etapa.innerHTML =
-      "Plataforma local · Etapa 06<br><small>Atuação física bloqueada por padrão</small>";
+      "Plataforma experimental · Etapa 07<br><small>Atuação física bloqueada por padrão</small>";
   document.documentElement.classList.toggle("light", p.tema === "claro");
   if (modulo) {
     modulo.dados.periodo = 1000 / (p.visual_hz ?? 10);
@@ -389,6 +390,7 @@ function pintar() {
   }
 }
 async function receber(s) {
+  if (!s || !s.dados) return;
   estado = s;
   buffer.adicionar(s);
   atualizarCabecalho(s);
@@ -474,7 +476,7 @@ async function navegar(id) {
   if ($("slot-sim")) $("slot-sim").append(sim);
   graficos = p.charts.map((g) => new Grafico($(g.id), g.series, g.unidade));
   if (id === "historico") await listarSessoes();
-  if (id === "experimentos") await listarExperimentos();
+  if (id === "experimentos") { montarCiencia($("ciencia"), api, mensagem); await listarExperimentos(); }
   if (id === "ia") await listarTreinos();
   if (id === "diagnostico") await listarEventos();
   if (id === "odometria") await opcoesSessoes($("comparar-2d"));

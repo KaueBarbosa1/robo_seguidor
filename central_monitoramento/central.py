@@ -51,6 +51,13 @@ class Central(Ponte):
             diagnostico=self._diagnostico_rede,sistema_pc=SistemaEmCache(self))
         self.escritor_externo.iniciar()
         self.worker=threading.Thread(target=self._monitorar,daemon=True,name='central-pc');self.worker.start()
+        from experimentos.executor import Executor
+        self.experimentos=Executor(self)
+
+    def proteger_experimento(self):
+        e=getattr(self,'experimentos',None)
+        if e and e.snapshot()['ativo'] and threading.current_thread() is not e.thread:
+            raise ValueError('Experimento em andamento: cancele antes de alterar a fonte ou configuração')
 
     def _monitorar(self):
         while not self.parada.is_set():
@@ -118,10 +125,14 @@ class Central(Ponte):
                 uptime_pc_s=time.monotonic()-self.inicio,cenario=self.cenario_nome,pausado=self.pausado,
                 remoto_real=False,distribuido_real=False)
             s['central']['etapa6']=self.etapa6
+            s['central']['experimento']=self.experimentos.snapshot() if hasattr(self,'experimentos') else None
             s['central']['operacao_rede']=self.fluxo.operacao.snapshot() if self.fluxo and self.fluxo.operacao else None
         return s
 
     def operacao_comando(self,d):
+        if d.get('acao') in ('parar','emergencia'):
+            if hasattr(self,'experimentos'):self.experimentos.parar()
+        else:self.proteger_experimento()
         if not self.etapa6 or self.modo=='historico' or not self.fluxo or not self.fluxo.operacao:raise ValueError('Canal operacional indisponível nesta origem')
         if d.get('instancia')!=self.instancia or d.get('epoch')!=self.epoch:raise ValueError('Fonte da interface mudou; pedido descartado')
         op=self.fluxo.operacao
@@ -157,11 +168,13 @@ class Central(Ponte):
         return op.comandar(dados,operador=d.get('operador'))
 
     def modo_alterar(self,modo):
+        self.proteger_experimento()
         if self.escritor_externo and self.escritor_externo.gravacao:self.escritor_externo.encerrar('troca de fonte; sem retomada automática')
         super().modo_alterar(modo)
         with self.lock:self.alarmes={};self.ocorrencias.clear()
 
     def simular(self,dados):
+        self.proteger_experimento()
         super().simular(dados)
         if self.fluxo and self.fluxo.servidor:
             c=self.cenario.ler();self.fluxo.servidor.falhas['descartar_cada']=c.get('descartar_cada',0)
@@ -191,6 +204,7 @@ class Central(Ponte):
         return True
 
     def gravacao_comando(self,d):
+        self.proteger_experimento()
         if self.modo=='historico':raise ValueError('Reprodução é somente leitura')
         g=self.escritor_externo;acao=d['acao']
         if acao=='iniciar':return g.nova_gravacao(d.get('nome','Central de monitoramento'),modo='simulacao' if self.modo=='simulado' else 'observacao_embarcada')
@@ -198,6 +212,7 @@ class Central(Ponte):
         return getattr(g,acao)()
 
     def configurar(self,d,salvar=True):
+        self.proteger_experimento()
         if not isinstance(d,dict) or set(d)-set(self.preferencias):raise ValueError('Preferência não permitida')
         p=dict(self.preferencias,**d)
         for k,a,b in [('janela_s',5,3600),('graficos_hz',.2,10),('visual_hz',1,20),('qualidade',1,2),('fov_vertical',20,120),('servo_centro',45,135)]:
@@ -224,4 +239,5 @@ class Central(Ponte):
         self.url_real=url;return True
 
     def fechar(self):
+        if hasattr(self,'experimentos'):self.experimentos.fechar()
         self.parada.set();super().fechar();self.worker.join(timeout=3);self.escritor_externo.fechar()

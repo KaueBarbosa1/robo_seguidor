@@ -103,8 +103,9 @@ class Benchmark:
         periodo = tempos.get('controle.periodo_s')
         dados['controle_hz_por_periodo'] = (1/periodo['media'] if periodo and periodo['media'] > 0 else None)
         dados['comunicacao'] = self.diagnostico_rede() if self.diagnostico_rede else None
-        dados['computador_rtt_s'] = (dados['comunicacao']['rtt_s']['mediana']
-            if dados['comunicacao'] and dados['comunicacao']['rtt_s'] else None)
+        rede=dados['comunicacao'] or {}
+        rtt=rede.get('rtt_s') or rede.get('canais',{}).get('telemetria',{}).get('rtt_s')
+        dados['computador_rtt_s'] = rtt.get('mediana') if rtt else None
         self.ultima_amostra = dados
         return dados
 

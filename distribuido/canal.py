@@ -4,6 +4,7 @@ from http import HTTPStatus
 import secrets
 import time
 import uuid
+from websockets.exceptions import ConnectionClosed
 
 from comunicacao.protocolo import decodificar,codificar,Sequencia
 from distribuido.configuracao import CONTRATO
@@ -69,5 +70,9 @@ class CanalOperacao:
                     self.autoridade.evento('mensagem_rejeitada',motivo=str(exc))
                 desafio=secrets.token_hex(16);desafio_t=time.monotonic();resposta['desafio']=desafio
                 await asyncio.wait_for(ws.send(codificar(servidor.mensagem(0,'referencia',resposta))),servidor.op.timeout_s)
+        except (ConnectionClosed,asyncio.TimeoutError) as exc:
+            # Encerramento pode coincidir com o envio do último ACK. Preserva
+            # o evento e o finally de revogação sem traceback de fechamento normal.
+            self.autoridade.evento('canal_operacional_encerrado',motivo=type(exc).__name__)
         finally:
             self.autoridade.desconectar(cliente);servidor.consumidores.discard(consumidor)

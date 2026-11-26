@@ -61,6 +61,7 @@ class TestAvisos(unittest.TestCase):
         from estado import Modo
         import time
         estado, motor = EstadoRobo(), Mock()
+        motor.estado_motores.return_value = None
         aplicar_comando(estado, motor, 'siga')
         self.assertGreater(estado._partida_ate, time.monotonic())
         motor.parar.assert_called()
