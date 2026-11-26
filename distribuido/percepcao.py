@@ -93,27 +93,9 @@ class PercepcaoRemota(PercepcaoLocal):
 
 def decodificar_jpeg(jpeg):
     inicio=time.perf_counter()
-    # Limita dimensões antes de aceitar o resultado da decodificação.
-    if not isinstance(jpeg,bytes) or len(jpeg)>4*1024**2:raise ValueError('JPEG fora do limite')
-    if not jpeg.startswith(b'\xff\xd8'):raise ValueError('Cabeçalho JPEG inválido')
-    pos=2;dimensoes=None
-    while pos+4<=len(jpeg):
-        if jpeg[pos]!=255:raise ValueError('Marcador JPEG inválido')
-        while pos<len(jpeg) and jpeg[pos]==255:pos+=1
-        if pos>=len(jpeg):break
-        marcador=jpeg[pos];pos+=1
-        if marcador in (0xD9,0xDA):break
-        if marcador==0x01 or 0xD0<=marcador<=0xD8:continue
-        if pos+2>len(jpeg):break
-        tamanho=int.from_bytes(jpeg[pos:pos+2],'big')
-        if tamanho<2 or pos+tamanho>len(jpeg):raise ValueError('Segmento JPEG inválido')
-        if marcador in (0xC0,0xC1,0xC2,0xC3,0xC5,0xC6,0xC7,0xC9,0xCA,0xCB,0xCD,0xCE,0xCF):
-            if tamanho<8:raise ValueError('Dimensões JPEG ausentes')
-            h=int.from_bytes(jpeg[pos+3:pos+5],'big');w=int.from_bytes(jpeg[pos+5:pos+7],'big')
-            dimensoes=(h,w);break
-        pos+=tamanho
-    if dimensoes is None or min(dimensoes)<2 or max(dimensoes)>4096 or dimensoes[0]*dimensoes[1]>8*1024**2:
-        raise ValueError('Resolução JPEG excessiva ou inválida antes do decode')
+    from visao.jpeg import dimensoes_jpeg
+    w,h=dimensoes_jpeg(jpeg)
+    if min(w,h)<2:raise ValueError('Resolução JPEG inválida antes do decode')
     frame=cv2.imdecode(np.frombuffer(jpeg,np.uint8),cv2.IMREAD_COLOR)
     if frame is None or max(frame.shape[:2])>4096:raise ValueError('JPEG inválido/resolução excessiva')
     return frame,time.perf_counter()-inicio

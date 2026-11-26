@@ -65,7 +65,7 @@ def test_resultados_incompativeis_recusados(autoridade,campo,valor):
     assert a.snapshot()['contadores']['resultados_rejeitados']==1
 
 @pytest.mark.parametrize('campo,valor',[
-    ('erro',float('nan')),('posicao',float('inf')),('posicao',1.1),('confianca',-1),
+    ('navegavel',False),('erro',float('nan')),('posicao',float('inf')),('posicao',1.1),('confianca',-1),
     ('algoritmo','cnn-fotos'),('versao_modelo','outros-pesos'),('linha_visivel',1),('inferencia_s',-1),('direcao',99),('confianca',None),('linha_visivel',None)])
 def test_saida_invalida_recusada(autoridade,campo,valor):
     a,r,m=autoridade;d=resultado(a,r);d['resultado'][campo]=valor
@@ -296,3 +296,11 @@ def test_heartbeat_ausente_para_mesmo_com_resultado_recente(autoridade):
     a,r,m=autoridade;repousar(a,r);cmd(a,'modo',modo='distribuido');repousar(a,r);cmd(a,'siga')
     r.avancar(.7);a.receber_resultado(resultado(a,r),'pc');a.supervisionar()
     assert a.estado.modo is Modo.PARADO and a.ultimo_motivo=='heartbeat_inferencia_expirado'
+
+
+def test_confirmacao_da_parada_anterior_nao_aparece_durante_movimento(autoridade):
+    a,r,m=autoridade;repousar(a,r);a.supervisionar()
+    assert a.snapshot()['parada']=='confirmada_pelos_dados'
+    cmd(a,'habilitar');cmd(a,'movimento',autorizacao=a.lease['id'],direcao='frente',velocidade_pps=2)
+    assert a.snapshot()['parada']=='nao_solicitada'
+    cmd(a,'parar');assert a.snapshot()['parada']=='aceita'

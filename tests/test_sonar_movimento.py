@@ -1,5 +1,6 @@
 """Modo 4 e calibracao: sem serial, motores, Bluetooth ou hardware reais."""
 import sys
+import pytest
 import threading
 import time
 from pathlib import Path
@@ -162,8 +163,19 @@ def test_sair_do_manual_cancela_modo4_e_nao_envia_v4_no_seguidor():
         assert enviados == [P.comando_velocidade(30, 30)]
 
 
+@pytest.fixture
+def relogio_sonar(monkeypatch):
+    class Relogio:
+        t=100.
+        def monotonic(self):return self.t
+        def sleep(self,segundos):self.t+=segundos
+    relogio=Relogio();monkeypatch.setattr(ferramenta,'time',relogio)
+    return relogio
+
+
 class ArduinoFalso:
-    def __init__(self):
+    def __init__(self, relogio=time):
+        self.relogio = relogio
         self.velocidades, self.centros = [], []
         self.fechou = False
         self.experimental = False
@@ -175,18 +187,18 @@ class ArduinoFalso:
     def fechar(self): self.fechou = True
     def velocidade(self, e, d): self.velocidades.append((e, d))
     def status_servo(self):
-        return SimpleNamespace(ativo=True, sonar_movimento=True, timestamp=time.monotonic())
+        return SimpleNamespace(ativo=True, sonar_movimento=True, timestamp=self.relogio.monotonic())
     def sensores(self):
-        return SimpleNamespace(timestamp=time.monotonic(), sonar_nao_calibrado=True,
+        return SimpleNamespace(timestamp=self.relogio.monotonic(), sonar_nao_calibrado=True,
                                sonar_experimental=self.experimental,
                                falha_sensor=not self.experimental, avanco_bloqueado=not self.experimental, distancia_cm=80,
                                ticks_esq=0, ticks_dir=0)
     def consumir_leituras_sonar(self):
-        return [SimpleNamespace(timestamp=time.monotonic(), angulo_nominal=90, distancia_cm=80)]
+        return [SimpleNamespace(timestamp=self.relogio.monotonic(), angulo_nominal=90, distancia_cm=80)]
 
 
-def test_ferramenta_sem_calibracao_nao_envia_movimento_e_fecha():
-    ard = ArduinoFalso()
+def test_ferramenta_sem_calibracao_nao_envia_movimento_e_fecha(relogio_sonar):
+    ard = ArduinoFalso(relogio_sonar)
     with patch.object(ferramenta, 'ArduinoSerial', return_value=ard), \
          patch.object(sys, 'argv', ['teste', '--pps', '12', '--tempo', '.01']):
         try:
@@ -198,16 +210,16 @@ def test_ferramenta_sem_calibracao_nao_envia_movimento_e_fecha():
     assert ard.fechou and not ard.velocidades and ard.centros == [False] * 3
 
 
-def test_ferramenta_padrao_so_varre_e_nunca_envia_velocidade():
-    ard = ArduinoFalso()
+def test_ferramenta_padrao_so_varre_e_nunca_envia_velocidade(relogio_sonar):
+    ard = ArduinoFalso(relogio_sonar)
     with patch.object(ferramenta, 'ArduinoSerial', return_value=ard), \
          patch.object(sys, 'argv', ['teste', '--tempo', '.01']):
         ferramenta.main()
     assert ard.fechou and not ard.velocidades
 
 
-def test_ferramenta_aceita_perfil_experimental_identificado():
-    ard = ArduinoFalso()
+def test_ferramenta_aceita_perfil_experimental_identificado(relogio_sonar):
+    ard = ArduinoFalso(relogio_sonar)
     ard.experimental = True
     with patch.object(ferramenta, 'ArduinoSerial', return_value=ard), \
          patch.object(sys, 'argv', ['teste', '--pps', '4', '--tempo', '.01']):

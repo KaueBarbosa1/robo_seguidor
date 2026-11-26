@@ -50,6 +50,7 @@ gemeo_digital/modelos/*.glb
 dados_gemeo/
 dados_distribuido/
 dados_experimentos/
+dados_implantacao/
 experimentos/resultados/
 experimentos/graficos/
 experimentos/relatorios/

@@ -109,6 +109,7 @@ class Ponte:
         self.estado=EstadoVisual(CAL_SIM);self.foto=None;self.status='iniciando';self.selecionada=None
         self.eventos=[];self.cal_real=Calibracao()
         self.instancia=str(uuid.uuid4())
+        self.aviso_origem=None
         self.bus=Distribuidor();self.escritor_externo=None
 
     def evento_rede(self,item,epoch):
@@ -123,11 +124,16 @@ class Ponte:
             with self.lock:
                 self.epoch+=1;self.modo=modo;self.estado=EstadoVisual(CAL_SIM if modo=='simulado' else self.cal_real)
                 self.foto=None;self.eventos=[];self.status='aguardando dados';self.selecionada=None
+                self.aviso_origem=None
             if modo!='historico':self.fluxo=Fluxo(self,self.epoch,modo=='simulado')
 
     def receber(self,msg,recepcao,epoch):
         with self.lock:
             if epoch!=self.epoch:return False
+            if self.modo in ('simulado','real') and msg.get('simulado') is not (self.modo=='simulado'):
+                self.aviso_origem='Origem incompatível: servidor simulado em modo real ou servidor real em simulação'
+                self.estado.invalidar();self.foto=None;return False
+            self.aviso_origem=None
             ok=self.estado.aceitar(msg,recepcao)
             if ok:
                 self.status='histórico' if self.modo=='historico' else 'conectado'
@@ -160,7 +166,7 @@ class Ponte:
                 idade_imagem+=meta.get('idade_limite_recepcao_s',0)
                 camera_ok=self.estado.msg['dados']['telemetria'].get('visao',{}).get('camera_ok')
                 if idade_imagem<=.5 and camera_ok is not False:imagem=dict(meta,idade_visualizacao_s=idade_imagem)
-            return dict(instancia=self.instancia,modo=self.modo,epoch=self.epoch,status=self.status if d.get('disponivel') else 'sem dados válidos',
+            return dict(instancia=self.instancia,modo=self.modo,epoch=self.epoch,status=self.aviso_origem or (self.status if d.get('disponivel') else 'sem dados válidos'),aviso_origem=self.aviso_origem,
                 dados=d,simulacao=self.cenario.ler(),replay=dict(pausado=self.replay_pausado,
                 velocidade=self.velocidade,posicao_utc=posicao,sessao=self.selecionada),eventos=self.eventos[-40:],
                 imagem=imagem)

@@ -1,0 +1,4 @@
+# Visão/controle/serial. Sem dashboard, banco, treino ou áudio.
+numpy
+opencv-python-headless
+pyserial

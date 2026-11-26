@@ -33,6 +33,7 @@ const legenda = (v) =>
     seguranca: "Segurança",
     confirmada_pelos_dados: "Confirmada pelos dados recebidos",
     aceita: "Solicitada e aceita",
+    nao_solicitada: "Não solicitada · movimento habilitado",
     falha_na_confirmacao: "Sem confirmação no prazo",
     mudanca_de_modo: "Modo alterado; aguardando habilitação",
     pedido_operador: "Parada solicitada pelo operador",

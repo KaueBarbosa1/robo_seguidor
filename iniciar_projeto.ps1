@@ -1,5 +1,5 @@
 param(
- [ValidateSet('central','testes','experimento','visao','relatorio','instalar')][string]$Acao='central',
+ [ValidateSet('central','testes','experimento','visao','relatorio','instalar','pacote-pi')][string]$Acao='central',
  [string]$Categoria='rapidos', [string]$Config='experimentos/configuracoes/comparacao_pc.json',
  [string]$Historico='', [string]$Servidor='', [string]$ValidacaoFisica='', [string]$Id='', [string]$Saida='dados_experimentos/visao',
  [ValidateSet('simulacao-embarcada','simulacao-distribuida','monitoramento','distribuido-real')][string]$Perfil='simulacao-embarcada',
@@ -18,6 +18,7 @@ try {
  } elseif($Acao -eq 'instalar'){
   & "$PSScriptRoot/instalar_central.ps1"
  } elseif($Acao -eq 'testes') {& $pythonProjeto tools/testes.py $Categoria}
+ elseif($Acao -eq 'pacote-pi') {& $pythonProjeto tools/preparar_pacote_pi.py}
  else {
   $argsProjeto=@('tools/experimentos.py')
   if($Acao -eq 'experimento'){$argsProjeto+=@('executar',$Config)}

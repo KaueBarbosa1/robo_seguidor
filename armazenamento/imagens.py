@@ -25,26 +25,8 @@ def hash_arquivo(caminho):
 
 
 def validar_jpeg(jpeg):
-    if len(jpeg)>4*1024*1024 or not jpeg.startswith(b'\xff\xd8') or not jpeg.endswith(b'\xff\xd9'):
-        raise ValueError('JPEG incompleto')
-    # Verificar dimensões antes do decoder, para limitar a alocação descompactada.
-    i=2;dimensoes=None
-    sof={0xc0,0xc1,0xc2,0xc3,0xc5,0xc6,0xc7,0xc9,0xca,0xcb,0xcd,0xce,0xcf}
-    while i+4<len(jpeg):
-        if jpeg[i]!=0xff:break
-        while i<len(jpeg) and jpeg[i]==0xff:i+=1
-        if i+3>=len(jpeg):break
-        marca=jpeg[i];i+=1
-        tamanho=int.from_bytes(jpeg[i:i+2],'big')
-        if tamanho<2 or i+tamanho>len(jpeg):break
-        if marca in sof and tamanho>=8:
-            altura=int.from_bytes(jpeg[i+3:i+5],'big')
-            largura=int.from_bytes(jpeg[i+5:i+7],'big')
-            dimensoes=largura,altura
-            break
-        i+=tamanho
-    if not dimensoes or min(dimensoes)<=0 or max(dimensoes)>4096 or dimensoes[0]*dimensoes[1]>1920*1080:
-        raise ValueError('Dimensoes JPEG ausentes ou acima do limite administrativo')
+    from visao.jpeg import dimensoes_jpeg
+    dimensoes_jpeg(jpeg,max_lado=4096,max_pixels=1920*1080)
     try:
         import cv2
         import numpy as np

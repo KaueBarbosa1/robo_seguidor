@@ -1,5 +1,5 @@
 """Um ensaio por vez, na Central existente; somente percepção virtual parada."""
-from collections import deque
+from collections import deque,OrderedDict,Counter
 from dataclasses import asdict,replace
 from datetime import datetime,timezone
 import csv
@@ -17,6 +17,25 @@ def utc():return datetime.now(timezone.utc).isoformat()
 
 
 class Cancelado(Exception):pass
+
+
+def verificar_integridade(raiz,cancelar,prazo_s=60.):
+    from contextlib import closing
+    import sqlite3
+    from armazenamento.banco import conectar
+    if cancelar.is_set():raise Cancelado('Cancelado antes da verificação de integridade')
+    limite=time.monotonic()+prazo_s
+    with closing(conectar(raiz)) as banco:
+        banco.set_progress_handler(lambda:int(cancelar.is_set() or time.monotonic()>limite),5000)
+        try:
+            resultado=dict(integrity_check=banco.execute('PRAGMA integrity_check').fetchone()[0],
+                foreign_key_check=[list(r) for r in banco.execute('PRAGMA foreign_key_check')])
+            if cancelar.is_set():raise Cancelado('Cancelado durante verificação de integridade')
+            return resultado
+        except sqlite3.OperationalError as exc:
+            if cancelar.is_set():raise Cancelado('Cancelado durante verificação de integridade') from exc
+            if time.monotonic()>limite:raise RuntimeError('Verificação de integridade excedeu o prazo; não foi aprovada') from exc
+            raise
 
 
 class Executor:
@@ -57,6 +76,8 @@ class Executor:
 
     def _executar(self,c):
         b=self.central
+        original=(b.op_distribuida,b.telemetria_hz,b.imagens_fps,b.camera_fps,b.escritor_externo.op)
+        contagens=Counter()
         try:
             env=ambiente()
             eid=b.escritor_externo.comandar('experimento',nome=c['nome'],objetivo=c['objetivo'],modo='simulacao',
@@ -68,9 +89,10 @@ class Executor:
                 ordem.extend((k,repeticao) for k in ids)
             for k,rep in ordem:
                 if self.cancelar.is_set():raise Cancelado('Cancelado pelo operador')
-                self._ensaio(c,k,rep,eid,env)
-                with self.lock:self.estado['concluidas']+=1
-            with self.lock:self.estado['estado']='concluido'
+                estado=self._ensaio(c,k,rep,eid,env);contagens[estado]+=1
+                with self.lock:
+                    self.estado['concluidas']+=1;self.estado['resultados']=dict(contagens)
+            with self.lock:self.estado['estado']='falha' if contagens['falha'] else 'concluido_com_bloqueios' if contagens['bloqueada'] else 'concluido'
         except Cancelado as exc:
             with self.lock:self.estado.update(estado='cancelado',erro=str(exc))
         except Exception as exc:
@@ -78,6 +100,9 @@ class Executor:
         finally:
             # Volta somente ao simulador parado, nunca retoma comandos anteriores.
             try:
+                b.op_distribuida,b.telemetria_hz,b.imagens_fps,b.camera_fps,armazenamento=original
+                if not b.escritor_externo.gravacao:
+                    b.escritor_externo.comandar('opcoes_locais',imagens=armazenamento.imagens,imagens_fps=armazenamento.imagens_fps)
                 if b.modo=='simulado':b.modo_alterar('simulado')
             except Exception as exc:
                 with self.lock:self.estado.update(estado='falha',erro=(self.estado.get('erro') or '')+f' | Encerramento: {type(exc).__name__}: {exc}')
@@ -138,14 +163,14 @@ class Executor:
             row['sessao_id']=sid
             b.escritor_externo.comandar('associar_sessoes',experimento=eid,sessoes=[row['sessao_id']])
             bench=Benchmark(pasta/'benchmark',intervalo=1.,condicoes=config);bench.diagnostico_rede=b._diagnostico_rede;bench.iniciar()
-            inicio=time.monotonic();ultimo_frame=None;ultimo_sys=0.;ultima_consulta=0.;bytes_csv=0;eventos={};linhas=[]
+            inicio=time.monotonic();ultimo_frame=None;ultimo_sys=0.;ultima_consulta=0.;bytes_csv=0;eventos=OrderedDict();eventos_observados=0
             with self.lock:self.estado['estado']='coletando'
             with (pasta/'amostras.csv').open('w',encoding='utf-8',newline='') as f:
                 campos=['t_s','frame_id','inferencia_id','geracao','inferencia_s','processamento_s','ciclo_s','cpu_pc_pct','rss_bytes','controle_hz','rtt_s','consulta_s']
                 writer=csv.DictWriter(f,fieldnames=campos);writer.writeheader()
                 while time.monotonic()-inicio<c['duracao_s']:
                     if self.cancelar.wait(.1):raise Cancelado('Cancelado durante coleta')
-                    st=op.snapshot();a=rt.autoridade.snapshot();r=a.get('ultimo_resultado') or {};frame=a.get('frame_id')
+                    a=rt.autoridade.snapshot();r=a.get('ultimo_resultado') or {};frame=a.get('frame_id')
                     # Execução local diagnóstica guardada pelo runtime, independente de navegação.
                     if modelo['processamento']=='embarcado':
                         r=dict(rt.ultimo_diagnostico or {});frame=r.get('frame_id')
@@ -169,7 +194,10 @@ class Executor:
                         if v is not None:limitadas[m].append(v)
                     writer.writerow(sample);amostras+=1;bytes_csv=f.tell()
                     if bytes_csv>50_000_000:raise RuntimeError('Limite de 50 MB de amostras por execução atingido')
-                    for e in a.get('eventos',[]):eventos[e['id']]=e
+                    for e in a.get('eventos',[]):
+                        if e['id'] not in eventos:eventos_observados+=1
+                        eventos[e['id']]=e
+                        if len(eventos)>1024:eventos.popitem(last=False)
             dt=time.monotonic()-inicio
             inicio_finalizacao=time.perf_counter()
             with self.lock:self.estado['estado']='finalizando_gravacao_e_integridade'
@@ -178,15 +206,13 @@ class Executor:
             bench=None
             b.gravacao_comando({'acao':'encerrar'});b.escritor_externo.sincronizar()
             servico_final=op.snapshot();autoridade_final=rt.autoridade.snapshot();gravador_final=b.escritor_externo.snapshot()
-            from armazenamento.banco import conectar
-            from contextlib import closing
-            with closing(conectar(b.historico.raiz)) as banco:
-                saude=dict(integrity_check=banco.execute('PRAGMA integrity_check').fetchone()[0],foreign_key_check=[list(r) for r in banco.execute('PRAGMA foreign_key_check')])
+            saude=verificar_integridade(b.historico.raiz,self.cancelar)
+            if saude['integrity_check']!='ok' or saude['foreign_key_check']:raise RuntimeError('Integridade/FK reprovadas; consulte o banco antes de continuar')
             resultado=dict(metricas={m:resumo(list(v)) for m,v in limitadas.items()},duracao_coleta_s=dt,
                 amostras=amostras,inicializacao_s=inicializacao,carga_modelo_s=carga_modelo,aquecimento_s=c['aquecimento_s'],
                 hash_imagem=hash_arquivo(pasta/'imagem_entrada.jpg'),versao_modelo=rt.pipeline.versao if modelo['processamento']=='embarcado' else op.pipeline.versao,
                 opcoes_autoridade=asdict(rt.autoridade.op),seguranca=autoridade_final,servico=servico_final,
-                gravacao=gid,gravador=gravador_final,integridade=saude,eventos=list(eventos.values()),finalizacao_s=time.perf_counter()-inicio_finalizacao,
+                gravacao=gid,gravador=gravador_final,integridade=saude,eventos=list(eventos.values()),eventos_observados=eventos_observados,eventos_limite_memoria=1024,finalizacao_s=time.perf_counter()-inicio_finalizacao,
                 limitacoes=['Percepção parada em JPEG sintético fixo; não mede seguimento de linha ou frenagem.',
                     'Todas as CPUs/memórias são do PC; Raspberry virtual compartilha o processo.',
                     'A–D referem-se à arquitetura virtual, não a quatro configurações físicas validadas.',
@@ -215,3 +241,4 @@ class Executor:
                 resultado['erro_persistencia_final']=f'{type(exc).__name__}: {exc}'
                 (pasta/'execucao.json').write_text(json.dumps({**row,'resultado':resultado},ensure_ascii=False,indent=2),encoding='utf-8')
                 raise
+        return row['estado']

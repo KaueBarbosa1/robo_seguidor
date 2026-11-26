@@ -233,7 +233,7 @@ class TestPainel(unittest.TestCase):
             motor.parar.side_effect = lambda **_: eventos.append('motor_parado')
             painel.parar.side_effect = lambda: eventos.append('painel_parado')
             voz.start.side_effect = RuntimeError('fim simulado')
-            with patch.object(sys, 'argv', ['main.py', '--sem-arduino']), patch.object(cfg, 'REMOTO_BT_ATIVO', False), patch.object(main, 'ArduinoNulo', return_value=motor), patch.object(main, 'abrir_fonte', return_value=self.fonte), patch.object(main, 'ThreadControle', return_value=tc) as controle, patch.object(main, 'ThreadVisao', return_value=tv), patch.object(main, 'ThreadVoz', return_value=voz), patch.object(main.signal, 'signal'), patch('tools.painel_coleta.Painel', return_value=painel) as criar_painel:
+            with patch.object(sys, 'argv', ['main.py', '--sem-arduino']), patch.object(cfg, 'REMOTO_BT_ATIVO', False), patch.object(main, 'ArduinoNulo', return_value=motor), patch.object(main, 'abrir_fonte', return_value=self.fonte), patch.object(main, 'ThreadControle', return_value=tc) as controle, patch.object(main, 'ThreadVisao', return_value=tv), patch.object(main, 'criar_thread_voz', return_value=voz), patch.object(main.signal, 'signal'), patch('tools.painel_coleta.Painel', return_value=painel) as criar_painel:
                 if porta_ocupada:
                     criar_painel.side_effect = OSError('porta ocupada')
                 with self.assertRaisesRegex(RuntimeError, 'fim simulado'):

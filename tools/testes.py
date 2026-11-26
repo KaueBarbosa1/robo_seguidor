@@ -41,16 +41,22 @@ def main():
         else:resultados.append(dict(nome='integracao_PTY_isolada',estado='bloqueado',motivo='Requer Linux/POSIX termios; nenhum dispositivo real será aberto'))
         compilador=shutil.which('g++')
         if compilador:
-            fontes=['harness.cpp',*[f'../robo_firmware/{n}.cpp' for n in ('comandos','motores','sensores','servo','sonar_movimento','sinalizacao')]]
-            exe=(a.saida/'firmware_host.exe').resolve()
-            r=subprocess.run([compilador,'-std=c++17','-I.','-I../robo_firmware','-o',str(exe),*fontes],cwd=RAIZ/'arduino/teste_host',capture_output=True,text=True,timeout=60)
-            texto=r.stdout+r.stderr
-            if r.returncode==0:
-                r=subprocess.run([str(exe)],capture_output=True,text=True,timeout=30);texto+=r.stdout+r.stderr
-            (a.saida/'firmware_host.txt').write_text(texto,encoding='utf-8');resultados.append(dict(nome='firmware_host',estado='aprovado' if r.returncode==0 else 'reprovado',exit_code=r.returncode))
+            try:
+                fontes=['harness.cpp',*[f'../robo_firmware/{n}.cpp' for n in ('comandos','motores','sensores','servo','sonar_movimento','sinalizacao')]]
+                exe=(a.saida/'firmware_host.exe').resolve()
+                r=subprocess.run([compilador,'-std=c++17','-I.','-I../robo_firmware','-o',str(exe),*fontes],cwd=RAIZ/'arduino/teste_host',capture_output=True,text=True,timeout=60)
+                texto=r.stdout+r.stderr
+                if r.returncode==0:
+                    r=subprocess.run([str(exe)],capture_output=True,text=True,timeout=30);texto+=r.stdout+r.stderr
+                (a.saida/'firmware_host.txt').write_text(texto,encoding='utf-8');resultados.append(dict(nome='firmware_host',estado='aprovado' if r.returncode==0 else 'reprovado',exit_code=r.returncode))
+            except (OSError,subprocess.TimeoutExpired) as exc:
+                resultados.append(dict(nome='firmware_host',estado='bloqueado',motivo=str(exc)))
         else:resultados.append(dict(nome='firmware_host',estado='bloqueado',motivo='g++ ausente'))
     (a.saida/'resultado.json').write_text(json.dumps(dict(criado_utc=datetime.now(timezone.utc).isoformat(),categoria=a.categoria,resultados=resultados,origem='software_no_PC'),ensure_ascii=False,indent=2),encoding='utf-8')
-    raise SystemExit(1 if any(r['estado']=='reprovado' for r in resultados) else 0)
+    # Dependências solicitadas ausentes não equivalem a uma suíte aprovada.
+    primarios={nome for nome,_,_ in comandos}
+    codigo=1 if any(r['estado']=='reprovado' for r in resultados) else (2 if any(r['nome'] in primarios and r['estado']=='bloqueado' for r in resultados) else 0)
+    raise SystemExit(codigo)
 
 
 if __name__=='__main__':main()

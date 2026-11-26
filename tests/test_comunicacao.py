@@ -289,7 +289,7 @@ class TestRede(unittest.IsolatedAsyncioTestCase):
               patch.object(main, 'abrir_fonte', return_value=camera),
               patch.object(main, 'ThreadControle', return_value=controle) as criar_controle,
               patch.object(main, 'ThreadVisao', return_value=visao),
-              patch.object(main, 'ThreadVoz', return_value=voz), patch.object(main.signal, 'signal'),
+              patch.object(main, 'criar_thread_voz', return_value=voz), patch.object(main.signal, 'signal'),
               patch('comunicacao.servidor.Servidor', return_value=servidor) as criar_servidor):
             with self.assertRaisesRegex(RuntimeError, 'fim do teste'):
                 main.main()

@@ -108,6 +108,7 @@ class Central(Ponte):
 
     def receber(self,*a,**kw):
         ok=super().receber(*a,**kw)
+        self.alerta('dominio_origem',bool(self.aviso_origem),'erro','Comunicação',self.aviso_origem or 'Origem compatível com a fonte selecionada')
         if ok:self._avaliar(super().snapshot())
         return ok
 
@@ -147,11 +148,8 @@ class Central(Ponte):
             if rt.estado.modo.name!='PARADO':raise ValueError('Pare antes de trocar a imagem')
             caminho=d.get('caminho','');imagem=None
             if caminho:
-                import cv2
-                p=Path(caminho)
-                if not p.is_file() or p.stat().st_size>8*1024**2 or p.suffix.lower() not in ('.png','.jpg','.jpeg'):raise ValueError('Arquivo de imagem inválido')
-                imagem=cv2.imread(str(p))
-                if imagem is None or max(imagem.shape[:2])>4096:raise ValueError('Resolução de imagem inválida')
+                from visao.jpeg import ler_imagem_limitada
+                imagem=ler_imagem_limitada(caminho)
             with rt.estado.lock:rt.autoridade.invalidar();rt.camera.imagem_teste=imagem
             return dict(imagem_teste=bool(caminho),dimensoes=list(imagem.shape[:2]) if imagem is not None else [240,320])
         if d.get('acao')=='configurar_pipeline':

@@ -280,7 +280,7 @@ class TestIntegracaoSemHardware(unittest.TestCase):
         tc=Mock();tv=Mock();voz=Mock()
         tc.join.side_effect=lambda **_: m.eventos.append('join')
         voz.start.side_effect=RuntimeError('falha inicial simulada')
-        with patch.object(sys,'argv',['main.py','--sem-arduino','--fonte-imagem','esp32']), patch.object(cfg,'REMOTO_BT_ATIVO',False), patch.object(main,'ArduinoNulo',return_value=m), patch.object(main,'ArduinoSerial',side_effect=AssertionError('serial proibida')), patch.object(main,'abrir_fonte',return_value=fonte), patch.object(main,'ThreadControle',return_value=tc), patch.object(main,'ThreadVisao',return_value=tv), patch.object(main,'ThreadVoz',return_value=voz), patch.object(main.signal,'signal'):
+        with patch.object(sys,'argv',['main.py','--sem-arduino','--fonte-imagem','esp32']), patch.object(cfg,'REMOTO_BT_ATIVO',False), patch.object(main,'ArduinoNulo',return_value=m), patch.object(main,'ArduinoSerial',side_effect=AssertionError('serial proibida')), patch.object(main,'abrir_fonte',return_value=fonte), patch.object(main,'ThreadControle',return_value=tc), patch.object(main,'ThreadVisao',return_value=tv), patch.object(main,'criar_thread_voz',return_value=voz), patch.object(main.signal,'signal'):
             with self.assertRaisesRegex(RuntimeError,'falha inicial'):main.main()
         self.assertLess(m.eventos.index('parar'),m.eventos.index('join'))
         self.assertIn('fechar',m.eventos);fonte.parar.assert_called_once()

@@ -235,7 +235,7 @@ class TestBenchmark(unittest.TestCase):
               patch.object(main, 'ArduinoNulo', return_value=motor),
               patch.object(main, 'ThreadControle', return_value=controle),
               patch.object(main, 'ThreadVisao', return_value=visao),
-              patch.object(main, 'ThreadVoz', return_value=voz),
+              patch.object(main, 'criar_thread_voz', return_value=voz),
               patch.object(main.signal, 'signal'),
               patch('monitoramento.benchmark.Benchmark', return_value=benchmark)):
             with self.assertRaisesRegex(RuntimeError, 'fim de teste'):

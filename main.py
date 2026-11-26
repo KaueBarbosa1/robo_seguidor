@@ -12,6 +12,7 @@ import os
 import signal
 import threading
 import time
+import math
 
 from controle import ThreadControle, aplicar_comando
 from estado import EstadoRobo
@@ -21,13 +22,18 @@ from visao.detector import ThreadVisao
 from visao.fontes import criar_fonte
 from visao.esp32_cam import CameraESP32
 import config as cfg
-from voz.reconhecimento import ThreadVoz
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(name)s] %(message)s")
 log = logging.getLogger("main")
 
 
-def abrir_fonte(nome: str, motor):
+def criar_thread_voz(ao_comando, parar):
+    """Carrega áudio e modelo somente quando o perfil habilita voz."""
+    from voz.reconhecimento import ThreadVoz
+    return ThreadVoz(ao_comando, parar)
+
+
+def abrir_fonte(nome: str, motor, camera_fps=None):
     """Abre a fonte de imagem. Se não der, o robô continua só com a voz (como sem câmera), com aviso claro."""
     if nome == "arduino" and not cfg.FIRMWARE_COM_CAMERA:
         log.warning("FIRMWARE_COM_CAMERA = False: o Arduino não envia imagem; seguindo sem câmera (só voz e controle remoto).")
@@ -37,6 +43,7 @@ def abrir_fonte(nome: str, motor):
         return criar_fonte("nenhuma")
     try:
         fonte = criar_fonte(nome, motor)
+        if isinstance(fonte,CameraESP32) and camera_fps is not None:fonte.fps_max=camera_fps
         if hasattr(fonte, "iniciar"):
             fonte.iniciar()                                 # fontes com captura em segundo plano
     except Exception as e:
@@ -62,7 +69,16 @@ def main() -> None:
     ap.add_argument('--rede-porta', type=int, default=cfg.REDE_PORTA)
     ap.add_argument('--operacao-rede',action='store_true',help='prepara canal operacional; atuação real bloqueada sem aprovação física explícita')
     ap.add_argument('--validacao-fisica',help='registro local de aprovação dos ensaios físicos; ausente mantém atuação por rede bloqueada')
+    ap.add_argument('--sem-voz',action='store_true',help='não carrega áudio/modelos de voz; perfil mínimo de instalação')
+    ap.add_argument('--sem-bluetooth',action='store_true',help='não inicia o serviço Bluetooth nesta execução')
+    ap.add_argument('--camera-fps',type=float,help='limite explícito de captura HTTP ESP32; sem fila ou mudança da resolução')
+    ap.add_argument('--opencv-threads',type=int,help='limita threads OpenCV neste processo, para controlar carga na Pi')
     args = ap.parse_args()
+    if args.camera_fps is not None and (not math.isfinite(args.camera_fps) or not .2<=args.camera_fps<=60):ap.error('--camera-fps deve estar entre0,2 e60')
+    if args.opencv_threads is not None:
+        if not 1<=args.opencv_threads<=16:ap.error('--opencv-threads deve estar entre1 e16')
+        import cv2
+        cv2.setNumThreads(args.opencv_threads)
     if args.operacao_rede and (not args.rede or args.fonte_imagem!='esp32' or args.politica!='opencv' or cfg.APRENDIZADO_ATIVO):
         ap.error('Operação de rede exige --rede, fonte esp32, OpenCV padrão e aprendizado online desligado')
     opcoes_rede = None
@@ -103,7 +119,7 @@ def main() -> None:
             log.error("Não consegui abrir o Arduino em %s (%s). Para testar sem ele: --sem-arduino",
                       cfg.SERIAL_PORTA, e)
             raise SystemExit(1)
-        fonte = abrir_fonte(args.fonte_imagem, motor)
+        fonte = abrir_fonte(args.fonte_imagem, motor, args.camera_fps)
         canal_operacao=None
         if args.operacao_rede:
             if not isinstance(fonte,CameraESP32):raise RuntimeError('Canal operacional exige câmera ESP32 disponível')
@@ -142,8 +158,9 @@ def main() -> None:
             (ThreadControle(estado, motor, parar, fonte, inferencia_rl=inferencia) if inferencia is not None
              else ThreadControle(estado, motor, parar, fonte)),
             ThreadVisao(estado, parar, fonte),
-            ThreadVoz(ao_comando_de_voz, parar),
         ]
+        if not args.sem_voz:
+            threads.append(criar_thread_voz(ao_comando_de_voz,parar))
         if inferencia is not None:
             threads.append(inferencia)
             log.warning("Politica %s: dominio=%s; inferencia congelada, sem treinamento.", args.politica, pacote.dominio)
@@ -151,7 +168,7 @@ def main() -> None:
             from aprendizado.robo_real import ThreadAprendizado
             threads.append(ThreadAprendizado(estado, motor, parar, fonte))
         opcionais = []
-        if cfg.REMOTO_BT_ATIVO:
+        if cfg.REMOTO_BT_ATIVO and not args.sem_bluetooth:
             from remoto.bluetooth_spp import ThreadBluetooth
             opcionais.append(ThreadBluetooth(estado, motor, parar))
         if args.benchmark:
@@ -202,12 +219,10 @@ def main() -> None:
         for t in threads + opcionais:
             t.start()
             iniciadas.append(t)
-        log.info("Robô pronto. Parado até ouvir 'siga'%s.",
-                 " ou receber comando do celular" if opcionais else "")
+        log.info('Robô pronto, parado. Voz=%s; Bluetooth=%s; captura máxima=%sFPS.',not args.sem_voz,bool(opcionais),args.camera_fps or 'sem limite explícito')
         while not parar.is_set():
             if not all(t.is_alive() for t in threads):
-                log.error("Uma thread morreu; encerrando.")
-                break
+                raise RuntimeError('Uma thread essencial morreu; encerrando com falha após parar os motores')
             time.sleep(0.2)
     finally:
         parar.set()

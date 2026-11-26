@@ -333,7 +333,7 @@ class TestInferencia(unittest.TestCase):
         import main
         motor, controle, visao, voz, runner, painel=Mock(),Mock(),Mock(),Mock(),Mock(),Mock()
         voz.start.side_effect=RuntimeError('encerramento de teste')
-        with patch.object(sys,'argv',['main.py','--politica','cnn-rl-sombra','--pacote-cnn-rl',str(self.manifesto)]), patch.object(cfg,'REMOTO_BT_ATIVO',False), patch.object(main,'ArduinoSerial',return_value=motor), patch.object(main,'abrir_fonte',return_value=self.fonte), patch.object(main,'ThreadControle',return_value=controle) as criar_controle, patch.object(main,'ThreadVisao',return_value=visao), patch.object(main,'ThreadVoz',return_value=voz), patch.object(main.signal,'signal'), patch('aprendizado.inferencia_esp32.ThreadInferencia',return_value=runner) as criar_runner, patch('tools.painel_coleta.Painel',return_value=painel):
+        with patch.object(sys,'argv',['main.py','--politica','cnn-rl-sombra','--pacote-cnn-rl',str(self.manifesto)]), patch.object(cfg,'REMOTO_BT_ATIVO',False), patch.object(main,'ArduinoSerial',return_value=motor), patch.object(main,'abrir_fonte',return_value=self.fonte), patch.object(main,'ThreadControle',return_value=controle) as criar_controle, patch.object(main,'ThreadVisao',return_value=visao), patch.object(main,'criar_thread_voz',return_value=voz), patch.object(main.signal,'signal'), patch('aprendizado.inferencia_esp32.ThreadInferencia',return_value=runner) as criar_runner, patch('tools.painel_coleta.Painel',return_value=painel):
             with self.assertRaisesRegex(RuntimeError,'encerramento de teste'): main.main()
             self.assertTrue(criar_runner.call_args.kwargs['sombra'])
             self.assertIs(criar_controle.call_args.kwargs['inferencia_rl'],runner)

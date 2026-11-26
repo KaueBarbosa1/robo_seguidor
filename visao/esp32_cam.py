@@ -11,6 +11,7 @@ from urllib.error import URLError
 import cv2
 import numpy as np
 from monitoramento import observar, contar
+from visao.jpeg import dimensoes_jpeg
 
 MAX_JPEG = 2 * 1024 * 1024
 URL_PADRAO = "http://192.168.4.1/capture"
@@ -49,6 +50,8 @@ def receber_quadro(opener, url, timeout):
         raise ValueError("JPEG truncado ou invalido")
     observar('camera_http_s', recepcao-inicio)
     contar('camera_jpeg_rx_bytes', len(dados))
+    if dimensoes_jpeg(dados,max_bytes=MAX_JPEG,max_lado=320,max_pixels=320*240)!=(320,240):
+        raise ValueError('Resolução diferente de 320x240 antes do decode')
     inicio_decode = time.perf_counter()
     imagem = cv2.imdecode(np.frombuffer(dados, dtype=np.uint8), cv2.IMREAD_COLOR)
     observar('camera_decode_s', time.perf_counter()-inicio_decode)
@@ -69,11 +72,13 @@ class CameraESP32:
     """
 
     def __init__(self, url=URL_PADRAO, timeout=1., idade_max_s=.3,
-                 reconexao_s=.5, opener=None):
+                 reconexao_s=.5, opener=None, fps_max=None):
         if any(not math.isfinite(v) or v <= 0 for v in
                (timeout, idade_max_s, reconexao_s)):
             raise ValueError("Prazos devem ser positivos e finitos")
         self.url, self.timeout = url, timeout
+        if fps_max is not None and (type(fps_max)not in (float,int) or not math.isfinite(fps_max) or not .2<=fps_max<=60):raise ValueError('FPS máximo inválido')
+        self.fps_max=fps_max
         self.idade_max_s, self.reconexao_s = idade_max_s, reconexao_s
         self._opener = opener or build_opener(ProxyHandler({}))
         self._cond = threading.Condition()
@@ -138,12 +143,14 @@ class CameraESP32:
         with self._cond:
             tempo = time.monotonic() - self._inicio if self._inicio is not None else 0.
             return dict(quadros=self._validos, erros=self._erros, vencidos=self._vencidos,
+                        fps_max_configurado=self.fps_max,
                         fps=self._validos / tempo if tempo > 0 else 0.,
                         http_ms=self._http_ms, resolucao=self._resolucao,
                         idade_ms=self._idade(self._quadro) * 1000 if self._quadro else None)
 
     def _loop(self):
         while not self._fim.is_set():
+            inicio_iteracao=time.monotonic()
             try:
                 q = receber_quadro(self._opener, self.url, self.timeout)
                 with self._cond:
@@ -170,6 +177,7 @@ class CameraESP32:
                     self._invalidar("erro")
                     self._cond.notify_all()
                 self._fim.wait(self.reconexao_s)
+            if self.fps_max is not None:self._fim.wait(max(0.,1/self.fps_max-(time.monotonic()-inicio_iteracao)))
 
     def id_atual(self):
         with self._cond:

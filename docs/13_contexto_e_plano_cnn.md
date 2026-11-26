@@ -1,5 +1,25 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de26/11/2026 — Revisão A–D (guia30):495 testes Python aprovados,
+56subtestes,13skips,19JS e harness C++ TUDO_OK. Corrigidos pré-requisitos do
+ensaio legado, relógio falso do teste sonar, dimensões JPEG/PNG antes do decoder,
+restauração/estados/cancelamento dos experimentos, domínio real/simulado,
+indicador atual de parada e encerramento com falha da main. Voz carregada sob
+demanda; flags opt-in de captura/threads/voz/BT. Firmware/pinos/ganhos/config,
+CNN própria/pesos/GLB preservados.15 páginas e movimento virtual conferidos.
+
+SSH confirmado carrasco@192.168.3.76, hostname redecarr0, Pi5/8GB/Debian13.
+Instalação isolada /home/carrasco/robo_implantacoes/revisao_bf509b22, perfil
+bluetooth+rede, sem libs de treino/voz/dashboard/SQLite/GLB. Main testada40s
+PARADA com Arduino nulo e imagem sintética, controle20Hz; clientePC9,95Hz.
+Inferência isolada da CNN original também executada, sempre diagnóstica.
+Essas medições não validam carga com câmera nem motores. Rede Carrinho-CAM
+inicialmente ausente/câmera desligada; Arduino desconectado. Serviço antigo
+robo.service parado pelo operador, mas continua habilitado e aponta ao código
+anterior. Sem migração de autostart/upload/movimento físico/treino online/push.
+Guia30 registra evidências, versões, comandos e pendências reais.
+
+
 Atualização de26/11/2026 — Etapa7 acrescenta plataforma experimental no PC,
 sem mudar firmware/pinagem/ganhos/pesos/GLB/Bluetooth. Inicializador unificado
 `.\iniciar_projeto.ps1` reutiliza a central existente e inicia simulação parada.

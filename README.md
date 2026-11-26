@@ -14,8 +14,10 @@ aguardam validação; CNN própria é diagnóstico, sem autorização de navega�
 - [Arquitetura, diagramas e rastreabilidade dos 40 requisitos](docs/28_rastreabilidade_e_arquitetura.md).
 - [Resultados realmente medidos nesta etapa](docs/29_resultados_etapa7.md).
 
-`python tools/testes.py todos` executa a suíte de software e reporta bloqueios
-de plataforma e a falha legada de promoção sintética ainda não resolvida.
+[Revisão A–D e instalação mínima efetivamente testada na Pi](docs/30_revisao_integrada_A_D.md):
+495 testes Python,56 subtestes,19 testes JS e harness do firmware aprovados;
+13 skips e PTY Windows explícitos. Falha legada de promoção sintética corrigida.
+`python tools/testes.py todos` executa a suíte e reporta bloqueios de plataforma.
 Não anuncia cobertura artificial nem certifica comportamento físico.
 
 Etapa6 no Windows: `.\iniciar_distribuido.ps1` abre o ambiente virtual parado;

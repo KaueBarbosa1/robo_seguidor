@@ -422,13 +422,16 @@ def test_simulador_professor_completa_e_cnn_aleatoria_nao_engana_o_supervisor():
 
 
 def test_ciclo_completo_sintetico():
-    cfg.APR_TEMPO_MAX_S = 30
+    # Usa a duração de produção: 8 episódios de 30s forneciam apenas304
+    # rótulos de treino após separar episódios, abaixo do mínimo600.
     rng = np.random.default_rng(5)
     amb = AmbienteSimulado(PistaSintetica(5), rng); det = DetectorLinha()
     c = CicloAprendizado(_tmp(), rng)
     for _ in range(8):
         r = executar_tentativa(amb, c, det, rng)
         c.registrar_resultado(r); c.treinar_se_preciso()
+    buf = BufferTreino(c.base)
+    assert int(buf.mascara[buf.indices(False)].sum()) >= cfg.APR_MIN_QUADROS_PRIMEIRO
     assert c.reg.campeao_id() is not None and c.e["nivel"] >= 1
     cid, rede = c.reg.carregar_campeao()
     # o campeão aprendeu a imitar o professor melhor que "sempre reto" nos episódios SEPARADOS para validação

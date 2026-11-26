@@ -138,6 +138,7 @@ class Autoridade:
                 if r.get('linha_visivel') is not None and type(r['linha_visivel'])is not bool:raise ValueError('linha_invalida')
                 # O payload não pode promover pesos offline/RL a modelo navegável.
                 navegavel=(self.algoritmo=='opencv' and r.get('navegavel')is True)
+                if self.algoritmo=='opencv' and not navegavel:raise ValueError('contrato_opencv_nao_navegavel')
                 if navegavel and r['linha_visivel'] and r.get('erro') is None:raise ValueError('erro_ausente')
                 if navegavel and (type(r['linha_visivel'])is not bool or r.get('confianca') is None):raise ValueError('validade_opencv_ausente')
                 if navegavel and (r.get('direcao') is None or r.get('escala_direcao') is None):raise ValueError('geometria_opencv_ausente')
@@ -271,7 +272,7 @@ class Autoridade:
             dados=dict(contrato=CONTRATO,processamento=self.processamento,operacao=self.operacao,
                 fonte_controle=self.fonte_controle,fase=self.fase,geracao=self.geracao,algoritmo=self.algoritmo,
                 versao_modelo=self.versao_modelo,simulado=self.simulado,emergencia=self.emergencia,
-                autorizacao_ativa=self.lease is not None and a<=self.lease['ate'],parada=self.stop_status,
+                autorizacao_ativa=self.lease is not None and a<=self.lease['ate'],parada=self.stop_status if self.estado.modo is Modo.PARADO else 'nao_solicitada',
                 motivo=self.ultimo_motivo,ultimo_resultado=r['dados'] if r else None,
                 frame_id=r['frame_id'] if r else None,idade_resultado_s=a-r['frame_t']+r['idade_inicial'] if r else None,
                 remoto_pronto=self.ultimo_heartbeat is not None and a-self.ultimo_heartbeat<=self.op.autorizacao_s,
