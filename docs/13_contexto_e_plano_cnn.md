@@ -1,5 +1,22 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de26/11/2026 — Regravação ESP32-CAM solicitada pelo usuário.
+Base conectada na Pi reconhecida como CH340, /dev/ttyUSB0, by-id
+usb-1a86_USB_Serial-if00-port0. Nenhum byte na captura serial115200 após
+RESET informado pelo operador. Copiado SEM ALTERAÇÕES o sketch
+arduino/esp32_cam_bancada e camera_pins.h; hashes PC/Pi conferidos.
+Compilação na Pi com Arduino CLI1.6.0/coreEspressif3.3.12/fqbn
+esp32:esp32:esp32cam aprovada:1.014.901bytes flash,57.624bytes RAM.
+Upload automático falhou por No serial data received. Operador informou
+sequência BOOT/IO0+RESET; nova tentativa115200 com --before no-reset também
+falhou na conexão, ANTES de qualquer escrita. Não declarar firmware regravado.
+Rede Carrinho-CAM ausente. Serviço robo.service permaneceu parado, Uno
+não conectado, sem main/motores/treino. Build e logs na Pi em
+/home/carrasco/robo_implantacoes/gravacao_camera_20261126; cópias dos logs no PC
+em dados_experimentos/camera_regravacao_20261126. Próximo passo: inspeção
+física da base/encaixe/alimentação/linhas de reset e UART, sem concluir defeito.
+
+
 Atualização de26/11/2026 — Revisão A–D (guia30):495 testes Python aprovados,
 56subtestes,13skips,19JS e harness C++ TUDO_OK. Corrigidos pré-requisitos do
 ensaio legado, relógio falso do teste sonar, dimensões JPEG/PNG antes do decoder,

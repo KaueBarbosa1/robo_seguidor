@@ -571,3 +571,26 @@ botoes, disco cheio, desconexao/recuperacao, expiracao, sessoes distintas,
 fonte unica compartilhada e encerramento da main apos parada do motor. Mais
 78 regressoes selecionadas (fonte5, decisao25, visual15, controle11 e seguranca22)
 passaram. Sem navegador automatizado, camera/serial reais, boot ou percurso.
+
+
+## Tentativa real de regravação —26/11/2026
+
+O operador autorizou regravar exatamente este sketch. Copiado para a Pi
+`redecarr0` sem alterações, com hashes dos fontes conferidos. Compilação
+`esp32:esp32:esp32cam`, CLI1.6.0, core3.3.12: aprovada,1.014.901bytes de
+programa e57.624bytes globais. Ferramenta CLI baixada da distribuição oficial
+Arduino para Linux ARM64, isolada na pasta desta bancada; core já existente.
+
+A base CH340 apareceu em `/dev/ttyUSB0` com permissão dialout. Captura115200
+após RESET não recebeu bytes. Upload automático e tentativa manual depois de
+BOOT/IO0+RESET informado pelo operador falharam em `Connecting`, com
+`No serial data received`. A tentativa manual usou115200 e `--before no-reset`
+para preservar o modo de gravação solicitado. Nenhum segmento chegou a ser
+escrito: firmware novo NÃO instalado. Não houve erase-flash, alteração do
+sketch/pinagem/CNN/Uno nem acionamento de motores. Wi-Fi Carrinho-CAM ausente.
+
+Build/logs na Pi: `/home/carrasco/robo_implantacoes/gravacao_camera_20261126`.
+Logs locais: `dados_experimentos/camera_regravacao_20261126/`. Necessária
+inspeção física de encaixe/alimentação/UART/reset antes de tentar novamente;
+o reconhecimento do conversor USB não confirma a inicialização do ESP32.
+Referência de diagnóstico: [Espressif — ausência de dados seriais](https://docs.espressif.com/projects/esptool/en/latest/esp32/troubleshooting.html#no-serial-data-received).
