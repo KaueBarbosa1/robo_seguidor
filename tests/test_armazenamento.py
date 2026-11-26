@@ -76,7 +76,7 @@ class TestHistorico(unittest.TestCase):
         self.bus.publicar('telemetria',mensagem(self.sid,seq,**dados))
 
     def test_criacao_wal_integridade_chaves(self):
-        self.assertEqual(self.h.estado()['versao'],4)
+        self.assertEqual(self.h.estado()['versao'],5)
         self.assertEqual(self.h.estado()['journal'],'wal')
         self.assertEqual(self.h.integridade()['sqlite'],['ok'])
         self.assertEqual(self.h.consultar('odometria'),[])
@@ -234,7 +234,7 @@ class TestHistorico(unittest.TestCase):
         c.execute('INSERT INTO experimentos(id,nome,data_utc) VALUES(?,?,?)',(str(uuid.uuid4()),'antigo',utc())); c.commit()
         migrar(c)
         self.assertEqual(c.execute('SELECT nome FROM experimentos').fetchone()[0],'antigo')
-        self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],4)
+        self.assertEqual(c.execute('PRAGMA user_version').fetchone()[0],5)
         c.execute('PRAGMA user_version=99')
         with self.assertRaises(ValueError): migrar(c)
         c.close()

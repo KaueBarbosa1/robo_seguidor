@@ -10,8 +10,8 @@ from armazenamento.normalizacao import utc
 
 CATEGORIAS = {'sessoes','gravacoes','telemetria','motores','sensores','visao_computacional',
               'inteligencia_artificial','desempenho','comunicacao','eventos','imagens',
-              'experimentos','odometria','intervalos','consolidado','dataset'}
-FILHAS = {'motores','sensores','visao_computacional','inteligencia_artificial'}
+              'experimentos','odometria','intervalos','consolidado','dataset','percepcao_remota','operacao_rede_eventos'}
+FILHAS = {'motores','sensores','visao_computacional','inteligencia_artificial','percepcao_remota'}
 CONSOLIDADO = '''SELECT t.id,t.sessao_id,t.sequencia,t.recebido_utc,t.origem_utc,t.simulado,
  t.estado_operacional,m.pwm_informado_esq,m.pwm_informado_dir,m.pps_esq,m.pps_dir,
  m.ticks_esq,m.ticks_dir,s.distancia_cm,s.distancia_estado,s.servo_comandado_graus,
@@ -80,6 +80,7 @@ class Historico:
                 instante = 'x.inicio_utc'
             elif categoria == 'odometria':
                 gid = None
+            elif categoria == 'operacao_rede_eventos':gid=None
         if filtros.get('sessao') is not None:
             if sid is None:
                 if categoria == 'gravacoes':
@@ -186,7 +187,8 @@ class Historico:
         colunas = dict(motores={'pps_esq','pps_dir','pwm_informado_esq','pwm_informado_dir'},
             sensores={'distancia_cm','servo_comandado_graus'},visao_computacional={'erro_normalizado'},
             desempenho={'cpu_pct','ram_pct','temperatura_c','rss_bytes','controle_hz','jitter_s'},
-            comunicacao={'rtt_s','jitter_s','fps'},inteligencia_artificial={'inferencia_s','previsao'})
+            comunicacao={'rtt_s','jitter_s','fps'},inteligencia_artificial={'inferencia_s','previsao'},
+            percepcao_remota={'latencia_total_s','inferencia_s','processamento_s','idade_resultado_s','erro','posicao'})
         if coluna not in colunas.get(categoria,set()):
             raise ValueError('Metrica estatistica nao permitida')
         sql,p,_ = self._query(categoria,filtros)
@@ -196,8 +198,10 @@ class Historico:
             # Qualidade original é preservada; excluir explicitamente campos vencidos.
             chave = {'servo_comandado_graus':'angulo_servo_graus','pwm_informado_esq':'pwm_esq',
                      'pwm_informado_dir':'pwm_dir','erro_normalizado':'erro'}.get(coluna,coluna)
-            if categoria in FILHAS or categoria == 'sensores':
+            if categoria in FILHAS-{'percepcao_remota'} or categoria == 'sensores':
                 where += f" AND COALESCE(json_extract(q.qualidade_json,'$.{chave}.estado'),'atual')='atual'"
+            if categoria=='percepcao_remota':
+                where += " AND q.idade_resultado_s<=json_extract(q.detalhes_json,'$.limites.resultado_s')"
             valores = c.execute(f'SELECT COUNT({coluna}),AVG({coluna}),MIN({coluna}),MAX({coluna})'+where,p).fetchone()
             n = valores[0]
             def percentil(fracao):

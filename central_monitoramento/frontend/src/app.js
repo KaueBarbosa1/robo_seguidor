@@ -1,4 +1,5 @@
 import { PAGINAS, criarPagina } from "./paginas.js";
+import { OperacaoUI } from "./operacao.js";
 import {
   BufferTemporal,
   esc,
@@ -63,6 +64,7 @@ const executar = (fn) => async (e) => {
     mensagem(err.message ?? String(err), true);
   }
 };
+const operacaoUI = new OperacaoUI((p, d) => api.post(p, d), mensagem);
 function formDados(form) {
   return Object.fromEntries(new FormData(form));
 }
@@ -105,7 +107,11 @@ function atualizarCabecalho(s) {
   $("estado-rede").textContent =
     `${s.dados.disponivel ? "●" : "○"} ${s.status}`;
   $("modo-processamento").textContent =
-    "Processamento: " + (t.ia?.modo_declarado ?? t.ia?.local ?? "indisponível");
+    "Processamento: " +
+    (t.distribuido?.processamento ??
+      t.ia?.modo_declarado ??
+      t.ia?.local ??
+      "indisponível");
   $("latencia-global").textContent = "RTT: " + num(r.rtt, "ms");
   $("sessao-global").textContent =
     "Sessão: " + (s.dados.envelope?.sessao?.slice(0, 8) ?? "—");
@@ -133,6 +139,10 @@ function atualizarCabecalho(s) {
   $("estado-central").textContent =
     `${tag} · ${buffer.itens.length}/7200 amostras no buffer · armazenamento ${g.estado ?? "indisponível"}`;
   const p = c.preferencias ?? {};
+  const etapa = document.querySelector(".nav-foot");
+  if (etapa && c.etapa6)
+    etapa.innerHTML =
+      "Plataforma local · Etapa 06<br><small>Atuação física bloqueada por padrão</small>";
   document.documentElement.classList.toggle("light", p.tema === "claro");
   if (modulo) {
     modulo.dados.periodo = 1000 / (p.visual_hz ?? 10);
@@ -242,11 +252,13 @@ function valores(s) {
     acao_ia: ia.diagnostico?.acao,
     recompensa: campo(ia.recompensa),
     natureza_host:
-      p.sistema_natureza === "simulado"
-        ? "SIMULADO no computador"
-        : s.modo === "historico"
-          ? "Registro histórico, ver metadados"
-          : "Host da telemetria",
+      p.sistema_natureza === "observado_no_PC_da_simulacao"
+        ? "PC da simulação; Raspberry virtual"
+        : p.sistema_natureza === "simulado"
+          ? "SIMULADO no computador"
+          : s.modo === "historico"
+            ? "Registro histórico, ver metadados"
+            : "Host da telemetria",
     cpu_nucleos:
       ok && sys.cpu_nucleos_pct
         ? sys.cpu_nucleos_pct.map((v) => num(v, "%")).join(" · ")
@@ -295,6 +307,11 @@ function valores(s) {
 }
 function pintar() {
   if (!estado || !modulo) return;
+  operacaoUI.atualizar(estado);
+  const painelAntigo = document
+    .querySelector("[data-direcao]")
+    ?.closest(".panel");
+  if (painelAntigo && estado.central?.etapa6) painelAntigo.hidden = true;
   for (const [k, valor] of Object.entries(estado.simulacao ?? {})) {
     const i = $("sim-" + k);
     if (!i || document.activeElement === i) continue;
@@ -425,6 +442,8 @@ async function navegar(id) {
   if (sim) casaSim.append(sim);
   $("twin-storage").append($("twin-app"));
   const p = criarPagina(id);
+  if (["geral", "ia", "desempenho", "comunicacao", "gemeo"].includes(id))
+    p.html = '<section id="operacao-resumo"></section>' + p.html;
   $("conteudo").innerHTML = p.html;
   window.scrollTo(0, 0);
   if ($("ativar-cinza"))
@@ -445,6 +464,12 @@ async function navegar(id) {
     );
   $("twin-app").classList.toggle("overview-twin", id === "geral");
   if ($("slot-twin")) $("slot-twin").append($("twin-app"));
+  if (id === "gemeo" && estado?.central?.etapa6) {
+    const destaque = document.createElement("button");
+    destaque.textContent = "Inspecionar Raspberry no modelo";
+    destaque.onclick = () => modulo.selecionar("raspberry_pi");
+    $("conteudo").prepend(destaque);
+  }
   if ($("slot-camera")) $("slot-camera").append(quadro, infoQuadro);
   if ($("slot-sim")) $("slot-sim").append(sim);
   graficos = p.charts.map((g) => new Grafico($(g.id), g.series, g.unidade));
@@ -469,6 +494,7 @@ async function navegar(id) {
       fo.elements.imagens_mb.value = op.max_imagens_bytes / 1024 ** 2;
   }
   ligarFormularios();
+  operacaoUI.montar(id);
   pintar();
 }
 async function opcoesSessoes(select) {
@@ -550,7 +576,7 @@ async function mostrarResumo(sid) {
         k + (k === "latencia" ? " (s)" : k === "temperatura" ? " (°C)" : ""),
         v,
       ]),
-    )}<p class="note">Percurso: ${num(q.sessao.odometria?.distancia_m, "m")} · eventos: ${esc(JSON.stringify(q.resumo.eventos))}</p><form id="form-metadados" class="form-grid"><label>Nome da sessão<input name="nome" maxlength="256" value="${esc(q.sessao.nome)}"></label><label>Observações<textarea name="observacoes">${esc(q.sessao.observacoes)}</textarea></label><button>Salvar observações</button></form><div class="divider"></div><form id="form-exportar" class="form-grid"><label>Categorias CSV<select name="categorias" multiple size="5">${["consolidado", "telemetria", "motores", "sensores", "visao_computacional", "inteligencia_artificial", "desempenho", "comunicacao", "odometria", "eventos", "experimentos", "imagens"].map((k) => `<option ${k === "consolidado" ? "selected" : ""}>${k}</option>`).join("")}</select></label><label>Início (opcional)<input name="inicio" type="datetime-local"></label><label>Fim (opcional)<input name="fim" type="datetime-local"></label><button>Exportar CSV e resumo</button></form><details><summary>Configurações e limitações</summary><pre>${esc(JSON.stringify({ configuracoes: q.sessao.configuracoes, limitacoes: q.limitacoes }, null, 2))}</pre></details></div>`;
+    )}<p class="note">Percurso: ${num(q.sessao.odometria?.distancia_m, "m")} · eventos: ${esc(JSON.stringify(q.resumo.eventos))}</p><form id="form-metadados" class="form-grid"><label>Nome da sessão<input name="nome" maxlength="256" value="${esc(q.sessao.nome)}"></label><label>Observações<textarea name="observacoes">${esc(q.sessao.observacoes)}</textarea></label><button>Salvar observações</button></form><div class="divider"></div><form id="form-exportar" class="form-grid"><label>Categorias CSV<select name="categorias" multiple size="5">${["consolidado", "telemetria", "motores", "sensores", "visao_computacional", "inteligencia_artificial", "desempenho", "comunicacao", "odometria", "eventos", "experimentos", "imagens", "percepcao_remota", "operacao_rede_eventos"].map((k) => `<option ${k === "consolidado" ? "selected" : ""}>${k}</option>`).join("")}</select></label><label>Início (opcional)<input name="inicio" type="datetime-local"></label><label>Fim (opcional)<input name="fim" type="datetime-local"></label><button>Exportar CSV e resumo</button></form><details><summary>Configurações e limitações</summary><pre>${esc(JSON.stringify({ configuracoes: q.sessao.configuracoes, limitacoes: q.limitacoes }, null, 2))}</pre></details></div>`;
   ligarFormularios();
   $("detalhe-sessao").scrollIntoView({ block: "start" });
 }
@@ -633,6 +659,28 @@ async function comparar() {
             `${esc(r.sessao.nome || r.sessao.id.slice(0, 8))}<small>${r.sessao.simulado ? "SIMULADA" : "REAL"} · ${esc(r.sessao.modo_processamento)}</small>`,
         ],
         ["Amostras", (r) => r.resumo.amostras],
+        [
+          "Processamentos registrados",
+          (r) =>
+            esc(
+              (r.sessao.processamentos_registrados ?? []).join(" / ") ||
+                "Sem dados da etapa 6",
+            ),
+        ],
+        [
+          "Ciclo distribuído · média / p95 (s)",
+          (r) =>
+            num(r.estatisticas.ciclo_distribuido?.media) +
+            " / " +
+            num(r.estatisticas.ciclo_distribuido?.p95),
+        ],
+        [
+          "Inferência · média / p95 (s)",
+          (r) =>
+            num(r.estatisticas.inferencia_percepcao?.media) +
+            " / " +
+            num(r.estatisticas.inferencia_percepcao?.p95),
+        ],
         [
           "PPS E · média / DP",
           (r) =>

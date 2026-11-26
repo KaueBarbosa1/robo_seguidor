@@ -11,16 +11,16 @@ class Cenario:
         self.lock=threading.Lock()
         self.dados=dict(esq=0.,dir=0.,servo=90.,distancia=100.,linha=True,camera=True,
                         falha=False,cpu=32.,temperatura=48.,latencia=0.,obstaculo_x=0.,obstaculo_z=-.7,
-                        motores=True,geometria=False,arduino=True,emergencia=False,descartar_cada=0,processamento='simulacao')
+                        motores=True,geometria=False,arduino=True,emergencia=False,descartar_cada=0,processamento='simulacao',falha_sensor=False,idade_frame_s=0.)
         self.pose=(0.,0.,0.)
     def atualizar(self,dados):
         import math
         limites=dict(esq=(-60,60),dir=(-60,60),servo=(45,135),distancia=(2,400),cpu=(0,100),
-                     temperatura=(0,100),latencia=(0,1),obstaculo_x=(-3,3),obstaculo_z=(-3,3))
+                     temperatura=(0,100),latencia=(0,1),obstaculo_x=(-3,3),obstaculo_z=(-3,3),idade_frame_s=(0,2))
         with self.lock:
             novo=dict(self.dados)
             for k,v in dados.items():
-                if k in ('linha','camera','falha','motores','geometria','arduino','emergencia') and type(v)is bool:novo[k]=v
+                if k in ('linha','camera','falha','motores','geometria','arduino','emergencia','falha_sensor') and type(v)is bool:novo[k]=v
                 elif k=='descartar_cada' and type(v)is int and 0<=v<=1000:novo[k]=v
                 elif k=='processamento' and v in ('embarcado','distribuido','simulacao'):novo[k]=v
                 elif k in limites and type(v) in (float,int) and math.isfinite(v) and limites[k][0]<=v<=limites[k][1]:novo[k]=v

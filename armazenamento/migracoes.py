@@ -1,5 +1,5 @@
 """Migrações cumulativas, sem apagar/recriar dados existentes."""
-VERSAO = 4
+VERSAO = 5
 BASE = '''
 CREATE TABLE schema_migracoes(versao INTEGER PRIMARY KEY, aplicada_utc TEXT NOT NULL);
 CREATE TABLE experimentos(
@@ -122,12 +122,28 @@ CREATE INDEX idx_comunicacao_telemetria ON comunicacao(telemetria_id,lado,id);
 CREATE INDEX idx_desempenho_ultimo ON desempenho(sessao_id,dispositivo,id DESC,amostra_mono_s,telemetria_id);
 '''
 
+DISTRIBUIDO = '''
+CREATE TABLE percepcao_remota(
+ telemetria_id INTEGER PRIMARY KEY REFERENCES telemetria(id),
+ processamento TEXT, operacao TEXT, fonte_controle TEXT, algoritmo TEXT,
+ versao_modelo TEXT, frame_id INTEGER, geracao INTEGER, fase TEXT,
+ emergencia INTEGER, parada TEXT, idade_resultado_s REAL, latencia_total_s REAL,
+ preprocessamento_s REAL, inferencia_s REAL, processamento_s REAL, erro REAL,
+ posicao REAL, confianca REAL, resultados_aceitos INTEGER, resultados_rejeitados INTEGER,
+ detalhes_json TEXT NOT NULL);
+CREATE TABLE operacao_rede_eventos(
+ id TEXT PRIMARY KEY, sessao_id TEXT NOT NULL REFERENCES sessoes(id),
+ timestamp_utc TEXT NOT NULL, tipo TEXT NOT NULL, simulado INTEGER NOT NULL,
+ motivo TEXT, detalhes_json TEXT NOT NULL);
+CREATE INDEX idx_operacao_rede_tempo ON operacao_rede_eventos(sessao_id,timestamp_utc,id);
+'''
+
 def migrar(conexao, ate=VERSAO):
     from datetime import datetime, timezone
     atual = conexao.execute('PRAGMA user_version').fetchone()[0]
     if atual > VERSAO or ate > VERSAO:
         raise ValueError('Banco mais novo que este software')
-    for versao, sql in ((1, BASE), (2, INDICES), (3,CENTRAL), (4,CONSULTAS_CENTRAL)):
+    for versao, sql in ((1, BASE), (2, INDICES), (3,CENTRAL), (4,CONSULTAS_CENTRAL), (5,DISTRIBUIDO)):
         if atual < versao <= ate:
             instante = datetime.now(timezone.utc).isoformat()
             try:

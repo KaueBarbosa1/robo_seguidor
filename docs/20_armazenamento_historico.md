@@ -96,7 +96,8 @@ erDiagram
 ```
 
 Há 19 tabelas na base da etapa3, incluindo `schema_migracoes` e associações;
-a central acrescenta `experimento_sessoes`, totalizando20. Cada projeção
+a etapa5 acrescenta `experimento_sessoes`, totalizando20; a etapa6 acrescenta
+mais duas tabelas, totalizando22. Cada projeção
 motores/sensores/visão/IA usa a chave da telemetria como PK/FK, permitindo no
 máximo uma linha por amostra. Uma categoria ausente não recebe uma linha
 artificial cheia de zeros. O envelope completo de origem é preservado uma vez
@@ -113,12 +114,15 @@ todas as colunas, tipos SQLite, unidades, nulabilidade e referências.
 
 ## 3. Integridade, migrações e concorrência
 
-Esquema atual v4, em `PRAGMA user_version` e `schema_migracoes`:
+Esquema atual v5, em `PRAGMA user_version` e `schema_migracoes`:
 
 1. Tabelas, chaves estrangeiras, CHECKs e unicidade.
 2. Índices de tempo/sessão/frame/experimento e marca de recuperação da gravação.
 3. Etapa 5: nome/observações da sessão, associação experimento–sessão e índice de odometria.
 4. Etapa 5: índices de comunicação por telemetria/lado e última amostra de desempenho por sessão/dispositivo.
+5. Etapa6: `percepcao_remota` e `operacao_rede_eventos`, com índice temporal e
+   projeção/JSON sem credenciais. Categorias exportáveis no mesmo CSV/gravador;
+   campos e resultados no [guia24](24_processamento_distribuido.md).
 
 As adições da central estão descritas no [guia23](23_central_monitoramento.md).
 Os resultados históricos da etapa3 abaixo continuam referentes àquela entrega.

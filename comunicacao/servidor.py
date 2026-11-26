@@ -33,7 +33,7 @@ def oferecer(fila, item):
 
 
 class Servidor:
-    def __init__(self, opcoes, amostras, fonte=None, simulado=False, falhas=None):
+    def __init__(self, opcoes, amostras, fonte=None, simulado=False, falhas=None, operacao=None):
         self.op, self.amostras, self.fonte = opcoes, amostras, fonte
         self.simulado, self.falhas = simulado, falhas or {}
         if self.falhas and not simulado:
@@ -45,6 +45,8 @@ class Servidor:
         self.erro = None
         self.thread = self.loop = self.fim = None
         self.porta = None
+        self.operacao=operacao
+        if operacao:operacao.autoridade.ligar(self.sessao)
 
     def iniciar(self):
         if self.thread:
@@ -67,7 +69,7 @@ class Servidor:
             self.pronto.set()
 
     def autorizar(self, conexao, pedido):
-        if pedido.path not in {'/ws/telemetria', '/ws/imagens'}:
+        if pedido.path not in ({'/ws/telemetria', '/ws/imagens','/ws/operacao'} if self.operacao else {'/ws/telemetria','/ws/imagens'}):
             return conexao.respond(HTTPStatus.NOT_FOUND, 'Endpoint inexistente\n')
         try:
             cabecalhos = pedido.headers.get_all('Authorization')
@@ -77,6 +79,9 @@ class Servidor:
             autorizado = False
         if not autorizado:
             return conexao.respond(HTTPStatus.UNAUTHORIZED, 'Autenticacao necessaria\n')
+        if pedido.path=='/ws/operacao':
+            rejeicao=self.operacao.autorizar(conexao,pedido)
+            if rejeicao:return rejeicao
         if len(self.consumidores) >= self.op.max_clientes:
             return conexao.respond(HTTPStatus.SERVICE_UNAVAILABLE, 'Limite de consumidores\n')
 
@@ -152,6 +157,9 @@ class Servidor:
         if len(self.consumidores) >= self.op.max_clientes:
             await ws.close(1013, 'Limite de consumidores')
             return
+        if ws.request.path=='/ws/operacao':
+            await self.operacao.conectar(self,ws)
+            return
         canal = ws.request.path.rsplit('/', 1)[-1]
         consumidor = Consumidor(canal, asyncio.Queue(self.op.fila))
         self.consumidores.add(consumidor)
@@ -221,7 +229,8 @@ class Servidor:
                 if idade > limite:
                     self.metricas.contar('descartes_antigos_imagens')
                     continue
-                msg = self.mensagem(seq, 'imagem', dict(frame_id=ident, jpeg_bytes=len(q.jpeg)), idade)
+                meta=self.operacao.autoridade.registrar_frame(ident,q) if self.operacao else {}
+                msg = self.mensagem(seq, 'imagem', dict(frame_id=ident, jpeg_bytes=len(q.jpeg),**meta), idade)
                 try:
                     pacote = empacotar_imagem(msg, q.jpeg, self.op.max_json, self.op.max_jpeg)
                 except ValueError:

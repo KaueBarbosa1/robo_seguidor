@@ -546,4 +546,4 @@ try {
 } catch (e) {
   erro(e);
 }
-export { dados, cena, modelo, sensores, config };
+export { dados, cena, modelo, sensores, config, selecionar };

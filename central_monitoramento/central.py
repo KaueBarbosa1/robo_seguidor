@@ -28,7 +28,13 @@ class SistemaEmCache:
     def coletar(self):return self.central.pc
 
 class Central(Ponte):
-    def __init__(self,*a,arquivo_preferencias=None,**kw):
+    def __init__(self,*a,arquivo_preferencias=None,etapa6=False,op_distribuida=None,tokens_operacao=None,
+                 telemetria_hz=10.,imagens_fps=5.,camera_fps=30.,**kw):
+        from distribuido.configuracao import OpcoesDistribuidas
+        self.etapa6=etapa6;self.op_distribuida=op_distribuida or OpcoesDistribuidas()
+        self.tokens_operacao=tokens_operacao or {};self.telemetria_hz=telemetria_hz;self.imagens_fps=imagens_fps;self.camera_fps=camera_fps
+        for nome,v,maximo in [('telemetria_hz',telemetria_hz,200),('imagens_fps',imagens_fps,60),('camera_fps',camera_fps,60)]:
+            if type(v) not in (int,float) or not math.isfinite(v) or not .2<=v<=maximo:raise ValueError('Frequência inválida: '+nome)
         super().__init__(*a,**kw)
         self.consultas=Consultas(self.historico);self.inicio=time.monotonic();self.alarmes={};self.ocorrencias=deque(maxlen=300)
         self.consultas_metricas={}
@@ -81,6 +87,10 @@ class Central(Ponte):
             ('sensor',u.get('falha_sensor'),'erro','Ultrassônico','Falha de sensor informada',False)]:
             if d['disponivel'] and atual(campo):self.alerta(chave,not valor(campo) if inverter else valor(campo),gravidade,componente,mensagem)
         if d['disponivel'] and type(v.get('camera_ok'))is bool:self.alerta('camera',not v['camera_ok'],'erro','ESP32-CAM','Câmera informada como indisponível')
+        distribuido=t.get('distribuido')
+        if isinstance(distribuido,dict):
+            self.alerta('emergencia_rede',distribuido.get('emergencia',False),'critico','Controle','Emergência por software retida; exige liberação explícita')
+            self.alerta('confirmacao_parada',distribuido.get('parada')=='falha_na_confirmacao','erro','Controle','Parada solicitada sem confirmação pelos dados disponíveis')
         if s['modo']=='simulado':
             c=s['simulacao'];self.alerta('arduino',not c.get('arduino',True),'erro','Arduino','Falha do Arduino simulada')
             self.alerta('emergencia',c.get('emergencia',False),'critico','Simulador','Parada de emergência exclusivamente simulada')
@@ -107,7 +117,44 @@ class Central(Ponte):
                 alertas=list(self.alarmes.values()),ocorrencias=list(self.ocorrencias)[-40:],
                 uptime_pc_s=time.monotonic()-self.inicio,cenario=self.cenario_nome,pausado=self.pausado,
                 remoto_real=False,distribuido_real=False)
+            s['central']['etapa6']=self.etapa6
+            s['central']['operacao_rede']=self.fluxo.operacao.snapshot() if self.fluxo and self.fluxo.operacao else None
         return s
+
+    def operacao_comando(self,d):
+        if not self.etapa6 or self.modo=='historico' or not self.fluxo or not self.fluxo.operacao:raise ValueError('Canal operacional indisponível nesta origem')
+        if d.get('instancia')!=self.instancia or d.get('epoch')!=self.epoch:raise ValueError('Fonte da interface mudou; pedido descartado')
+        op=self.fluxo.operacao
+        import uuid
+        try:uuid.UUID(d.get('operador',''))
+        except (ValueError,TypeError,AttributeError):raise ValueError('Identificação da aba de operação inválida')
+        if self.modo=='real' and not self.op_distribuida.remoto_real:
+            raise ValueError('Controle/configuração real bloqueados no PC até validação física explícita')
+        if d.get('acao')=='imagem_teste':
+            if self.modo!='simulado' or not self.fluxo.integrado:raise ValueError('Imagem local exclusiva do simulador')
+            rt=self.fluxo.integrado
+            if rt.estado.modo.name!='PARADO':raise ValueError('Pare antes de trocar a imagem')
+            caminho=d.get('caminho','');imagem=None
+            if caminho:
+                import cv2
+                p=Path(caminho)
+                if not p.is_file() or p.stat().st_size>8*1024**2 or p.suffix.lower() not in ('.png','.jpg','.jpeg'):raise ValueError('Arquivo de imagem inválido')
+                imagem=cv2.imread(str(p))
+                if imagem is None or max(imagem.shape[:2])>4096:raise ValueError('Resolução de imagem inválida')
+            with rt.estado.lock:rt.autoridade.invalidar();rt.camera.imagem_teste=imagem
+            return dict(imagem_teste=bool(caminho),dimensoes=list(imagem.shape[:2]) if imagem is not None else [240,320])
+        if d.get('acao')=='configurar_pipeline':
+            manifesto=d.get('manifesto')
+            if d.get('algoritmo')=='cnn-fotos' and not manifesto:manifesto=Path(__file__).resolve().parents[1]/'dataset_pista/resultados/treino_posicao_02/experimento.json'
+            op.configurar(d.get('algoritmo'),manifesto);return op.snapshot()
+        if d.get('acao')=='falhas_servico':
+            if self.modo!='simulado':raise ValueError('Injeção de falhas exclusiva da simulação')
+            atraso=d.get('atraso_s',0.)
+            if type(atraso)not in (int,float) or not math.isfinite(atraso) or not 0<=atraso<=2:raise ValueError('Atraso inválido')
+            op.atraso_s=atraso;op.pausa_inferencia=d.get('pausar') is True;op.falha_inferencia=d.get('falhar') is True
+            return op.snapshot()
+        dados={k:v for k,v in d.items() if k in ('acao','modo','algoritmo','direcao','velocidade_pps')}
+        return op.comandar(dados,operador=d.get('operador'))
 
     def modo_alterar(self,modo):
         if self.escritor_externo and self.escritor_externo.gravacao:self.escritor_externo.encerrar('troca de fonte; sem retomada automática')

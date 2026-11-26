@@ -96,6 +96,10 @@ def _motivo_lateral(motor, manual, agora=None, estado=None):
 def aplicar_comando(estado: EstadoRobo, motor, comando: str) -> None:
     """Chamado pela thread de voz. Prioridade absoluta sobre a visão."""
     with estado.lock:
+        autoridade = getattr(estado, '_autoridade_rede', None)
+        if autoridade is not None and not autoridade.local_assumir('voz', comando == 'pare'):
+            motor.parar()
+            return
         if estado.encerrando and comando != "pare":
             return
         if comando in {"pare", "siga", "esquerda", "direita", "voltar"}:
@@ -156,6 +160,10 @@ def aplicar_movimento_manual(estado: EstadoRobo, motor, esq: int, dir_: int, val
     esq = max(-cfg.VEL_MAX, min(cfg.VEL_MAX, int(esq)))
     dir_ = max(-cfg.VEL_MAX, min(cfg.VEL_MAX, int(dir_)))
     with estado.lock:
+        autoridade = getattr(estado, '_autoridade_rede', None)
+        if autoridade is not None and not autoridade.local_assumir('bluetooth', not (esq or dir_)):
+            motor.parar()
+            return
         if estado.encerrando:
             return
         getattr(motor, 'usar_sonar_manual', lambda ativo: None)(bool(esq or dir_) and cfg.ULTRASSOM_BLUETOOTH_ATIVO)
@@ -543,6 +551,9 @@ class ThreadControle(threading.Thread):
             ciclo('controle', periodo)
 
             with self._estado.lock:                          # decisão + envio atômicos
+                autoridade = getattr(self._estado, '_autoridade_rede', None)
+                if autoridade is not None:
+                    autoridade.supervisionar()
                 modo = self._estado.atualizar_manobra()
                 if modo is not Modo.MANUAL:
                     if modo_ant is Modo.MANUAL and getattr(cfg, 'REMOTO_DIAGNOSTICO_MOVIMENTO', True):
@@ -598,6 +609,15 @@ class ThreadControle(threading.Thread):
                 elif modo is Modo.PARADO:
                     self._diagnosticar_parada("modo_PARADO")
                     self._motor.parar()                      # também serve de "keep-alive" do watchdog
+
+                elif modo is Modo.REMOTO_PC:
+                    # Somente aqui se converte uma intenção de rede em referência
+                    # de velocidade. O navegador não fornece PWM nem porta serial.
+                    esq, dir_ = autoridade.pedido_pps() if autoridade else (0, 0)
+                    if esq or dir_:
+                        self._motor.velocidade(round(esq), round(dir_))
+                    else:
+                        self._motor.parar()
 
                 elif modo is Modo.GIRO_ESQ:
                     if self._obstaculo(): self._motor.parar()

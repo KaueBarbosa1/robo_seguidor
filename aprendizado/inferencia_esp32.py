@@ -257,6 +257,9 @@ class ThreadInferencia(threading.Thread):
         ultimo = 0
         try:
             while not self.parar.is_set():
+                autoridade=getattr(self.estado,'_autoridade_rede',None)
+                if autoridade is not None and autoridade.processamento=='distribuido':
+                    self.resetar();self.parar.wait(.02);continue
                 with self.estado.lock:
                     sessao = self.estado.sessao_visao
                 q = self.fonte.proximo_quadro_detalhado(ultimo, timeout=.1)

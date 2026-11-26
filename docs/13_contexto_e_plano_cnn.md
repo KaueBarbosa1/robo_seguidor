@@ -1,5 +1,33 @@
 # Contexto do projeto e plano para a CNN
 
+Atualização de26/11/2026 — Etapa6 implementada em software no PC. Módulo
+distribuido integra percepção OpenCV compartilhada, retorno autenticado pelo
+mesmo WebSocket, validação local Pi de frame/sessão/geração/idade, autoridade
+exclusiva, presença do operador, parada e emergência retida. ThreadControle20 Hz
+continua responsável por referências de motor; PI/PD/firmware/pinos preservados.
+O simulador executa o mesmo controlador com motor/câmera/sensores virtuais.
+Inicialização: `.\iniciar_distribuido.ps1`, embarcado virtual parado por padrão;
+`-Perfil simulacao-distribuida` ativa somente percepção remota, ainda parado.
+Main aceita canal opt-in; atuação real exige registro manual explícito de
+validação e permanece bloqueada nesta entrega. Nenhuma conexão física foi feita.
+
+CNN02 realmente carregada e inferida no PC com pré-processamento/semântica
+offline preservados. Sua ROI y075 não cabe no JPEG320x240 e a visibilidade
+não foi supervisionada: diagnóstico em imagens compatíveis, sem navegação,
+confiança artificial ou substituição por modelo pronto. RL reutiliza o pacote
+anterior, mas faltam checkpoints locais e controle distribuído RL não foi liberado.
+Não houve treinamento, mudança de ganhos/rede ESP32/Bluetooth nem push.
+SQLite migra preservando dados para v5, com projeção de percepção e eventos
+operacionais, exportação CSV e campos de comparação. Guia24 detalha arquitetura,
+contrato, arbitragem, resultados e roteiro progressivo de20 ensaios físicos.
+Ensaios reais de software: OpenCV4,98 Hz, CNNdiagnóstico5,16 Hz no Windows;
+não são resultados da Raspberry/pista. Imagens fixas geraram diferenças zero
+entre provedores sob tolerância1e-6. Falhas/atrasos descartam frames e não
+retomam movimento após reconexão. Detalhes e limites no guia24.
+Regressão final selecionada:468 aprovados,1 ignorado,4 desmarcados,56 subtestes;
+46 casos da etapa6 e15 testes JS. Interface desktop/móvel e inferência
+histórica de6 JPEGs verificadas. Não é certificação física nem toda a suíte de hardware.
+
 Atualização de 25/11/2026 — Etapa 5 implementada no Windows: central integrada
 em `.\iniciar_central.ps1`, 14 páginas, mesma Ponte/Cliente/bus/Gravador/SQLite
 e um único Three.js/GLB original. Gráficos limitados, cenários, alertas por

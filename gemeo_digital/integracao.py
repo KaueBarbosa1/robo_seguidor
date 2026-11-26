@@ -30,12 +30,24 @@ class Fluxo:
         self.bus=ponte.bus;self.ass=self.bus.assinar({'telemetria','imagens','eventos'},64)
         self.fim=threading.Event();self.pronto=threading.Event();self.loop=None;self.cliente=None
         self.camera=self.servidor=self.gravador=None
+        self.integrado=self.operacao=None
         if simulado:
-            self.camera=FonteCenario(ponte.cenario);self.camera.iniciar()
-            op=Opcoes.central(secrets.token_hex(24),host=cfg.REDE_SIM_HOST,porta=0)
-            self.servidor=Servidor(op,AmostrasCenario(ponte.cenario,self.camera),self.camera,True)
+            canal=None
+            if getattr(ponte,'etapa6',False):
+                from distribuido.simulacao import RuntimeSimulado,AmostrasIntegradas
+                from distribuido.canal import CanalOperacao
+                self.integrado=RuntimeSimulado(ponte.cenario,ponte.op_distribuida,camera_fps=ponte.camera_fps)
+                self.camera=self.integrado.camera;amostras=AmostrasIntegradas(self.integrado,ponte.telemetria_hz)
+                tokens={p:secrets.token_hex(24) for p in ('percepcao','controle','administrar')}
+                canal=CanalOperacao(self.integrado.autoridade,tokens)
+            else:self.camera=FonteCenario(ponte.cenario);amostras=AmostrasCenario(ponte.cenario,self.camera)
+            self.camera.iniciar()
+            op=Opcoes.central(secrets.token_hex(24),host=cfg.REDE_SIM_HOST,porta=0,
+                telemetria_hz=getattr(ponte,'telemetria_hz',10.),imagens_fps=getattr(ponte,'imagens_fps',5.))
+            self.servidor=Servidor(op,amostras,self.camera,True,operacao=canal)
             self.servidor.iniciar();self.url=url_local(op.host,self.servidor.porta)
             self.op=op
+            if self.integrado:self.integrado.iniciar()
         else:
             if not ponte.url_real:raise ValueError('Defina --servidor e ROBO_REDE_TOKEN no terminal')
             self.url=ponte.url_real;self.op=Opcoes.central(ponte.token_real)
@@ -48,6 +60,12 @@ class Fluxo:
         self.thread=threading.Thread(target=self._rede,daemon=True,name='gemeo-cliente');self.thread.start()
         self.pump=threading.Thread(target=self._consumir,daemon=True,name='gemeo-fanout');self.pump.start()
         if not self.pronto.wait(3):raise RuntimeError('Cliente não iniciou')
+        if getattr(ponte,'etapa6',False):
+            tokens=tokens if simulado else getattr(ponte,'tokens_operacao',{})
+            if tokens:
+                from distribuido.servico import ServicoPC
+                self.operacao=ServicoPC(self.url,self.op,self.bus,tokens,ponte.op_distribuida)
+                self.operacao.iniciar()
 
     def _rede(self):
         async def run():
@@ -72,10 +90,12 @@ class Fluxo:
 
     def fechar(self):
         self.fim.set()
+        if self.operacao:self.operacao.fechar()
         if self.loop and self.cliente and not self.loop.is_closed():self.loop.call_soon_threadsafe(self.cliente.parar)
         self.thread.join(timeout=7);self.pump.join(timeout=1)
         if self.servidor:self.servidor.parar()
         if self.camera:self.camera.parar()
+        if self.integrado:self.integrado.fechar()
         if self.gravador and self.gravador is not self.ponte.escritor_externo:self.gravador.fechar()
         self.bus.remover(self.ass)
 

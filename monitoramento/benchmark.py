@@ -16,7 +16,8 @@ from monitoramento.sistema import Sistema
 log = logging.getLogger('benchmark')
 TEMPOS = ('opencv_s', 'cnn_s', 'rl_s', 'voz_s', 'camera_http_s', 'camera_decode_s',
           'serial_escrita_s', 'serial_intervalo_sensores_s', 'controle.trabalho_s',
-          'controle.periodo_s', 'controle.jitter_s', 'controle.idade_frame_s', 'rede.rtt_s')
+          'controle.periodo_s', 'controle.jitter_s', 'controle.idade_frame_s', 'rede.rtt_s',
+          'distribuido.ciclo_s','distribuido.inferencia_s')
 
 
 def utc():

@@ -979,3 +979,82 @@ pre {
   background: #dce6ec;
   color: #1d3443;
 }
+
+.op-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  background: var(--panel);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+.op-status b {
+  width: 100%;
+  color: var(--accent);
+  font-size: 15px;
+}
+.op-status span {
+  font-size: 12px;
+}
+.fluxo-operacao {
+  display: flex;
+  flex-wrap: wrap;
+  list-style: none;
+  gap: 9px;
+  padding: 0;
+  margin: 14px 0;
+}
+.fluxo-operacao li {
+  border: 1px solid var(--line);
+  padding: 9px 14px;
+  font-size: 12px;
+  background: var(--panel);
+}
+.fluxo-operacao li:not(:last-child)::after {
+  content: " →";
+  color: var(--blue);
+  margin-left: 10px;
+}
+.fluxo-operacao .processador-ativo {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+.controle-direcional {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 22px 0;
+}
+.controle-direcional button {
+  min-height: 58px;
+  touch-action: none;
+  user-select: none;
+  font-size: 16px;
+}
+.controle-direcional button:first-child {
+  grid-column: 2;
+}
+.controle-direcional button:nth-child(2) {
+  grid-column: 1;
+}
+.controle-direcional button:last-child {
+  grid-column: 2;
+}
+button.danger {
+  background: #74352f;
+  color: #fff;
+  border-color: #e59180;
+  margin: 10px 8px 10px 0;
+}
+#op-imagem-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 14px;
+}
+#op-imagem-form label {
+  flex: 1;
+  min-width: 160px;
+}

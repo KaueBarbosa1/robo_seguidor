@@ -130,6 +130,20 @@ def telemetria(c, msg, recepcao_mono, gravacao, modo=None):
                    natureza=d.get('sistema_natureza','medido_no_host'))
     if isinstance(d.get('comunicacao'), dict):
         comunicacao(c, msg['sessao'], gravacao, recebido, d['comunicacao'], 'servidor', telemetria_id=ident)
+    remoto=t.get('distribuido')
+    if isinstance(remoto,dict):
+        r=remoto.get('ultimo_resultado') or {};ct=remoto.get('contadores') or {}
+        inserir(c,'percepcao_remota',dict(telemetria_id=ident,
+            **{k:texto(remoto.get(k)) for k in ('processamento','operacao','fonte_controle','algoritmo','versao_modelo','fase','parada')},
+            **{k:numero(remoto.get(k)) for k in ('frame_id','geracao','emergencia','idade_resultado_s')},
+            latencia_total_s=(remoto.get('latencias_s') or [None])[-1] if r else None,
+            **{k:numero(r.get(k)) for k in ('preprocessamento_s','inferencia_s','processamento_s','erro','posicao','confianca')},
+            resultados_aceitos=numero(ct.get('resultados_aceitos')),resultados_rejeitados=numero(ct.get('resultados_rejeitados')),
+            detalhes_json=js(remoto)))
+        for e in remoto.get('eventos',[]):
+            if not isinstance(e,dict) or not isinstance(e.get('id'),str) or not e.get('timestamp') or not e.get('tipo'):continue
+            inserir(c,'operacao_rede_eventos',dict(id=e['id'],sessao_id=msg['sessao'],timestamp_utc=utc(e['timestamp']),
+                tipo=e['tipo'],simulado=int(msg['simulado']),motivo=texto(e.get('motivo')),detalhes_json=js(e)),True)
     return ident, True
 
 

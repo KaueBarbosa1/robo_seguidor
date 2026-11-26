@@ -1,6 +1,23 @@
 # Dicionario de dados — Etapa 3
 
-Base gerada do esquema SQLite v2, acrescida das migrações v3/v4 da central.
+## Adições da Etapa6 — esquema v5
+
+`percepcao_remota` tem PK/FK `telemetria_id`. Colunas TEXT: processamento,
+operacao, fonte_controle, algoritmo, versao_modelo, fase e parada. INTEGER:
+frame_id, geracao, emergencia e contadores resultados_aceitos/rejeitados.
+REAL: idade_resultado_s, latencia_total_s, preprocessamento_s, inferencia_s,
+processamento_s (segundos), erro/posicao normalizados e confiança quando existe.
+`detalhes_json` preserva estado/validade/semântica originais. Ausências são NULL.
+
+`operacao_rede_eventos` tem PK TEXT id(UUID), FK sessao_id, timestamp_utc(TEXT),
+tipo(TEXT), simulado(INTEGER), motivo(TEXT opcional) e detalhes_json(TEXT).
+Índice(sessao_id,timestamp_utc,id), deduplicação por UUID. Não armazena tokens,
+desafios ou autorização privada. Projeções são amostradas pela telemetria;
+eventos de resultado preservam cada ocorrência recebida durante a gravação.
+Estatísticas de projeção são ponderadas por amostras de telemetria, não por
+tentativas independentes. Guia24 documenta exportação e limitações.
+
+Base gerada do esquema SQLite v2, acrescida das migrações v3/v4/v5 da central.
 Valores indisponiveis sao NULL; nenhuma medicao recebe zero por ausencia. BOOLEAN e representado por INTEGER 0/1. Qualidade e natureza originais ficam nos campos JSON e no envelope fonte.
 
 ## Adições da Etapa 5 — esquema v4

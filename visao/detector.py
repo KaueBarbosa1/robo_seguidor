@@ -256,6 +256,11 @@ class ThreadVisao(threading.Thread):
         sessao_anterior = None
         sem_quadro = 0
         while not self._parar.is_set():
+            autoridade=getattr(self._estado,'_autoridade_rede',None)
+            if autoridade is not None and autoridade.processamento=='distribuido':
+                detector.limpar_historico();sessao_anterior=None
+                self._parar.wait(.02)
+                continue
             with self._estado.lock:
                 modo, sessao = self._estado.modo, self._estado.sessao_visao
             if modo is not Modo.SEGUINDO:

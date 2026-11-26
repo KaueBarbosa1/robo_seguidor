@@ -104,4 +104,16 @@ class Telemetria:
             saida['camera']['estado_idade'] = ('indisponivel' if idade_camera is None else
                 'atual' if 0 <= idade_camera <= limite else 'desatualizado')
         saida['serial'] = dict(getattr(self.motor, 'estatisticas', {}))
+        autoridade=getattr(self.estado,'_autoridade_rede',None)
+        if autoridade is not None:
+            remoto=autoridade.snapshot();saida['distribuido']=remoto
+            saida['ia']['politica']=remoto['algoritmo']
+            saida['ia']['local']='computador' if remoto['processamento']=='distribuido' else 'raspberry_ou_host_embarcado'
+            r=remoto.get('ultimo_resultado') if remoto['processamento']=='distribuido' else remoto.get('local_resultado')
+            if r:
+                saida['ia']['diagnostico']=dict(inferencia_s=r.get('inferencia_s'),previsao=r.get('posicao'),versao=remoto['versao_modelo'],
+                    acao=r.get('acao'),navegavel=r.get('navegavel'),semantica=r.get('semantica'))
+            if remoto['processamento']=='distribuido':saida['visao']['algoritmo']=remoto['algoritmo']
+            if callable(getattr(self.fonte,'saude',None)):
+                saida['visao']['camera_ok']=self.fonte.saude()['status']=='ok'
         return saida

@@ -1,5 +1,12 @@
 # Robô seguidor de linha com comando de voz
 
+Etapa6 no Windows: `.\iniciar_distribuido.ps1` abre o ambiente virtual parado;
+`-Perfil simulacao-distribuida` executa o circuito de percepção pelo PC.
+Controle por autorização/presença, OpenCV compartilhado, diagnóstico da CNN
+própria e instrumentação usam a mesma central/base/gêmeo. Consulte o
+[manual da etapa6](distribuido/README.md) e o [guia técnico/validação](docs/24_processamento_distribuido.md).
+Atuação real permanece bloqueada por padrão e depende de ensaios físicos posteriores.
+
 Central de monitoramento integrada no Windows: execute `.\iniciar_central.ps1`
 e abra `http://127.0.0.1:8780`. Reúne 14 páginas, gêmeo original, câmera,
 gráficos, simulação, histórico, experimentos e exportação. Consulte o

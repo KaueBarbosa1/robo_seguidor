@@ -1,0 +1,10 @@
+{
+  "etapa": 6,
+  "estado": "aguardando_ensaios_fisicos",
+  "responsavel": "",
+  "data": "2026-11-26",
+  "evidencias": [],
+  "remoto_real": false,
+  "distribuido_real": false,
+  "observacao": "Exemplo sem aprovação. Não habilita atuação real. Preencher somente após os ensaios e revisão pelo operador."
+}

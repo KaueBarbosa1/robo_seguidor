@@ -1,5 +1,6 @@
 import { esc } from "./nucleo.js";
 import { blocoGrafico } from "./graficos.js";
+import { htmlControle } from "./operacao.js";
 export const PAGINAS = [
   [
     "geral",
@@ -68,6 +69,12 @@ export const PAGINAS = [
     "Organização acadêmica e comparações exploratórias entre sessões identificadas.",
   ],
   [
+    "controle",
+    "Controle remoto",
+    "⌘",
+    "Autorização exclusiva, presença do operador e processamento distribuído.",
+  ],
+  [
     "simulacao",
     "Simulação",
     "▷",
@@ -99,6 +106,7 @@ export function criarPagina(id) {
     return blocoGrafico(i, t, u, s);
   };
   let html = "";
+  if (id === "controle") html = htmlControle();
   if (id === "geral")
     html =
       metric([

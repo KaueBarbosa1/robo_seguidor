@@ -44,7 +44,7 @@ def test_inicializacao_reutiliza_html_modelo_e_migracao(ambiente):
     html=urlopen(url).read().decode()
     assert 'RS · Central de operações' in html and html.count('id="cena"')==1
     assert html.count('importmap')==1
-    assert b.historico.estado()['versao']==4
+    assert b.historico.estado()['versao']==5
     with closing(conectar(b.historico.raiz)) as c:
         plano=' '.join(str(tuple(r)) for r in c.execute("EXPLAIN QUERY PLAN SELECT rtt_s FROM comunicacao WHERE telemetria_id=1 AND lado='servidor' LIMIT 1"))
         assert 'idx_comunicacao_telemetria' in plano

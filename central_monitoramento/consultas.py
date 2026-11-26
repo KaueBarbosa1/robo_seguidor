@@ -50,12 +50,15 @@ class Consultas:
             p=c.execute('SELECT * FROM odometria WHERE sessao_id=? ORDER BY timestamp_utc DESC,id DESC LIMIT 1',(sid,)).fetchone()
             info['odometria']=dict(p) if p else None
             info['configuracoes']=[dict(r) for r in c.execute('SELECT g.id,g.nome,g.configuracoes_json FROM gravacoes g JOIN gravacao_sessoes gs ON gs.gravacao_id=g.id WHERE gs.sessao_id=? LIMIT 20',(sid,))]
+            info['processamentos_registrados']=[r[0] for r in c.execute('SELECT DISTINCT p.processamento FROM percepcao_remota p JOIN telemetria t ON t.id=p.telemetria_id WHERE t.sessao_id=?',(sid,))]
         f=dict(sessao=sid,simulado=bool(info['simulado']))
         stats={}
         for nome,cat,col in [('pps_esq','motores','pps_esq'),('pps_dir','motores','pps_dir'),('latencia','comunicacao','rtt_s'),('temperatura','desempenho','temperatura_c'),('fps','comunicacao','fps'),('cpu','desempenho','cpu_pct')]:
             extra={'dispositivo':'servidor'} if cat=='desempenho' else {'lado':'servidor'} if cat=='comunicacao' else {}
             stats[nome]=self.h.estatistica(cat,col,**f,**extra)
         histograma=[];lat=stats['latencia']
+        for nome,col in [('ciclo_distribuido','latencia_total_s'),('inferencia_percepcao','inferencia_s')]:
+            stats[nome]=self.h.estatistica('percepcao_remota',col,**f)
         if lat['n']:
             a,z=lat['minimo'],lat['maximo'];amplitude=max(z-a,1e-12)
             with closing(conectar(self.h.raiz)) as c:

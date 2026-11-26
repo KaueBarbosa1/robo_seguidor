@@ -60,7 +60,11 @@ def main() -> None:
     ap.add_argument('--rede', action='store_true', default=cfg.REDE_ATIVA, help='WebSocket observacional autenticado')
     ap.add_argument('--rede-host', default=cfg.REDE_HOST, help='IP local explicito para o servidor')
     ap.add_argument('--rede-porta', type=int, default=cfg.REDE_PORTA)
+    ap.add_argument('--operacao-rede',action='store_true',help='prepara canal operacional; atuação real bloqueada sem aprovação física explícita')
+    ap.add_argument('--validacao-fisica',help='registro local de aprovação dos ensaios físicos; ausente mantém atuação por rede bloqueada')
     args = ap.parse_args()
+    if args.operacao_rede and (not args.rede or args.fonte_imagem!='esp32' or args.politica!='opencv' or cfg.APRENDIZADO_ATIVO):
+        ap.error('Operação de rede exige --rede, fonte esp32, OpenCV padrão e aprendizado online desligado')
     opcoes_rede = None
     if args.rede:
         try:
@@ -100,6 +104,16 @@ def main() -> None:
                       cfg.SERIAL_PORTA, e)
             raise SystemExit(1)
         fonte = abrir_fonte(args.fonte_imagem, motor)
+        canal_operacao=None
+        if args.operacao_rede:
+            if not isinstance(fonte,CameraESP32):raise RuntimeError('Canal operacional exige câmera ESP32 disponível')
+            from distribuido.configuracao import opcoes_aprovadas,tokens_ambiente
+            from distribuido.autoridade import Autoridade
+            from distribuido.canal import CanalOperacao
+            op_dist=opcoes_aprovadas(args.validacao_fisica)
+            if (op_dist.remoto_real or op_dist.distribuido_real) and (not cfg.CONTROLE_VELOCIDADE_ATIVO or cfg.FIRMWARE_COM_CAMERA):
+                raise ValueError('Atuação de rede exige perfil existente PI/encoders sem câmera no Uno')
+            canal_operacao=CanalOperacao(Autoridade(estado,motor,fonte,op_dist),tokens_ambiente())
         if pacote is not None:
             if not isinstance(fonte, CameraESP32):
                 raise RuntimeError("CNN/RL sem fonte ESP32 disponivel")
@@ -171,7 +185,7 @@ def main() -> None:
                     opcoes_rede.telemetria_hz, benchmark)
                 rede = Servidor(opcoes_rede, amostras,
                     fonte if isinstance(fonte, CameraESP32) else None,
-                    simulado=args.sem_arduino or args.fonte_imagem == 'simulada')
+                    simulado=args.sem_arduino or args.fonte_imagem == 'simulada',operacao=canal_operacao)
                 rede.iniciar()
                 if benchmark is not None:
                     benchmark.diagnostico_rede = rede.metricas.snapshot

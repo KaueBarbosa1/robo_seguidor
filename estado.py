@@ -17,6 +17,7 @@ class Modo(Enum):
     GIRO_DIR = auto()
     RE = auto()
     MANUAL = auto()          # controle remoto (celular por Bluetooth): anda enquanto chegarem comandos
+    REMOTO_PC = auto()       # referência PPS autorizada pela supervisão embarcada
 
 
 MANOBRAS = {Modo.GIRO_ESQ, Modo.GIRO_DIR, Modo.RE}
